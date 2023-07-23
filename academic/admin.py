@@ -20,5 +20,16 @@ class SectionAdmin(admin.ModelAdmin):
     save_on_top = True
     list_per_page = 15
 
+class ClassAdmin(admin.ModelAdmin):
+    list_display = ['code','name','institution']
+    search_fields = ['code','name','institution']
+    filter_horizontal = ('section',)
+    save_on_top = True
+    list_per_page = 15
+
+    class Meta:
+        model = Class
+
 admin.site.register(Session,SessionAdmin)
 admin.site.register(Section,SectionAdmin)
+admin.site.register(Class,ClassAdmin)
