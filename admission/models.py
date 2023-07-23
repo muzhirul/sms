@@ -82,3 +82,24 @@ class AdmissionTestSetup(models.Model):
 
     def __str__(self):
         return self.subject
+
+class AdmissionTestResult(models.Model):
+    SUBJECT_TYPE = (('BANGLA','Bangla'),('MATH','Math'),('ENGLISH','English'),('O','Other'))
+    admission = models.ForeignKey(Admission,on_delete=models.SET_NULL,blank=True,null=True)
+    subject = models.CharField(max_length=20, blank=True,null=True,choices=SUBJECT_TYPE)
+    mark = models.IntegerField(blank=True,null=True,verbose_name='Mark')
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    start_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='ad_test_result_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='ad_test_result_updated_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ad_test_result'
+
+    def __str__(self):
+        return self.subject
+
