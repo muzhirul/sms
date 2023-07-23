@@ -30,7 +30,7 @@ class Admission(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'admission'
+        db_table = 'ad_student'
 
     def __str__(self):
         return self.first_name
