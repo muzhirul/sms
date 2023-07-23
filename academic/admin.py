@@ -11,4 +11,14 @@ class SessionAdmin(admin.ModelAdmin):
     save_on_top = True
     list_per_page = 15
 
+class SectionAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ("Section Information",{'fields':[('code','section','institution','status'),]})
+    ]
+    list_display = ['code','section','institution','status','created_at']
+    search_fields = ['code','section','institution']
+    save_on_top = True
+    list_per_page = 15
+
 admin.site.register(Session,SessionAdmin)
+admin.site.register(Section,SectionAdmin)

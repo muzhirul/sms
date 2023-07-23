@@ -15,6 +15,7 @@ class Session(models.Model):
 
     class Meta:
         db_table = 'ac_session'
+        verbose_name = '1. Section'
     
     def __str__(self):
         return self.session
@@ -31,6 +32,7 @@ class Section(models.Model):
 
     class Meta:
         db_table = 'ac_section'
+        verbose_name = '2. Section'
     
     def __str__(self):
         return self.section
