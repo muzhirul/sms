@@ -21,6 +21,10 @@ class SectionAdmin(admin.ModelAdmin):
     list_per_page = 15
 
 class ClassAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ("Class Information",{'fields':[('code','name','institution','status'),]}),
+        ("Section Information",{'fields':[('section',)]})
+    ]
     list_display = ['code','name','institution']
     search_fields = ['code','name','institution']
     filter_horizontal = ('section',)
