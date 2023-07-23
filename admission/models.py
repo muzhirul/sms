@@ -1,4 +1,5 @@
 from django.db import models
+from institution.models import Institution
 from django_userforeignkey.models.fields import UserForeignKey
 
 # Create your models here.
@@ -20,6 +21,7 @@ class Admission(models.Model):
     blood_group = models.CharField(max_length=5, blank=True,null=True,choices=BLOOD_GROUP_TYPE, verbose_name='Blood Group')
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
+    Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     is_online = models.BooleanField(default=False, verbose_name='Is Online')
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='admission_creator', editable=False, blank=True, null=True)

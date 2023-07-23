@@ -14,7 +14,7 @@ class GuardianTabularInline(admin.TabularInline):
 @admin_thumbnails.thumbnail('photo')
 class AdmissionAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Basic Information",{'fields':[('code','first_name','last_name','gender'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','admission_date','blood_group','status','is_online'),]}),
+        ("Basic Information",{'fields':[('code','first_name','last_name','gender'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','admission_date','blood_group','Institution','status','is_online'),]}),
         ("Address",{'fields':[('present_address','permanent_address'),]})        
     ]
     list_display = ['code','first_name','last_name','dob','admission_date','blood_group','status','photo_thumbnail']

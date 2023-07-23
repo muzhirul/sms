@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_userforeignkey',
     'authentication',
+    'institution',
     'student',
     'staff',
     'admission',
