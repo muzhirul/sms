@@ -11,6 +11,11 @@ class GuardianTabularInline(admin.TabularInline):
     model = Guardian
     fields = ['first_name','last_name','mobile_no','relation','gender','ocupation','nid','photo','photo_thumbnail','is_guardian','status']
     extra = 0
+
+class AdmissionTestResultTabularInline(admin.TabularInline):
+    model = AdmissionTestResult
+    fields =['subject','mark','institution','status']
+    extra = 0
 @admin_thumbnails.thumbnail('photo')
 class AdmissionAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -25,7 +30,7 @@ class AdmissionAdmin(admin.ModelAdmin):
     save_on_top = True
     list_per_page = 15
 
-    inlines = [GuardianTabularInline]
+    inlines = [GuardianTabularInline,AdmissionTestResultTabularInline]
     
     class Meta:
         model = Admission
