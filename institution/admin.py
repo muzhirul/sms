@@ -1,8 +1,14 @@
 from django.contrib import admin
 import admin_thumbnails
 from institution.models import *
+from admission.models import AdmissionTestSetup
 
 # Register your models here.
+
+class AdmissionTestSetupTabularInline(admin.TabularInline):
+    model = AdmissionTestSetup
+    fields = ['subject','exam_mark','pass_mark','institution','start_date','end_date','status']
+    extra = 0
 @admin_thumbnails.thumbnail('logo')
 class InstitutionAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -16,7 +22,8 @@ class InstitutionAdmin(admin.ModelAdmin):
     # save_as = True
     save_on_top = True
     list_per_page = 15
-
-    model=Institution
+    inlines = [AdmissionTestSetupTabularInline]
+    class Meta:
+        model=Institution
 
 admin.site.register(Institution,InstitutionAdmin)

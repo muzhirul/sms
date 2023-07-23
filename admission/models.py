@@ -62,3 +62,23 @@ class Guardian(models.Model):
 
     def __str__(self):
         return self.first_name
+
+class AdmissionTestSetup(models.Model):
+    SUBJECT_TYPE = (('BANGLA','Bangla'),('MATH','Math'),('ENGLISH','English'),('O','Other'))
+    subject = models.CharField(max_length=20, blank=True,null=True,choices=SUBJECT_TYPE)
+    exam_mark = models.IntegerField(blank=True,null=True,verbose_name='Exam Mark')
+    pass_mark = models.IntegerField(blank=True,null=True,verbose_name='Pass Mark')
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    start_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='ad_test_setup_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='ad_test_setup_updated_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ad_test_setup'
+
+    def __str__(self):
+        return self.subject
