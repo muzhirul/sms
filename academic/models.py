@@ -54,3 +54,20 @@ class Class(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Version(models.Model):
+    code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Version Code')
+    version = models.IntegerField(blank=True,null=True, verbose_name='Version')
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True,null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='version_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='version_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ac_version'
+        verbose_name = '4. Versions'
+
+    def __str__(self):
+        return self.version
