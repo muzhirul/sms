@@ -2,6 +2,14 @@ from django.contrib import admin
 from academic.models import *
 
 # Register your models here.
+class VersionAdmin(admin.ModelAdmin):
+    list_display = ['code','version','status','created_at']
+    search_fields = ['code','version','status']
+    save_on_top = True
+    list_per_page = 15
+
+    class Meta:
+        model = Version
 class SessionAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Session Information",{'fields':[('code','session','institution','status'),]})
@@ -20,6 +28,18 @@ class SectionAdmin(admin.ModelAdmin):
     save_on_top = True
     list_per_page = 15
 
+class SubjectAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ("Subject Information",{"fields":[('code','type','institution'),('picture','status'),('start_date','end_date'),]})
+    ]
+    list_display = ['code','type','name','status','created_at']
+    search_fields = ['code','type','name','status']
+    save_on_top = True
+    list_per_page = 15
+
+    class Meta:
+        model = Subject
+
 class ClassAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Class Information",{'fields':[('code','name','institution','status'),]}),
@@ -34,6 +54,8 @@ class ClassAdmin(admin.ModelAdmin):
     class Meta:
         model = Class
 
+admin.site.register(Version,VersionAdmin)
 admin.site.register(Session,SessionAdmin)
 admin.site.register(Section,SectionAdmin)
 admin.site.register(Class,ClassAdmin)
+admin.site.register(Subject,SubjectAdmin)

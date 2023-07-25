@@ -6,8 +6,10 @@ from django_userforeignkey.models.fields import UserForeignKey
 class Version(models.Model):
     code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Version Code')
     version = models.IntegerField(blank=True,null=True, verbose_name='Version')
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True,null=True)
+    status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='version_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='version_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -15,7 +17,7 @@ class Version(models.Model):
 
     class Meta:
         db_table = 'ac_version'
-        verbose_name = '1. Versions'
+        verbose_name = '1. Version'
 
     def __str__(self):
         return self.version
@@ -56,12 +58,15 @@ class Section(models.Model):
     
 
 class Subject(models.Model):
+    SUBJECT_TYPE = (('THEORY','Theory'),('PARCTICAL','Practical'))
     code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Subject Code')
-    type = models.CharField(max_length=20, blank=True, null=True,verbose_name='Subject Type')
+    type = models.CharField(max_length=20, blank=True, null=True,verbose_name='Subject Type',choices=SUBJECT_TYPE)
     name = models.CharField(max_length=100, blank=True,null=True,verbose_name='Subject Name')
     picture = models.ImageField(upload_to='subject_img/',blank=True,null=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True,null=True)
+    status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='subject_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='subject_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
