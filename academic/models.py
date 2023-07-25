@@ -116,4 +116,26 @@ class ClassRoom(models.Model):
     def __str__(self):
         return self.room_no
     
+class ClassPeriod(models.Model):
+    code = models.CharField(max_length=10, blank=True,null=True, verbose_name='Class Period Code')
+    name = models.CharField(max_length=100, blank=True,null=True,verbose_name='Class Period Name')
+    start_time = models.TimeField(blank=True,null=True)
+    end_time = models.TimeField(blank=True,null=True)
+    duration = models.IntegerField(blank=True,null=True,verbose_name='Class Duration')
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_period_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_period_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ac_class_period'
+        verbose_name = '7. Class Period'
+
+    def __str__(self):
+        return self.name
+
 
