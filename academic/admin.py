@@ -66,9 +66,22 @@ class ClassRoomAdmin(admin.ModelAdmin):
     class Meta:
         model = ClassRoom
 
+class ClassPeriodAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ("Class Period Information",{"fields":[('code','name'),('start_time','end_time'),('duration','status')]})
+    ]
+    list_display = ['code','name','start_time','end_time','duration','status']
+    search_fields = ['code','name','start_time','end_time','duration']
+    save_on_top = True
+    list_per_page = 15
+
+    class Meta:
+        model = ClassPeriod
+
 admin.site.register(Version,VersionAdmin)
 admin.site.register(Session,SessionAdmin)
 admin.site.register(Section,SectionAdmin)
 admin.site.register(Class,ClassAdmin)
 admin.site.register(Subject,SubjectAdmin)
 admin.site.register(ClassRoom,ClassRoomAdmin)
+admin.site.register(ClassPeriod,ClassPeriodAdmin)
