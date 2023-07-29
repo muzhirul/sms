@@ -30,7 +30,7 @@ class SectionAdmin(admin.ModelAdmin):
 
 class SubjectAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Subject Information",{"fields":[('code','type','institution'),('picture','status'),('start_date','end_date'),]})
+        ("Subject Information",{"fields":[('code','type','institution'),('name','picture','status'),('start_date','end_date'),]})
     ]
     list_display = ['code','type','name','status','created_at']
     search_fields = ['code','type','name','status']
@@ -43,11 +43,12 @@ class SubjectAdmin(admin.ModelAdmin):
 class ClassAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Class Information",{'fields':[('code','name','institution','status'),]}),
-        ("Section Information",{'fields':[('section',)]})
+        ("Subject Information",{'fields':[('subject',)]}),
+        ("Section Information",{'fields':[('section',)]}),
     ]
     list_display = ['code','name','institution']
     search_fields = ['code','name','institution']
-    filter_horizontal = ('section',)
+    filter_horizontal = ('section','subject')
     save_on_top = True
     list_per_page = 15
 
