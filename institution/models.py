@@ -21,6 +21,7 @@ class Institution(models.Model):
 
     class Meta:
         db_table = 'ins_institution'
+        verbose_name = '1. Institution'
 
     def __str__(self):
         return self.name
@@ -43,6 +44,7 @@ class Branch(models.Model):
 
     class Meta:
         db_table = 'ins_branch'
+        verbose_name = '2. Branch'
 
     def __str__(self):
         return self.name

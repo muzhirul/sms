@@ -12,7 +12,7 @@ class AdmissionTestSetupTabularInline(admin.TabularInline):
 @admin_thumbnails.thumbnail('logo')
 class InstitutionAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Basic Information",{'fields':[('parent','code','name','mobile_no'),('email','logo','site_link','map_link'),]}),
+        ("Basic Information",{'fields':[('code','name','mobile_no'),('email','logo','site_link','map_link'),]}),
         ("Address",{'fields':[('short_address','address'),]})        
     ]
     list_display = ['code','name','mobile_no','email','logo_thumbnail','status']
