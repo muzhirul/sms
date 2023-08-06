@@ -43,12 +43,12 @@ class SubjectAdmin(admin.ModelAdmin):
 class ClassAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Class Information",{'fields':[('code','name','institution','status'),]}),
-        ("Subject Information",{'fields':[('subject',)]}),
-        ("Section Information",{'fields':[('section',)]}),
+        # ("Subject Information",{'fields':[('subject',)]}),
+        # ("Section Information",{'fields':[('section',)]}),
     ]
     list_display = ['code','name','institution']
     search_fields = ['code','name','institution']
-    filter_horizontal = ('section','subject')
+    # filter_horizontal = ('section','subject')
     save_on_top = True
     list_per_page = 15
 
@@ -86,3 +86,4 @@ admin.site.register(Class,ClassAdmin)
 admin.site.register(Subject,SubjectAdmin)
 admin.site.register(ClassRoom,ClassRoomAdmin)
 admin.site.register(ClassPeriod,ClassPeriodAdmin)
+admin.site.register(ClassSection)
