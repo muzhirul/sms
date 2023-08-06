@@ -27,3 +27,4 @@ class InstitutionAdmin(admin.ModelAdmin):
         model=Institution
 
 admin.site.register(Institution,InstitutionAdmin)
+admin.site.register(Branch)

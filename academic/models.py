@@ -1,5 +1,5 @@
 from django.db import models
-from institution.models import Institution
+from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 
 # Create your models here.
@@ -7,6 +7,7 @@ class Version(models.Model):
     code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Version Code')
     version = models.CharField(max_length=20,blank=True,null=True, verbose_name='Version')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True,null=True)
     status = models.BooleanField(default=True)
@@ -26,6 +27,7 @@ class Session(models.Model):
     code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Session Code')
     session = models.IntegerField(blank=True,null=True,verbose_name='Session')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='session_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='session_update_by', editable=False, blank=True, null=True)
@@ -43,6 +45,7 @@ class Section(models.Model):
     code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Section Code')
     section = models.CharField(max_length=50,blank=True,null=True,verbose_name='Section')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='section_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='section_update_by', editable=False, blank=True, null=True)
@@ -64,6 +67,7 @@ class Subject(models.Model):
     name = models.CharField(max_length=100, blank=True,null=True,verbose_name='Subject Name')
     picture = models.ImageField(upload_to='subject_img/',blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True,null=True)
     status = models.BooleanField(default=True)
@@ -83,6 +87,7 @@ class ClassName(models.Model):
     code = models.CharField(max_length=10,blank=True,null=True,verbose_name='Class Code')
     name = models.CharField(max_length=50,blank=True,null=True, verbose_name='Class Name')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     # section = models.ManyToManyField(Section)
     # subject = models.ManyToManyField(Subject)
     status = models.BooleanField(default=True)
@@ -105,6 +110,7 @@ class ClassRoom(models.Model):
     building = models.CharField(max_length=100, blank=True,null=True, verbose_name='Building Name')
     room_no = models.CharField(max_length=10, blank=True, null=True, verbose_name='Room No.')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True,null=True)
     status = models.BooleanField(default=True)
@@ -127,6 +133,7 @@ class ClassPeriod(models.Model):
     end_time = models.TimeField(blank=True,null=True)
     duration = models.IntegerField(blank=True,null=True,verbose_name='Class Duration')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True,null=True)
     status = models.BooleanField(default=True)
@@ -147,6 +154,7 @@ class ClassSection(models.Model):
     section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True, null=True)
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, blank=True, null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_section_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_section_update_by', editable=False, blank=True, null=True)
@@ -164,6 +172,7 @@ class ClassSubject(models.Model):
     class_section = models.ForeignKey(ClassSection, on_delete=models.SET_NULL, blank=True,null=True)
     subject = models.ManyToManyField(Subject)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_subject_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_subject_update_by', editable=False, blank=True, null=True)
