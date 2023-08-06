@@ -5,7 +5,7 @@ from django_userforeignkey.models.fields import UserForeignKey
 # Create your models here.
 class Version(models.Model):
     code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Version Code')
-    version = models.IntegerField(blank=True,null=True, verbose_name='Version')
+    version = models.CharField(max_length=20,blank=True,null=True, verbose_name='Version')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True,null=True)
@@ -79,7 +79,7 @@ class Subject(models.Model):
     def __str__(self):
         return str(self.code) + ' | ' +str(self.name) + ' | ' + str(self.type)
 
-class Class(models.Model):
+class ClassName(models.Model):
     code = models.CharField(max_length=10,blank=True,null=True,verbose_name='Class Code')
     name = models.CharField(max_length=50,blank=True,null=True, verbose_name='Class Name')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
@@ -143,7 +143,7 @@ class ClassPeriod(models.Model):
         return self.name
 
 class ClassSection(models.Model):
-    class_name = models.ForeignKey(Class, on_delete=models.SET_NULL, blank=True, null=True)
+    class_name = models.ForeignKey(ClassName, on_delete=models.SET_NULL, blank=True, null=True)
     section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True, null=True)
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, blank=True, null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
@@ -158,5 +158,21 @@ class ClassSection(models.Model):
         verbose_name = '8. Class section'
 
     def __str__(self):
-        return self.class_name.name
+        return str(self.class_name.name) +' | '+str(self.section.section)
 
+class ClassSubject(models.Model):
+    class_section = models.ForeignKey(ClassSection, on_delete=models.SET_NULL, blank=True,null=True)
+    subject = models.ManyToManyField(Subject)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_subject_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_subject_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ac_class_subject'
+        verbose_name = '9. Class Subject'
+
+    def __str__(self):
+        return self.class_section.class_name.name

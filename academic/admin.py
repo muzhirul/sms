@@ -53,7 +53,7 @@ class ClassAdmin(admin.ModelAdmin):
     list_per_page = 15
 
     class Meta:
-        model = Class
+        model = ClassName
     
 class ClassRoomAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -82,8 +82,9 @@ class ClassPeriodAdmin(admin.ModelAdmin):
 admin.site.register(Version,VersionAdmin)
 admin.site.register(Session,SessionAdmin)
 admin.site.register(Section,SectionAdmin)
-admin.site.register(Class,ClassAdmin)
+admin.site.register(ClassName,ClassAdmin)
 admin.site.register(Subject,SubjectAdmin)
 admin.site.register(ClassRoom,ClassRoomAdmin)
 admin.site.register(ClassPeriod,ClassPeriodAdmin)
 admin.site.register(ClassSection)
+admin.site.register(ClassSubject)
