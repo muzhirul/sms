@@ -1,5 +1,5 @@
 from django.db import models
-from institution.models import Institution
+from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 
 # Create your models here.
@@ -22,6 +22,7 @@ class Admission(models.Model):
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
     Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     is_online = models.BooleanField(default=False, verbose_name='Is Online')
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='admission_creator', editable=False, blank=True, null=True)
