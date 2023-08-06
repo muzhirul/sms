@@ -32,3 +32,30 @@ class staff(models.Model):
 
     def __str__(self):
         return self.first_name
+    
+class Education(models.Model):
+    staff = models.ForeignKey(staff, on_delete=models.SET_NULL, blank=True,null=True)
+    order_seq = models.IntegerField(blank=True,null=True)
+    institution_name = models.CharField(max_length=255, blank=True, null=True)
+    registration_no = models.CharField(max_length=50, blank=True,null=True)
+    title = models.CharField(max_length=255,blank=True,null=True)
+    board = models.CharField(max_length=50, blank=True,null=True)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True,null=True)
+    passing_year = models.IntegerField(blank=True, null=True)
+    result = models.CharField(max_length=20, blank=True,null=True)
+    result_out_of = models.CharField(max_length=50, blank=True,null=True)
+    remarks = models.CharField(max_length=255, blank=True, null=True)
+    Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='education_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='education_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'sta_education'
+
+    def __str__(self):
+        return self.title
