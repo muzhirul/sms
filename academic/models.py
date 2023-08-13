@@ -170,7 +170,8 @@ class ClassSection(models.Model):
 
 class ClassSubject(models.Model):
     class_section = models.ForeignKey(ClassSection, on_delete=models.SET_NULL, blank=True,null=True)
-    subject = models.ManyToManyField(Subject)
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, blank=True, null=True)
+    image = models.ImageField(upload_to='book_images/', blank=True, null=True, verbose_name='Book Image')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
