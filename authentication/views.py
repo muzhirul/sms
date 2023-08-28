@@ -5,7 +5,10 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import LoginSerializer
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import Permission
+from academic.models import *
+
+
+
 # Create your views here.
 class UserLoginView(APIView):
     def post(self, request):
@@ -15,6 +18,10 @@ class UserLoginView(APIView):
             username=serializer.validated_data['username'],
             password=serializer.validated_data['password']
         )
+        # if not user:
+        #     raise forms.ValidationError('Invalid Credentials')
+        # content_type = ContentType.objects.all()
+        # print(content_type)
         if user is None:
             return Response({
                 'code':401,
@@ -22,6 +29,16 @@ class UserLoginView(APIView):
                 'error':[],
                 'data': None
                 }, status=status.HTTP_401_UNAUTHORIZED)
+        # if not user.is_active:
+        #     raise forms.ValidationError('Account disabled, contact admin')
+        if not user.is_verified:
+            return Response({
+                'code':401,
+                'message': 'Account is not verfied',
+                'error':[],
+                'data': None
+                }, status=status.HTTP_401_UNAUTHORIZED)
+        
         refresh = RefreshToken.for_user(user)
         user_serializer = LoginSerializer(user)
         user_data = user_serializer.data
