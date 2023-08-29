@@ -49,54 +49,18 @@ class UserV2LoginView(APIView):
         user_serializer = LoginSerializer2(user)
         user_data = user_serializer.data
         
-
-        group_data = []
         permission_info = {}
         for group in user.groups.all():
-            # app_labels = set()
             for content_type_id  in Permission.objects.filter(group=group).values_list('content_type_id', flat=True).distinct():
                 content_type = ContentType.objects.get(id=content_type_id)
                 app_label = content_type.app_label
                 model_name = content_type.model
                 if app_label not in permission_info:
-                    permission_info[app_label] = {'sub_menu': []}
-                if model_name not in permission_info[app_label]['sub_menu']:
-                    permission_info[app_label]['sub_menu'].append(model_name)
-                    
-                permissions = Permission.objects.filter(content_type=content_type)
-                print(permissions)
-                # permission_names = [permission.codename for permission in permissions]
-                # permission_info[app_label]['permissions'].extend(permission_names)
-                # group_data.append({'app_label': app_label, 'model_name': model_name})
-                # app_label = (permission.content_type.app_label)
-                # content_type_id = permission.content_type
-                # modelList = Permission.objects.filter(group=group,content_type=content_type_id).count()
-                # print(modelList)
-                # app_labels.add(app_label)
-            # group_data.append({
-            #     'name':group.name,
-            #     'menu': app_labels
-            # })
-
-
-        # Include detailed permission data for each group
-        # group_data = []
-        # for group in user.groups.all():
-        #     group_permissions = Permission.objects.filter(group=group)
-        #     group_data.append({
-        #         'name': group.name,
-        #         'permissions': [
-        #             {
-        #                 'id': permission.id,
-        #                 'name': permission.name,
-        #                 'codename': permission.codename,
-        #             }
-        #             for permission in group_permissions
-        #         ]
-        #     })
-
+                    permission_info[app_label] = {}
+                permissions = Permission.objects.filter(content_type=content_type,group=group)
+                permission_names = [permission.codename for permission in permissions]
+                permission_info[app_label][model_name] = permission_names
         user_data['menu'] = permission_info
-  
         user_data['token'] = {}
         user_data['token']['refresh'] = str(refresh)
         user_data['token']['access'] = str(refresh.access_token)
