@@ -10,12 +10,13 @@ class ContentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContentType
         fields = ['id','app_label','model']
+        ordering = ('id',)
         
 class PermissionSerializer(serializers.ModelSerializer):
-    content_type = ContentTypeSerializer(read_only=True)  # Include group permissions
+    menu = ContentTypeSerializer(read_only=True, source='content_type')  # Include group permissions
     class Meta:
         model = Permission
-        fields = ['id', 'name', 'codename','content_type']
+        fields = ['id', 'name', 'codename','menu']
 
 class GroupSerializer(serializers.ModelSerializer):
     permissions = PermissionSerializer(many=True, read_only=True)  # Include group permissions
@@ -33,4 +34,14 @@ class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = Authentication
         fields = ['id','username','first_name','last_name','user_type','password','roles']
+        
+class LoginSerializer2(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=50,min_length=3)
+    password = serializers.CharField(max_length=68, min_length=5, write_only=True)
+    
+    
+    class Meta:
+        model = Authentication
+        fields = ['id','username','first_name','last_name','user_type','password']
+        
         
