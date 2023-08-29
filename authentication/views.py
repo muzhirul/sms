@@ -19,15 +19,7 @@ class UserV2LoginView(APIView):
             username=serializer.validated_data['username'],
             password=serializer.validated_data['password']
         )
-        
-                # print(app_label)
-        # userGroup = user.groups.all()
-        # userPermission = Permission.objects.filter(group=userGroup).count()
-        # print(userPermission)
-        # if not user:
-        #     raise forms.ValidationError('Invalid Credentials')
-        # content_type = ContentType.objects.all()
-        # print(content_type)
+
         if user is None:
             return Response({
                 'code':401,
@@ -60,7 +52,7 @@ class UserV2LoginView(APIView):
                 permissions = Permission.objects.filter(content_type=content_type,group=group)
                 permission_names = [permission.codename for permission in permissions]
                 permission_info[app_label][model_name] = permission_names
-        user_data['menu'] = permission_info
+        user_data['menus'] = permission_info
         user_data['token'] = {}
         user_data['token']['refresh'] = str(refresh)
         user_data['token']['access'] = str(refresh.access_token)
