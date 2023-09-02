@@ -7,7 +7,6 @@ from .serializers import LoginSerializer, LoginSerializer2
 from django.contrib.auth import authenticate
 from academic.models import *
 from django.contrib.auth.models import Permission
-from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 
 
