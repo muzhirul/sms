@@ -5,7 +5,7 @@ class VersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Version
         # Exclude the 'status' field and other fields you want to exclude
-        exclude = ['status', 'created_by', 'updated_by', 'created_at', 'updated_at']
+        exclude = ['created_by', 'updated_by', 'created_at', 'updated_at']
 
 
 class SessionSerializer(serializers.ModelSerializer):
