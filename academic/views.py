@@ -40,26 +40,16 @@ class VersionList(generics.ListCreateAPIView):
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        
-        if serializer.is_valid():
-            instance = serializer.save()
-            # Customize the response data
-            response_data = {
-                "code": status.HTTP_201_CREATED,  # Status code for successful creation
-                "message": "Version created successfully",
-                "data": VersionSerializer(instance).data,
-            }
-                
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        
-        # If the serializer is not valid, return an error response
-        error_data = {
-            "code": status.HTTP_400_BAD_REQUEST,  # Status code for validation error
-            "message": "Validation error",
-            "errors": serializer.errors,
-        }
-        
-        return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if serializer.is_valid():
+                instance = serializer.save()
+                # Customize the response data
+                return CustomResponse(code=status.HTTP_200_OK, message="Version created successfully", data=VersionSerializer(instance).data)
+            # If the serializer is not valid, return an error response
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
 class VersionDetail(generics.RetrieveUpdateAPIView):
     queryset = Version.objects.all()
@@ -68,6 +58,23 @@ class VersionDetail(generics.RetrieveUpdateAPIView):
     
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=VersionSerializer(instance).data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        try:
+            if serializer.is_valid():
+                # Perform any custom update logic here if needed
+                instance = serializer.save()
+                # Customize the response format for successful update
+                return CustomResponse(code=status.HTTP_200_OK, message="Version updated successfully", data=VersionSerializer(instance).data)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
