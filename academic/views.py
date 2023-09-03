@@ -61,8 +61,13 @@ class VersionList(generics.ListCreateAPIView):
         
         return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-
-
+class VersionDetail(generics.RetrieveUpdateAPIView):
+    queryset = Version.objects.all()
+    serializer_class = VersionSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
         
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=VersionSerializer(instance).data)
