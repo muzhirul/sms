@@ -14,7 +14,7 @@ class SessionAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Session Information",{'fields':[('code','session','institution','branch','status'),]})
     ]
-    list_display = ['code','session','institution','branch','status','created_at']
+    list_display = ['code','session','institution','branch','status','created_by','created_at']
     search_fields = ['code','session','institution']
     save_on_top = True
     list_per_page = 15
