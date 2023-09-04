@@ -3,7 +3,7 @@ from academic.models import *
 
 # Register your models here.
 class VersionAdmin(admin.ModelAdmin):
-    list_display = ['code','version','status','created_at']
+    list_display = ['code','version','status','created_at','updated_by','updated_at']
     search_fields = ['code','version','status']
     save_on_top = True
     list_per_page = 15
@@ -12,25 +12,25 @@ class VersionAdmin(admin.ModelAdmin):
         model = Version
 class SessionAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Session Information",{'fields':[('code','session','institution','status'),]})
+        ("Session Information",{'fields':[('code','session','institution','branch','status'),]})
     ]
-    list_display = ['code','session','institution','status','created_at']
+    list_display = ['code','session','institution','branch','status','created_at']
     search_fields = ['code','session','institution']
     save_on_top = True
     list_per_page = 15
 
 class SectionAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Section Information",{'fields':[('code','section','institution','status'),]})
+        ("Section Information",{'fields':[('code','section','institution','branch','status'),]})
     ]
-    list_display = ['code','section','institution','status','created_at']
+    list_display = ['code','section','institution','branch','status','created_at']
     search_fields = ['code','section','institution']
     save_on_top = True
     list_per_page = 15
 
 class SubjectAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Subject Information",{"fields":[('code','type','institution'),('name','picture','status'),('start_date','end_date'),]})
+        ("Subject Information",{"fields":[('code','type','institution','branch'),('name','picture','status'),('start_date','end_date'),]})
     ]
     list_display = ['code','type','name','status','created_at']
     search_fields = ['code','type','name','status']
@@ -42,7 +42,7 @@ class SubjectAdmin(admin.ModelAdmin):
 
 class ClassAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Class Information",{'fields':[('code','name','institution','status'),]}),
+        ("Class Information",{'fields':[('code','name','institution','branch','status'),]}),
         # ("Subject Information",{'fields':[('subject',)]}),
         # ("Section Information",{'fields':[('section',)]}),
     ]
@@ -57,7 +57,7 @@ class ClassAdmin(admin.ModelAdmin):
     
 class ClassRoomAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Class Room Information",{"fields":[('code','building','location'),('start_date','end_date'),('room_no','institution','status')]})
+        ("Class Room Information",{"fields":[('code','building','location'),('start_date','end_date'),('room_no','institution','branch','status')]})
     ]
     list_display = ['code','building','location','room_no','status']
     search_fields = ['code','building','location','room_no','status']

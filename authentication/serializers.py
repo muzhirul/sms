@@ -42,6 +42,6 @@ class LoginSerializer2(serializers.ModelSerializer):
     
     class Meta:
         model = Authentication
-        fields = ['id','username','first_name','last_name','user_type','password']
+        fields = ['id','username','first_name','last_name','user_type','institution','branch','password']
         
         

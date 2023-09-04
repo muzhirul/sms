@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 import uuid
+from institution.models import Institution, Branch
 
 
 
@@ -30,12 +31,14 @@ class MyAccountManager(BaseUserManager):
         return user
 # Create your models here.
 class Authentication(AbstractBaseUser,PermissionsMixin):
-    USER_TYPE = (('TEACHER', 'Teacher'),('STUDENT', 'Student'), ('GUARDIAN', 'Guardian'), ('ACCOUNTANT', 'Accountant'))
+    USER_TYPE = (('ADMIN', 'Admin'),('TEACHER', 'Teacher'),('STUDENT', 'Student'), ('GUARDIAN', 'Guardian'), ('ACCOUNTANT', 'Accountant'))
     id = models.UUIDField(primary_key=True, max_length=40, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=50, unique=True,db_index=True)
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     user_type = models.CharField(max_length=30, blank=True, null=True, choices=USER_TYPE)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)

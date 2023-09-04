@@ -7,15 +7,26 @@ from rest_framework import status
 # from rest_framework_simplejwt.views import TokenObtainPairView
 from sms.pagination import CustomPagination
 from rest_framework.response import Response
+from authentication.models import Authentication
 
 # Create your views here.
 class VersionList(generics.ListCreateAPIView):
-    queryset = Version.objects.filter(status=True).order_by('id')
+    # queryset = Version.objects.filter(status=True).order_by('id')
     serializer_class = VersionSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     pagination_class = CustomPagination
     
-    
+    def get_queryset(self):
+        queryset = Version.objects.filter(status=True).order_by('id')
+        try:
+            user_id = self.request.query_params.get('user')
+            users = Authentication.objects.get(id=user_id)
+            if users.institution and users.branch:
+                queryset = queryset.filter(institution=users.institution, branch=users.branch)
+        except:
+            pass
+        return queryset
+        
     def list(self,request,*args, **kwargs):
         # serializer_class = TokenObtainPairView  # Create this serializer
         queryset = self.filter_queryset(self.get_queryset())

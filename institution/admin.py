@@ -9,6 +9,11 @@ class AdmissionTestSetupTabularInline(admin.TabularInline):
     model = AdmissionTestSetup
     fields = ['subject','exam_mark','pass_mark','institution','start_date','end_date','status']
     extra = 0
+    
+class BranchTabularInline(admin.TabularInline):
+    model = Branch
+    extra = 0
+
 @admin_thumbnails.thumbnail('logo')
 class InstitutionAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -22,9 +27,9 @@ class InstitutionAdmin(admin.ModelAdmin):
     # save_as = True
     save_on_top = True
     list_per_page = 15
-    inlines = [AdmissionTestSetupTabularInline]
+    inlines = [AdmissionTestSetupTabularInline,BranchTabularInline]
     class Meta:
         model=Institution
 
 admin.site.register(Institution,InstitutionAdmin)
-admin.site.register(Branch)
+# admin.site.register(Branch)

@@ -4,7 +4,7 @@ from authentication.models import *
 
 # Register your models here.
 class AuthenticationAdmin(UserAdmin):
-    list_display = ('username','first_name','last_name','is_active')
+    list_display = ('id','username','first_name','last_name','is_active')
 
     filter_horizontal = ('groups', 'user_permissions',)
     list_filter = ()
