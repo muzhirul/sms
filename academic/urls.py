@@ -1,5 +1,8 @@
 from django.urls import path,include
-from .views import VersionList, VersionDetail, VersionDelete,SessionList, SessionDetail, SessionDelete,SectionList,SectionDetail,SectionDelete
+from .views import (VersionList, VersionDetail, VersionDelete,
+                    SessionList, SessionDetail, SessionDelete,
+                    SectionList,SectionDetail,SectionDelete,
+                    SubjectList,SubjectDetail,SubjectDelete)
 
 urlpatterns = [
     # For version
@@ -14,4 +17,8 @@ urlpatterns = [
     path('api/section', SectionList.as_view(), name='section-list'),
     path('api/section/detail/<int:pk>', SectionDetail.as_view(), name='section-detail'),
     path('api/section/delete/<int:pk>', SectionDelete.as_view(), name='section-delete'),
+    # For Subject
+    path('api/subject', SubjectList.as_view(), name='subject-list'),
+    path('api/subject/detail/<int:pk>', SubjectDetail.as_view(), name='subject-detail'),
+    path('api/subject/delete/<int:pk>', SubjectDelete.as_view(), name='subject-delete'),
 ]
