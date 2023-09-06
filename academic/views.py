@@ -1,3 +1,4 @@
+from urllib import request
 from django.shortcuts import render
 from rest_framework import generics, permissions
 from sms.utils import CustomResponse
@@ -8,7 +9,9 @@ from rest_framework import status
 from sms.pagination import CustomPagination
 from rest_framework.response import Response
 from authentication.models import Authentication
+# from django.contrib.auth import get_user_model
 
+# User = get_user_model()
 # Create your views here.
 '''
 For version
@@ -120,16 +123,27 @@ class SessionList(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Session.objects.filter(status=True).order_by('-id')
         try:
-            user_id = self.request.query_params.get('user')
-            users = Authentication.objects.get(id=user_id)
-            if users.institution and users.branch:
-                queryset = queryset.filter(institution=users.institution, branch=users.branch)
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            print(branch_id)
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id)
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id)
+            else:
+                queryset            
         except:
             pass
         return queryset
         
     def list(self,request,*args, **kwargs):
         # serializer_class = TokenObtainPairView  # Create this serializer
+        if not request.user.groups.filter(name='Admin').exists():
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:

@@ -1,10 +1,17 @@
 from django.db import models
 from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
+import uuid
+from django.contrib.auth.models import User
+
+def generate_unique_code():
+    return str(uuid.uuid4().hex[:10])  # Adjust the length as needed
+
+
 
 # Create your models here.
 class Version(models.Model):
-    code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Version Code')
+    code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Version Code', unique=True, default=generate_unique_code)
     version = models.CharField(max_length=20,blank=True,null=True, verbose_name='Version')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
@@ -24,7 +31,7 @@ class Version(models.Model):
         return self.version
     
 class Session(models.Model):
-    code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Session Code')
+    code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Session Code', unique=True, default=generate_unique_code)
     session = models.IntegerField(blank=True,null=True,verbose_name='Session')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
@@ -42,7 +49,7 @@ class Session(models.Model):
         return str(self.session)
 
 class Section(models.Model):
-    code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Section Code')
+    code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Section Code', unique=True, default=generate_unique_code)
     section = models.CharField(max_length=50,blank=True,null=True,verbose_name='Section')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)

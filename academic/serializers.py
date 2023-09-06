@@ -13,6 +13,8 @@ class SessionSerializer(serializers.ModelSerializer):
         model = Session
         # Exclude the specified fields from serialization
         exclude = ['status', 'created_by', 'updated_by', 'created_at', 'updated_at']
+        read_only_fields = ('code',)
+
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -20,6 +22,7 @@ class SectionSerializer(serializers.ModelSerializer):
         model = Section
         # Exclude the specified fields from serialization
         exclude = ['status', 'created_by', 'updated_by', 'created_at', 'updated_at']
+        read_only_fields = ('code',)
 
 
 class SubjectSerializer(serializers.ModelSerializer):
