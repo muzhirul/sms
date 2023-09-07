@@ -2,7 +2,8 @@ from django.urls import path,include
 from .views import (VersionList, VersionDetail, VersionDelete,
                     SessionList, SessionDetail, SessionDelete,
                     SectionList,SectionDetail,SectionDelete,
-                    SubjectList,SubjectDetail,SubjectDelete)
+                    SubjectList,SubjectDetail,SubjectDelete,
+                    ClassList,ClassDetail,ClassDelete)
 
 urlpatterns = [
     # For version
@@ -21,4 +22,8 @@ urlpatterns = [
     path('api/subject', SubjectList.as_view(), name='subject-list'),
     path('api/subject/detail/<int:pk>', SubjectDetail.as_view(), name='subject-detail'),
     path('api/subject/delete/<int:pk>', SubjectDelete.as_view(), name='subject-delete'),
+    # For Class
+    path('api/class', ClassList.as_view(), name='class-list'),
+    path('api/class/detail/<int:pk>', ClassDetail.as_view(), name='class-detail'),
+    path('api/class/delete/<int:pk>', ClassDelete.as_view(), name='class-delete'),
 ]

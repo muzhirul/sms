@@ -46,7 +46,7 @@ class ClassAdmin(admin.ModelAdmin):
         # ("Subject Information",{'fields':[('subject',)]}),
         # ("Section Information",{'fields':[('section',)]}),
     ]
-    list_display = ['code','name','institution']
+    list_display = ['code','name','institution','status']
     search_fields = ['code','name','institution']
     # filter_horizontal = ('section','subject')
     save_on_top = True
