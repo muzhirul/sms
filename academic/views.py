@@ -576,3 +576,103 @@ class ClassDelete(generics.UpdateAPIView):
         instance.save()
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class {instance.name} Delete successfully", data=None)
+
+'''
+For Class Room
+'''
+class ClassRoomList(generics.ListCreateAPIView):
+    # queryset = Version.objects.filter(status=True).order_by('id')
+    serializer_class = ClassRoomSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+    
+    def get_queryset(self):
+        queryset = ClassRoom.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id)
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id)
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+        
+    def list(self,request,*args, **kwargs):
+        # serializer_class = TokenObtainPairView  # Create this serializer
+        if not request.user.groups.filter(name='Admin').exists():
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        print(serializer)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+
+                instance = serializer.save(institution=institution, branch=branch)
+                # Customize the response data
+                return CustomResponse(code=status.HTTP_200_OK, message="Class Room created successfully", data=ClassRoomSerializer(instance).data)
+            # If the serializer is not valid, return an error response
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+class ClassRoomDetail(generics.RetrieveUpdateAPIView):
+    queryset = ClassRoom.objects.all()
+    serializer_class = ClassRoomSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassRoomSerializer(instance).data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        try:
+            if serializer.is_valid():
+                # Perform any custom update logic here if needed
+                instance = serializer.save()
+                # Customize the response format for successful update
+                return CustomResponse(code=status.HTTP_200_OK, message="Class Room updated successfully", data=ClassRoomSerializer(instance).data)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
