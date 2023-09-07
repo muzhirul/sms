@@ -676,3 +676,18 @@ class ClassRoomDetail(generics.RetrieveUpdateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
+class ClassRoomDelete(generics.UpdateAPIView):
+    queryset = ClassRoom.objects.all()
+    serializer_class = ClassRoomSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Room {instance.room_no} already Deleted", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Class Room {instance.room_no} Delete successfully", data=None)
