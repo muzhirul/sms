@@ -791,3 +791,18 @@ class ClassPeriodDetail(generics.RetrieveUpdateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
+class ClassPeriodDelete(generics.UpdateAPIView):
+    queryset = ClassPeriod.objects.all()
+    serializer_class = ClassPeriodSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Period {instance.name} already Deleted", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Class Period {instance.name} Delete successfully", data=None)
