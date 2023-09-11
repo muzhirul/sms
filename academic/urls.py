@@ -7,7 +7,7 @@ from .views import (VersionList, VersionDetail, VersionDelete,
                     ClassRoomList,ClassRoomDetail,ClassRoomDelete,
                     ClassPeriodList,ClassPeriodDetail,ClassPeriodDelete,
                     ClassSectionList,ClassSectionDetail,ClassSectionDelete,
-                    ClassSubjectList,ClassSubjectDetail)
+                    ClassSubjectList,ClassSubjectDetail,ClassSubjectDelete)
 
 urlpatterns = [
     # For version
@@ -45,4 +45,5 @@ urlpatterns = [
     # For Class Subject
     path('api/class-subject', ClassSubjectList.as_view(), name='class-subject-list'),
     path('api/class-subject/detail/<int:pk>', ClassSubjectDetail.as_view(), name='class-subject-detail'),
+    path('api/class-subject/delete/<int:pk>', ClassSubjectDelete.as_view(), name='class-subject-delete'),
 ]
