@@ -808,7 +808,7 @@ class ClassPeriodDelete(generics.UpdateAPIView):
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Period {instance.name} Delete successfully", data=None)
 
 '''
-For Class Period
+For Class Section
 '''
 class ClassSectionList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
@@ -878,3 +878,31 @@ class ClassSectionList(generics.ListCreateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+class ClassSectionDetail(generics.RetrieveUpdateAPIView):
+    queryset = ClassSection.objects.all()
+    serializer_class = ClassSectionSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassSectionSerializer(instance).data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        try:
+            if serializer.is_valid():
+                # Perform any custom update logic here if needed
+                instance = serializer.save()
+                # Customize the response format for successful update
+                return CustomResponse(code=status.HTTP_200_OK, message="Class Section updated successfully", data=ClassSectionSerializer(instance).data)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
