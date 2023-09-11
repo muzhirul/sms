@@ -78,6 +78,12 @@ class ClassPeriodAdmin(admin.ModelAdmin):
 
     class Meta:
         model = ClassPeriod
+        
+class ClassSectionAdmin(admin.ModelAdmin):
+    list_display = ['class_name','section','session','status']
+    search_fields = ['class_name__name','section__section','session__session']
+    class Meta:
+        model = ClassSection
 
 admin.site.register(Version,VersionAdmin)
 admin.site.register(Session,SessionAdmin)
@@ -86,5 +92,5 @@ admin.site.register(ClassName,ClassAdmin)
 admin.site.register(Subject,SubjectAdmin)
 admin.site.register(ClassRoom,ClassRoomAdmin)
 admin.site.register(ClassPeriod,ClassPeriodAdmin)
-admin.site.register(ClassSection)
+admin.site.register(ClassSection,ClassSectionAdmin)
 admin.site.register(ClassSubject)
