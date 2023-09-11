@@ -53,4 +53,8 @@ class ClassPeriodSerializer(serializers.ModelSerializer):
         exclude = ['status', 'created_by', 'updated_by', 'created_at', 'updated_at']
 
 
-        
+class ClassSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClassSection
+        # Exclude the specified fields from serialization
+        exclude = ['status', 'created_by', 'updated_by', 'created_at', 'updated_at']
