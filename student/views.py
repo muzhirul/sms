@@ -49,6 +49,10 @@ class StudentList(generics.ListCreateAPIView):
     def create(self,request,*args, **kwargs):
         data = request.data
         student_data = data.copy()
+        first_name = student_data.get('first_name')
+        last_name = student_data.get('last_name')
+        is_active = student_data.get('is_active', True) 
+        user_type = student_data.get('user_type', 'STUDENT') 
         guardians_data = student_data.pop('guardians', [])
         # Create the student
         student_serializer = self.get_serializer(data=student_data)
@@ -61,13 +65,45 @@ class StudentList(generics.ListCreateAPIView):
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
                 student = student_serializer.save(Institution=institution, branch=branch)
+                try:
+                    std_user_data = Student.objects.values('student_no').get(id=student.id)
+                    std_username = std_user_data['student_no']
+                    user = Authentication(username=std_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution, branch=branch)
+                    # Set a default password (you can change this as needed)
+                    default_password = '12345678'
+                    user.set_password(default_password)
+                    user.save()
+                    # Update the student's user_id field
+                    student.user_id = user.id
+                    student.save()
+                except:
+                    pass
                 # Create the guardian and associate with the student
                 guardians = []
                 for guardian_data in guardians_data:
+                    ga_first_name = guardian_data.get('first_name')
+                    ga_last_name = guardian_data.get('last_name')
+                    ga_is_active = guardian_data.get('is_active', True) 
+                    ga_user_type = guardian_data.get('user_type', 'GUARDIAN') 
+                    ga_is_guardian = guardian_data.get('is_guardian') 
                     guardian_data['student'] = student.id
                     guardian_serializer = GuardianSerializer(data=guardian_data)
                     guardian_serializer.is_valid(raise_exception=True)
                     guardian = guardian_serializer.save()
+                    if ga_is_guardian:
+                        try:
+                            ga_user_data = Guardian.objects.values('guardian_no').get(id=guardian.id)
+                            ga_username = ga_user_data['guardian_no']
+                            ga_user = Authentication(username=ga_username,first_name=ga_first_name,last_name=ga_last_name,user_type=ga_user_type,is_active=ga_is_active,institution=institution, branch=branch)
+                            # Set a default password (you can change this as needed)
+                            default_password = '12345678'
+                            ga_user.set_password(default_password)
+                            ga_user.save()
+                            # Update the Guardian's user_id field
+                            guardian.user_id = user.id
+                            guardian.save()
+                        except:
+                            pass
                     guardians.append(guardian)
                 response_data = student_serializer.data
                 response_data['guardians'] = GuardianSerializer(guardians, many=True).data
