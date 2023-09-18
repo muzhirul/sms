@@ -42,7 +42,7 @@ class SubjectAdmin(admin.ModelAdmin):
 
 class ClassAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Class Information",{'fields':[('code','name','institution','branch','status'),]}),
+        ("Class Information",{'fields':[('code','name','section','version','session','institution','branch','status'),]}),
         # ("Subject Information",{'fields':[('subject',)]}),
         # ("Section Information",{'fields':[('section',)]}),
     ]
