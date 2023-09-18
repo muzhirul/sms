@@ -45,3 +45,34 @@ class StudentList(generics.ListCreateAPIView):
             }
 
         return Response(response_data)
+    
+    def create(self,request,*args, **kwargs):
+        data = request.data
+        student_data = data.copy()
+        guardians_data = student_data.pop('guardians', [])
+        # Create the student
+        student_serializer = self.get_serializer(data=student_data)
+        try:
+            if student_serializer.is_valid():
+                student_serializer.is_valid(raise_exception=True)
+                institution_data = student_serializer.validated_data.get('institution')
+                branch_data = student_serializer.validated_data.get('branch')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                student = student_serializer.save(Institution=institution, branch=branch)
+                # Create the guardian and associate with the student
+                guardians = []
+                for guardian_data in guardians_data:
+                    guardian_data['student'] = student.id
+                    guardian_serializer = GuardianSerializer(data=guardian_data)
+                    guardian_serializer.is_valid(raise_exception=True)
+                    guardian = guardian_serializer.save()
+                    guardians.append(guardian)
+                response_data = student_serializer.data
+                response_data['guardians'] = GuardianSerializer(guardians, many=True).data
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+            
+        return Response(response_data, status=status.HTTP_201_CREATED)

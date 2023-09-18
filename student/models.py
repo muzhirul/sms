@@ -65,7 +65,7 @@ class Guardian(models.Model):
     OCUPATION_TYPE = (('DOCTOR','Doctor'),('TEACHER','Teacher'),('OTHER','Other'))
     RELATION_TYPE = (('FATHER','Father'),('MOTHER','Mother'),('BROTHER','Brother'),('SISTER','Sister'))
     guardian_no = models.CharField(max_length=15,blank=True,null=True,editable=False, verbose_name='Guardian No', default=generate_guardian_no)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE,related_name="student_guardian")
+    student = models.ForeignKey(Student, on_delete=models.CASCADE,related_name="guardians")
     first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='First Name')
     last_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Last Name')
     gender = models.CharField(max_length=10, blank=True, null=True, choices=GENDER_TYPE)
