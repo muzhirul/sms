@@ -100,7 +100,7 @@ class StudentList(generics.ListCreateAPIView):
                             ga_user.set_password(default_password)
                             ga_user.save()
                             # Update the Guardian's user_id field
-                            guardian.user_id = user.id
+                            guardian.user_id = ga_user.id
                             guardian.save()
                         except:
                             pass
@@ -112,3 +112,61 @@ class StudentList(generics.ListCreateAPIView):
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
             
         return Response(response_data, status=status.HTTP_201_CREATED)
+    
+    
+class StudentDetail(generics.RetrieveUpdateAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=StudentSerializer(instance).data)
+    
+    def update(self, request, *args, **kwargs):
+        # Get the student instance
+        student = self.get_object()
+        # Deserialize the updated student data
+        student_serializer = self.get_serializer(student, data=request.data, partial=True)
+        student_serializer.is_valid(raise_exception=True)
+        instance = student_serializer.save()
+        # Deserialize the updated guardian data
+        guardian_data = request.data.get('guardians')
+        if guardian_data:
+            for guardian_item in guardian_data:
+                guardian_id = guardian_item.get('id')
+                if guardian_id:
+                    try:
+                        guardian = Guardian.objects.get(id=guardian_id, student=student)
+                        guardian_serializer = GuardianSerializer(guardian, data=guardian_item, partial=True)
+                        guardian_serializer.is_valid(raise_exception=True)
+                        guardian_serializer.save()
+                    except Guardian.DoesNotExist:
+                        pass
+                else:
+                    ga_first_name = guardian_item.get('first_name')
+                    ga_last_name = guardian_item.get('last_name')
+                    ga_is_active = guardian_item.get('is_active', True) 
+                    ga_user_type = guardian_item.get('user_type', 'GUARDIAN') 
+                    ga_is_guardian = guardian_item.get('is_guardian')
+                    # If no guardian ID provided, create a new guardian for the student
+                    guardian_item['student'] = student.id
+                    guardian_serializer = GuardianSerializer(data=guardian_item)
+                    guardian_serializer.is_valid(raise_exception=True)
+                    guardian = guardian_serializer.save()
+                    if ga_is_guardian:
+                        try:
+                            ga_user_data = Guardian.objects.values('guardian_no').get(id=guardian.id)
+                            ga_username = ga_user_data['guardian_no']
+                            ga_user = Authentication(username=ga_username,first_name=ga_first_name,last_name=ga_last_name,user_type=ga_user_type,is_active=ga_is_active)
+                            # Set a default password (you can change this as needed)
+                            default_password = '12345678'
+                            ga_user.set_password(default_password)
+                            ga_user.save()
+                            # Update the Guardian's user_id field
+                            guardian.user_id = ga_user.id
+                            guardian.save()
+                        except:
+                            pass
+        return CustomResponse(code=status.HTTP_200_OK, message="Student updated successfully", data=StudentSerializer(instance).data)
