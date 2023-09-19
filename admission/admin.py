@@ -35,4 +35,4 @@ class AdmissionAdmin(admin.ModelAdmin):
     class Meta:
         model = Admission
 
-admin.site.register(Admission,AdmissionAdmin)
+# admin.site.register(Admission,AdmissionAdmin)

@@ -27,7 +27,8 @@ class InstitutionAdmin(admin.ModelAdmin):
     # save_as = True
     save_on_top = True
     list_per_page = 15
-    inlines = [AdmissionTestSetupTabularInline,BranchTabularInline]
+    inlines = [BranchTabularInline]
+    # inlines = [AdmissionTestSetupTabularInline,BranchTabularInline]
     class Meta:
         model=Institution
 

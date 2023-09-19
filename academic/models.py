@@ -111,7 +111,7 @@ class ClassName(models.Model):
         verbose_name = '5. Class'
 
     def __str__(self):
-        return self.name
+        return str(self.name) + ' | ' +str(self.section)
     
 class ClassRoom(models.Model):
     LOCATION_TYPE = (('GROUND','Ground Floor'),('1st','1st Floor'),('2nd','2nd Floor'))
@@ -179,6 +179,7 @@ class ClassSection(models.Model):
         return str(self.class_name.name) +' | '+str(self.section.section)
 
 class ClassSubject(models.Model):
+    class_name = models.ForeignKey(ClassName, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Class Name')
     class_section = models.ForeignKey(ClassSection, on_delete=models.SET_NULL, blank=True,null=True)
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, blank=True, null=True)
     image = models.ImageField(upload_to='book_images/', blank=True, null=True, verbose_name='Book Image')
