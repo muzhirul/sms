@@ -16,6 +16,7 @@ class AdmissionTestResultTabularInline(admin.TabularInline):
     model = AdmissionTestResult
     fields =['subject','mark','institution','status']
     extra = 0
+    
 @admin_thumbnails.thumbnail('photo')
 class AdmissionAdmin(admin.ModelAdmin):
     fieldsets = [
