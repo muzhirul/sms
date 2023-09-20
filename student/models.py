@@ -3,6 +3,7 @@ from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 from authentication.models import Authentication
 import datetime
+from setup_app.models import *
 # For generate student number
 def generate_student_no():
     last_stuent_no = Student.objects.all().order_by('student_no').last()
@@ -22,14 +23,14 @@ class Student(models.Model):
     student_no = models.CharField(max_length=15,blank=True,null=True,editable=False, verbose_name='Student No', default=generate_student_no)
     first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='First Name')
     last_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Last Name')
-    gender = models.CharField(max_length=10, blank=True, null=True, choices=GENDER_TYPE)
+    gender = models.ForeignKey(Gender,on_delete=models.SET_NULL,blank=True,null=True,related_name='student_gender')
     dob = models.DateField(null=True, blank=True, verbose_name='Date of Birth')
     photo = models.ImageField(upload_to='student_photo/',blank=True, null=True, verbose_name='Photo')
     mobile_no = models.CharField(max_length=11,blank=True,null=True,verbose_name='Mobile No')
-    religion = models.CharField(max_length=10, blank=True, null=True, choices=RELIGION_TYPE)
+    religion = models.ForeignKey(Religion,on_delete=models.SET_NULL,blank=True,null=True,related_name='student_religion')
     email = models.EmailField(max_length=255,blank=True,null=True, verbose_name='Email Address')
     admission_date = models.DateField(blank=True, null=True,verbose_name='Admission Date')
-    blood_group = models.CharField(max_length=5, blank=True,null=True,choices=BLOOD_GROUP_TYPE, verbose_name='Blood Group')
+    blood_group = models.ForeignKey(BloodGroup,on_delete=models.SET_NULL,blank=True,null=True,related_name='student_b_group')
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
     Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
@@ -59,18 +60,13 @@ def generate_guardian_no():
     new_gd_num = 'G-'+str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_guardian_num).zfill(2)
     return new_gd_num   
 class Guardian(models.Model):
-    GENDER_TYPE = (('M','Male'),('F','Female'),('O','Other'))
-    RELIGION_TYPE = (('M','Muslim'),('H','Hindu'))
-    BLOOD_GROUP_TYPE = (('A+','A+'),('A-','A-'))
-    OCUPATION_TYPE = (('DOCTOR','Doctor'),('TEACHER','Teacher'),('OTHER','Other'))
-    RELATION_TYPE = (('FATHER','Father'),('MOTHER','Mother'),('BROTHER','Brother'),('SISTER','Sister'))
     guardian_no = models.CharField(max_length=15,blank=True,null=True,editable=False, verbose_name='Guardian No', default=generate_guardian_no)
     student = models.ForeignKey(Student, on_delete=models.CASCADE,related_name="guardians")
     first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='First Name')
     last_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Last Name')
-    gender = models.CharField(max_length=10, blank=True, null=True, choices=GENDER_TYPE)
-    relation = models.CharField(max_length=20,blank=True,null=True,choices=RELATION_TYPE)
-    ocupation = models.CharField(max_length=10,blank=True,null=True,choices=OCUPATION_TYPE,verbose_name='Ocupation')
+    gender = models.ForeignKey(Gender,on_delete=models.SET_NULL,blank=True,null=True,related_name='guardian_gender')
+    relation = models.ForeignKey(Relation,on_delete=models.SET_NULL,blank=True,null=True,related_name='guardian_relation')
+    occupation = models.ForeignKey(Occupation,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='guardian_occupation')
     nid = models.CharField(max_length=20, null=True,blank=True, verbose_name='NID')
     photo = models.ImageField(upload_to='guardian_photo/',blank=True,null=True)
     mobile_no = models.CharField(max_length=11,blank=True,null=True,verbose_name='Mobile No')

@@ -6,7 +6,7 @@ import admin_thumbnails
 @admin_thumbnails.thumbnail('photo')
 class GuardianTabularInline(admin.TabularInline):
     model = Guardian
-    fields = ['first_name','last_name','mobile_no','relation','gender','ocupation','nid','photo','photo_thumbnail','is_guardian']
+    fields = ['first_name','last_name','mobile_no','relation','gender','occupation','nid','photo','photo_thumbnail','is_guardian']
     extra = 0
     
 

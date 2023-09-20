@@ -196,4 +196,4 @@ class ClassSubject(models.Model):
         verbose_name = '9. Class Subject'
 
     def __str__(self):
-        return self.class_section.class_name.name
+        return (self.class_name.name)
