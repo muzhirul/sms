@@ -6,7 +6,7 @@ from authentication.models import *
 class AuthenticationAdmin(UserAdmin):
     list_display = ('id','username','first_name','last_name','is_active')
 
-    filter_horizontal = ('groups', 'user_permissions',)
+    filter_horizontal = ('groups', 'user_permissions','role')
     list_filter = ()
     fieldsets = ()
     class Meta:
