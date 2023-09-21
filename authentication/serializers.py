@@ -50,3 +50,10 @@ class LoginSerializer3(serializers.ModelSerializer):
     class Meta:
         model = Authentication
         fields = ['id','username','first_name','last_name','user_type','institution','branch','password']
+    
+class LoginSerializer4(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=50,min_length=3)
+    password = serializers.CharField(max_length=68, min_length=5, write_only=True)
+    class Meta:
+        model = Authentication
+        fields = ['id','username','first_name','last_name','user_type','institution','branch','password']
