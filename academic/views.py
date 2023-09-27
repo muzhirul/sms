@@ -6,7 +6,7 @@ from .models import *
 from .serializers import *
 from rest_framework import status
 # from rest_framework_simplejwt.views import TokenObtainPairView
-from sms.pagination import CustomPagination
+from sms.pagination import CustomPagination, CustomLimitOffsetPagination
 from rest_framework.response import Response
 from authentication.models import Authentication
 # from django.contrib.auth import get_user_model
@@ -124,7 +124,7 @@ class SessionList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
     serializer_class = SessionSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
-    pagination_class = CustomPagination
+    pagination_class = CustomLimitOffsetPagination
     
     def get_queryset(self):
         queryset = Session.objects.filter(status=True).order_by('-id')
