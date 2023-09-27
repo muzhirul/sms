@@ -124,7 +124,7 @@ class SessionList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
     serializer_class = SessionSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
-    pagination_class = CustomLimitOffsetPagination
+    pagination_class = CustomPagination
     
     def get_queryset(self):
         queryset = Session.objects.filter(status=True).order_by('-id')
