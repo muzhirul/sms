@@ -77,6 +77,8 @@ class UserV4LoginView(APIView):
                 sub_memu = {}
                 sub_memu['id'] = child_menu.id
                 sub_memu['name'] = child_menu.name
+                if child_menu.slug:
+                    sub_memu['slug'] = '/'+parent_menu.slug+'/'+child_menu.slug
                 sub_memu['order'] = child_menu.sl_no
                 sub_memu['permission'] = []
                 userPermission = []

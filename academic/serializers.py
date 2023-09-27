@@ -5,14 +5,14 @@ class VersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Version
         # Exclude the 'status' field and other fields you want to exclude
-        exclude = ['created_by', 'updated_by', 'created_at', 'updated_at']
+        exclude = ['status']
 
 
 class SessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Session
         # Exclude the specified fields from serialization
-        exclude = ['status', 'created_by', 'updated_by', 'created_at', 'updated_at']
+        exclude = ['status']
         read_only_fields = ('code',)
 
 
@@ -21,7 +21,7 @@ class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
         # Exclude the specified fields from serialization
-        exclude = ['status', 'created_by', 'updated_by', 'created_at', 'updated_at']
+        exclude = ['status']
         read_only_fields = ('code',)
 
 
