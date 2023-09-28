@@ -9,6 +9,7 @@ from rest_framework import status
 from sms.pagination import CustomPagination, CustomLimitOffsetPagination
 from rest_framework.response import Response
 from authentication.models import Authentication
+from setup_app.models import *
 # from django.contrib.auth import get_user_model
 
 # User = get_user_model()
@@ -35,6 +36,18 @@ class VersionList(generics.ListCreateAPIView):
         
     def list(self,request,*args, **kwargs):
         # serializer_class = TokenObtainPairView  # Create this serializer
+        
+        user = Authentication.objects.get(id=self.request.user.id)
+        role_id = []
+        for role in user.role.filter(status=True):
+            role_id.append((role.id))
+        menu_ids = []
+        for menus in Menu.objects.filter(name='Version',status=True):
+            menu_ids.append((menus.id))
+        menu_permissions = Permission.objects.filter(role__in=role_id,menu__in=menu_ids,status=True,can_view=True)
+        if not menu_permissions:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
