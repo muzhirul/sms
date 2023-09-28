@@ -32,7 +32,7 @@ class Version(models.Model):
     
 class Session(models.Model):
     code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Session Code', unique=True, default=generate_unique_code)
-    session = models.IntegerField(blank=True,null=True,verbose_name='Session')
+    session = models.CharField(max_length=100,blank=True,null=True,verbose_name='Session')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
