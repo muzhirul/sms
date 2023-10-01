@@ -60,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django_userforeignkey.middleware.UserForeignKeyMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'sms.middleware.MiddleWareLifeCycle'
 ]
 
 ROOT_URLCONF = 'sms.urls'

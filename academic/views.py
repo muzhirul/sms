@@ -10,6 +10,7 @@ from sms.pagination import CustomPagination, CustomLimitOffsetPagination
 from rest_framework.response import Response
 from authentication.models import Authentication
 from setup_app.models import *
+from sms.permission import check_permission
 # from django.contrib.auth import get_user_model
 
 # User = get_user_model()
@@ -35,18 +36,11 @@ class VersionList(generics.ListCreateAPIView):
         return queryset
         
     def list(self,request,*args, **kwargs):
-        # serializer_class = TokenObtainPairView  # Create this serializer
-        
-        user = Authentication.objects.get(id=self.request.user.id)
-        role_id = []
-        for role in user.role.filter(status=True):
-            role_id.append((role.id))
-        menu_ids = []
-        for menus in Menu.objects.filter(name='Version',status=True):
-            menu_ids.append((menus.id))
-        menu_permissions = Permission.objects.filter(role__in=role_id,menu__in=menu_ids,status=True,can_view=True)
-        if not menu_permissions:
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Version', 'view')
+        if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -69,6 +63,12 @@ class VersionList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self, request, *args, **kwargs):
+        '''Check user has permission to Create start'''
+        permission_check = check_permission(self.request.user.id, 'Version', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Create End'''
+        
         serializer = self.get_serializer(data=request.data)
         try:
             if serializer.is_valid():
@@ -93,11 +93,23 @@ class VersionDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        permission_check = check_permission(self.request.user.id, 'Version', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=VersionSerializer(instance).data)
 
     def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        permission_check = check_permission(self.request.user.id, 'Version', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -121,6 +133,12 @@ class VersionDelete(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        permission_check = check_permission(self.request.user.id, 'Version', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+        
         instance = self.get_object()
         if not instance.status:
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Version {instance.version} already Deleted", data=None)
