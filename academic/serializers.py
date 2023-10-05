@@ -4,6 +4,8 @@ from academic.models import *
 class VersionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    institution_name = serializers.ReadOnlyField(source='institution.name')
+    branch_name = serializers.ReadOnlyField(source='branch.name')
     class Meta:
         model = Version
         # Exclude the 'status' field and other fields you want to exclude
@@ -14,6 +16,8 @@ class VersionSerializer(serializers.ModelSerializer):
 class SessionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    institution_name = serializers.ReadOnlyField(source='institution.name')
+    branch_name = serializers.ReadOnlyField(source='branch.name')
     class Meta:
         model = Session
         # Exclude the specified fields from serialization
@@ -25,6 +29,8 @@ class SessionSerializer(serializers.ModelSerializer):
 class SectionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    institution_name = serializers.ReadOnlyField(source='institution.name')
+    branch_name = serializers.ReadOnlyField(source='branch.name')
     class Meta:
         model = Section
         # Exclude the specified fields from serialization
@@ -35,6 +41,8 @@ class SectionSerializer(serializers.ModelSerializer):
 class SubjectSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    institution_name = serializers.ReadOnlyField(source='institution.name')
+    branch_name = serializers.ReadOnlyField(source='branch.name')
     class Meta:
         model = Subject
         # Exclude the specified fields from serialization
@@ -44,6 +52,8 @@ class SubjectSerializer(serializers.ModelSerializer):
 class ClassSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    institution_name = serializers.ReadOnlyField(source='institution.name')
+    branch_name = serializers.ReadOnlyField(source='branch.name')
     class Meta:
         model = ClassName
         # Exclude the specified fields from serialization
@@ -53,6 +63,8 @@ class ClassSerializer(serializers.ModelSerializer):
 class ClassRoomSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    institution_name = serializers.ReadOnlyField(source='institution.name')
+    branch_name = serializers.ReadOnlyField(source='branch.name')
     class Meta:
         model = ClassRoom
         # Exclude the specified fields from serialization
@@ -62,6 +74,8 @@ class ClassRoomSerializer(serializers.ModelSerializer):
 class ClassPeriodSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    institution_name = serializers.ReadOnlyField(source='institution.name')
+    branch_name = serializers.ReadOnlyField(source='branch.name')
     class Meta:
         model = ClassPeriod
         # Exclude the specified fields from serialization
@@ -71,6 +85,8 @@ class ClassPeriodSerializer(serializers.ModelSerializer):
 class ClassSectionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    institution_name = serializers.ReadOnlyField(source='institution.name')
+    branch_name = serializers.ReadOnlyField(source='branch.name')
     class Meta:
         model = ClassSection
         # Exclude the specified fields from serialization
@@ -79,6 +95,8 @@ class ClassSectionSerializer(serializers.ModelSerializer):
 class ClassSubjectSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    institution_name = serializers.ReadOnlyField(source='institution.name')
+    branch_name = serializers.ReadOnlyField(source='branch.name')
     class Meta:
         model = ClassSubject
         # Exclude the specified fields from serialization

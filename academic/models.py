@@ -64,7 +64,7 @@ class Section(models.Model):
         verbose_name = '3. Section'
     
     def __str__(self):
-        return f'self.section'
+        return self.section
     
 
 class Subject(models.Model):

@@ -27,10 +27,17 @@ class VersionList(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Version.objects.filter(status=True).order_by('-id')
         try:
-            user_id = self.request.query_params.get('user')
-            users = Authentication.objects.get(id=user_id)
-            if users.institution and users.branch:
-                queryset = queryset.filter(institution=users.institution, branch=users.branch)
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
         except:
             pass
         return queryset
@@ -119,10 +126,21 @@ class VersionDetail(generics.RetrieveUpdateAPIView):
         
         try:
             if serializer.is_valid():
-                # Perform any custom update logic here if needed
-                instance = serializer.save()
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                version = serializer.validated_data.get('version')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                version_count = Version.objects.filter(version=version,institution=institution,branch=branch,status=True).count()
+                print(version_count)
+                if(version_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Version created successfully", data=VersionSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Version {version} already exits", data=serializer.errors)
                 # Customize the response format for successful update
-                return CustomResponse(code=status.HTTP_200_OK, message="Version updated successfully", data=VersionSerializer(instance).data)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
@@ -165,14 +183,13 @@ class SessionList(generics.ListCreateAPIView):
         try:
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch
-            print(branch_id)
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id)
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id)
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
             else:
                 queryset            
         except:
@@ -180,10 +197,12 @@ class SessionList(generics.ListCreateAPIView):
         return queryset
         
     def list(self,request,*args, **kwargs):
-        # serializer_class = TokenObtainPairView  # Create this serializer
-        if not request.user.groups.filter(name='Admin').exists():
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Session', 'view')
+        if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
+        '''Check user has permission to View end'''
+        
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -205,18 +224,26 @@ class SessionList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Session', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         serializer = self.get_serializer(data=request.data)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                session = serializer.validated_data.get('session')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
-                # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Session created successfully", data=SessionSerializer(instance).data)
+                session_count = Session.objects.filter(session=session,institution=institution,branch=branch,status=True).count()
+                if(session_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Session created successfully", data=SessionSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Session {session} already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -229,21 +256,39 @@ class SessionDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        permission_check = check_permission(self.request.user.id, 'Session', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=SessionSerializer(instance).data)
 
     def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        permission_check = check_permission(self.request.user.id, 'Session', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         
         try:
             if serializer.is_valid():
-                # Perform any custom update logic here if needed
-                instance = serializer.save()
-                # Customize the response format for successful update
-                return CustomResponse(code=status.HTTP_200_OK, message="Session updated successfully", data=SessionSerializer(instance).data)
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                session = serializer.validated_data.get('session')
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                session_count = Session.objects.filter(session=session,institution=institution,branch=branch,status=True).count()
+                if (session_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Session updated successfully", data=SessionSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Session {session} already exits", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
@@ -257,6 +302,11 @@ class SessionDelete(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        permission_check = check_permission(self.request.user.id, 'Session', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
         instance = self.get_object()
         if not instance.status:
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Session {instance.session} already Deleted", data=None)
@@ -282,22 +332,23 @@ class SectionList(generics.ListCreateAPIView):
             branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id)
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id)
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
             else:
-                queryset            
+                queryset          
         except:
             pass
         return queryset
         
     def list(self,request,*args, **kwargs):
-        # serializer_class = TokenObtainPairView  # Create this serializer
-        if not request.user.groups.filter(name='Admin').exists():
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Section', 'view')
+        if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
+        '''Check user has permission to View end'''
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -319,19 +370,26 @@ class SectionList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Section', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         serializer = self.get_serializer(data=request.data)
-        print(serializer)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                section = serializer.validated_data.get('section')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
-                # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Section created successfully", data=SectionSerializer(instance).data)
+                section_count = Section.objects.filter(section=section,institution=institution,branch=branch,status=True).count()
+                if (section_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Section created successfully", data=SectionSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Section {section} already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -344,21 +402,39 @@ class SectionDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        permission_check = check_permission(self.request.user.id, 'Section', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=SectionSerializer(instance).data)
 
     def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        permission_check = check_permission(self.request.user.id, 'Section', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         
         try:
             if serializer.is_valid():
-                # Perform any custom update logic here if needed
-                instance = serializer.save()
-                # Customize the response format for successful update
-                return CustomResponse(code=status.HTTP_200_OK, message="Section updated successfully", data=SectionSerializer(instance).data)
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                section = serializer.validated_data.get('section')
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                section_count = Section.objects.filter(section=section,institution=institution,branch=branch,status=True).count()
+                if (section_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Section updated successfully", data=SectionSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Section {section} already exits", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
@@ -372,6 +448,11 @@ class SectionDelete(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        permission_check = check_permission(self.request.user.id, 'Section', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
         instance = self.get_object()
         if not instance.status:
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Section {instance.section} already Deleted", data=None)
@@ -397,22 +478,23 @@ class SubjectList(generics.ListCreateAPIView):
             branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id)
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id)
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
             else:
-                queryset            
+                queryset           
         except:
             pass
         return queryset
         
     def list(self,request,*args, **kwargs):
-        # serializer_class = TokenObtainPairView  # Create this serializer
-        if not request.user.groups.filter(name='Admin').exists():
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Subject', 'view')
+        if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
+        '''Check user has permission to View end'''
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -434,19 +516,28 @@ class SubjectList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Subject', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         serializer = self.get_serializer(data=request.data)
-        print(serializer)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                code = serializer.validated_data.get('code')
+                type = serializer.validated_data.get('type')
+                name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
-                # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Subject created successfully", data=SubjectSerializer(instance).data)
+                subject_count = Subject.objects.filter(code=code,type=type,name=name,institution=institution,branch=branch,status=True).count()
+                if(subject_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Subject created successfully", data=SubjectSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Subject {name} {type} already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -459,11 +550,21 @@ class SubjectDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Subject', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=SubjectSerializer(instance).data)
 
     def update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Subject', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -487,6 +588,11 @@ class SubjectDelete(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Subject', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         if not instance.status:
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Subject {instance.name} already Deleted", data=None)
@@ -512,13 +618,13 @@ class ClassList(generics.ListCreateAPIView):
             branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id)
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id)
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
             else:
-                queryset            
+                queryset           
         except:
             pass
         return queryset
@@ -627,11 +733,11 @@ class ClassRoomList(generics.ListCreateAPIView):
             branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id)
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id)
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
             else:
                 queryset            
         except:
@@ -742,11 +848,11 @@ class ClassPeriodList(generics.ListCreateAPIView):
             branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id)
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id)
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
             else:
                 queryset            
         except:
@@ -857,11 +963,11 @@ class ClassSectionList(generics.ListCreateAPIView):
             branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id)
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id)
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
             else:
                 queryset            
         except:
@@ -972,13 +1078,13 @@ class ClassSubjectList(generics.ListCreateAPIView):
             branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id)
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id)
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id)
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
             else:
-                queryset            
+                queryset           
         except:
             pass
         return queryset
