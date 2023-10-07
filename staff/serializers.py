@@ -11,3 +11,8 @@ class DepartmentSerializer(serializers.ModelSerializer):
         # Exclude the 'status' field and other fields you want to exclude
         exclude = ['status','code']
         # exclude = ['created_by', 'updated_by', 'created_at', 'updated_at']
+
+class DepartmentListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ['id','name']
