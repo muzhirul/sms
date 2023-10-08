@@ -10,6 +10,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from setup_app.models import Role,Permission,Menu
 from django.db.models import Q
+from django.contrib.sites.shortcuts import get_current_site
 
 
 class UserV4LoginView(APIView):
@@ -20,6 +21,10 @@ class UserV4LoginView(APIView):
             username=serializer.validated_data['username'],
             password=serializer.validated_data['password']
         )
+        SITE_PROTOCOL = 'http://'
+        if request.is_secure():
+            SITE_PROTOCOL = 'https://'
+        current_site = get_current_site(request).domain
         if user is None:
             return Response({
                 'code':401,
@@ -63,7 +68,10 @@ class UserV4LoginView(APIView):
             main_menu = {}
             main_menu['id'] = parent_menu.id
             main_menu['name'] = parent_menu.name
-            main_menu['icon'] = str(parent_menu.icon)
+            if parent_menu.icon:
+                main_menu['icon'] = SITE_PROTOCOL+current_site + '/media/'+str(parent_menu.icon)
+            else:
+                main_menu['icon'] = ''
             main_menu['order'] = parent_menu.sl_no
             child_id = []
             permissions = Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True), role__in=role_id,menu__parent= parent_menu.id,status=True).values_list('menu__id', flat=True).distinct()

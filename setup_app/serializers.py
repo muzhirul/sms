@@ -13,4 +13,22 @@ class RoleSerializer(serializers.ModelSerializer):
     
     class Meta:
         model : Role
-        field = ['name']
+        fields = ['name']
+        
+class ReligionSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Religion
+        fields = ['id','name']
+    
+class BloodGroupSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = BloodGroup
+        fields = ['id','name']
+        
+class GenderSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Gender
+        fields = ['id','name']
