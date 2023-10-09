@@ -39,3 +39,9 @@ class OccupationSerializer(serializers.ModelSerializer):
         model = Occupation
         fields = ['id','name']
         
+class RelationSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Relation
+        fields = ['id','name']
+        
