@@ -8,6 +8,7 @@ from sms.pagination import CustomPagination
 from rest_framework.response import Response
 from setup_app.models import *
 from sms.permission import check_permission
+from authentication.models import Authentication
 # Create your views here.
 
 class StaffDepartmentList(generics.ListAPIView):
@@ -396,5 +397,71 @@ class DesignationDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Designation {instance.name} Delete successfully", data=None)
 
-
+class staffCreateView(generics.CreateAPIView):
+    serializer_class = staffSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+    
+    def get_queryset(self):
+        queryset = Staff.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    def create(self,request,*args, **kwargs):
+        data = request.data
+        staff_data = data.copy()
+        first_name = staff_data.get('first_name')
+        last_name = staff_data.get('last_name')
+        is_active = staff_data.get('is_active', True) 
+        user_type = staff_data.get('user_type', '') 
+        education_datas = staff_data.pop('staff_education', [])
+        staff_serializer = self.get_serializer(data=staff_data)
+        try:
+            if staff_serializer.is_valid():
+                staff_serializer.is_valid(raise_exception=True)
+                institution_data = staff_serializer.validated_data.get('institution')
+                branch_data = staff_serializer.validated_data.get('branch')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                staff = staff_serializer.save(Institution=institution,branch=branch)
+                try:
+                    std_user_data = Staff.objects.values('staff_id').get(id=staff.id)
+                    std_username = std_user_data['staff_id']
+                    user = Authentication(username=std_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
+                        # Set a default password (you can change this as needed)
+                    default_password = '12345678'
+                    user.set_password(default_password)
+                    user.save()
+                        # Update the student's user_id field
+                    staff.user_id = user.id
+                    staff.save()
+                except:
+                    pass
+                staff_educations = []
+                for education_data in education_datas:
+                    education_data['staff'] = staff.id
+                    education_serializer = EducationSerializer(data=education_data)
+                    education_serializer.is_valid(raise_exception=True)
+                    education = education_serializer.save()
+                    staff_educations.append(education)
+                response_data = staff_serializer.data
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+            
+        return Response(response_data, status=status.HTTP_201_CREATED)
 

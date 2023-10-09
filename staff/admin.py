@@ -10,18 +10,19 @@ class EducationTabularInline(admin.TabularInline):
     
 @admin_thumbnails.thumbnail('photo')
 class StaffAdmin(admin.ModelAdmin):
+    list_display = ['staff_id','first_name','last_name']
     fieldsets = [
         ("Basic Information",{'fields':[('first_name','last_name','gender'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','blood_group'),]}),
         ("Address",{'fields':[('present_address','permanent_address'),]})        
     ]
     
     class Meta:
-        model = staff
+        model = Staff
     
     inlines = [EducationTabularInline]
 
 
 
-admin.site.register(staff,StaffAdmin)
+admin.site.register(Staff,StaffAdmin)
 admin.site.register(Designation)
 admin.site.register(Department)

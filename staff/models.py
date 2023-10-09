@@ -1,22 +1,34 @@
 from django.db import models
 from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
+from setup_app.models import *
+import datetime
 # Create your models here.
-class staff(models.Model):
+
+def staff_no():
+    last_guardian_no = Staff.objects.all().order_by('staff_id').last()
+    if not last_guardian_no or last_guardian_no.staff_id is None:
+        return str(datetime.date.today().year) + str(datetime.date.today().month).zfill(2) + '00'
+    guardian_num = str(last_guardian_no.staff_id)[-2:]
+    guardian_num_int = int(guardian_num)
+    new_guardian_num = guardian_num_int + 1
+    new_gd_num = str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_guardian_num).zfill(2)
+    return new_gd_num 
+class Staff(models.Model):
     GENDER_TYPE = (('M','Male'),('F','Female'),('O','Other'))
     RELIGION_TYPE = (('M','Muslim'),('H','Hindu'))
     BLOOD_GROUP_TYPE = (('A+','A+'),('A-','A-'))
-    code = models.CharField(max_length=20, blank=True, null=True,editable=False, verbose_name='Staff Code')
-    staff_id = models.CharField(max_length=20, blank=True,null=True,editable=False, verbose_name='Staff ID')
+    code = models.CharField(max_length=20, blank=True, null=True,verbose_name='Staff Code')
+    staff_id = models.CharField(max_length=20, blank=True,null=True,editable=False, verbose_name='Staff ID',default=staff_no)
     first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='First Name')
     last_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Last Name')
-    gender = models.CharField(max_length=10, blank=True, null=True, choices=GENDER_TYPE)
+    gender = models.ForeignKey(Gender,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
     dob = models.DateField(null=True, blank=True, verbose_name='Date of Birth')
     photo = models.ImageField(upload_to='staff_photo/',blank=True, null=True, verbose_name='Photo')
     mobile_no = models.CharField(max_length=11,blank=True,null=True,verbose_name='Mobile No')
-    religion = models.CharField(max_length=10, blank=True, null=True, choices=RELIGION_TYPE)
+    religion = models.ForeignKey(Relation,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
     email = models.EmailField(max_length=255,blank=True,null=True, verbose_name='Email Address')
-    blood_group = models.CharField(max_length=5, blank=True,null=True,choices=BLOOD_GROUP_TYPE, verbose_name='Blood Group')
+    blood_group = models.ForeignKey(BloodGroup,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_b_group')
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
     Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
@@ -34,7 +46,7 @@ class staff(models.Model):
         return self.first_name
     
 class Education(models.Model):
-    staff = models.ForeignKey(staff, on_delete=models.SET_NULL, blank=True,null=True)
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_education')
     order_seq = models.IntegerField(blank=True,null=True)
     institution_name = models.CharField(max_length=255, blank=True, null=True)
     registration_no = models.CharField(max_length=50, blank=True,null=True)
@@ -46,8 +58,6 @@ class Education(models.Model):
     result = models.CharField(max_length=20, blank=True,null=True)
     result_out_of = models.CharField(max_length=50, blank=True,null=True)
     remarks = models.CharField(max_length=255, blank=True, null=True)
-    Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
-    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='education_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='education_update_by', editable=False, blank=True, null=True)
@@ -57,8 +67,8 @@ class Education(models.Model):
     class Meta:
         db_table = 'sta_education'
 
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
     
 class Designation(models.Model):
     code = models.CharField(max_length=20, blank=True, null=True)

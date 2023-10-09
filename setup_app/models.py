@@ -24,7 +24,7 @@ class Setup(models.Model):
         db_table = 's_setup'
         
     def __str__(self):
-        return self.type
+        return f"self.type"
     
 class Religion(models.Model):
     name = models.CharField(max_length=50,blank=True,null=True,verbose_name='Religion Name')

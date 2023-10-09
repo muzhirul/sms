@@ -32,3 +32,17 @@ class DesignationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Designation
         fields = ['id','name']
+        
+class EducationSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Education
+        fields = '__all__'
+    
+class staffSerializer(serializers.ModelSerializer):
+    staff_education = EducationSerializer(many=True, required=False, read_only=True)
+
+    class Meta:
+        model = Staff
+        # fields = ['first_nmae','last_name']
+        fields = '__all__'
