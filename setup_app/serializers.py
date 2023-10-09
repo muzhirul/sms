@@ -32,3 +32,10 @@ class GenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Gender
         fields = ['id','name']
+        
+class OccupationSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Occupation
+        fields = ['id','name']
+        
