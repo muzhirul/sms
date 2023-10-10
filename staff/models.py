@@ -3,6 +3,7 @@ from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 from setup_app.models import *
 import datetime
+from authentication.models import Authentication
 # Create your models here.
 
 def staff_no():
@@ -31,6 +32,7 @@ class Staff(models.Model):
     blood_group = models.ForeignKey(BloodGroup,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_b_group')
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
+    user = models.OneToOneField(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
     Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)

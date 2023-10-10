@@ -151,4 +151,4 @@ class Permission(models.Model):
         db_table = 's_permission'
         
     def __str__(self):
-        return self.menu.name
+        return self.role.name

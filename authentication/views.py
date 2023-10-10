@@ -60,8 +60,10 @@ class UserV4LoginView(APIView):
                 #     menu_info[app_name][model_name] = []
         parent_id = []
         for parent in Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True), role__in=role_id,status=True).values_list('menu__parent', flat=True).distinct():
-            parent_id.append(parent)
+            if parent:
+                parent_id.append(parent)
         main_menus = []
+        print(parent_id)
         parent_menus = Menu.objects.filter(id__in=parent_id,parent_id__isnull=True,status=True).order_by('sl_no')
         for parent_menu in parent_menus:
             # print(parent_menu.name)
