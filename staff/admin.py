@@ -21,8 +21,22 @@ class StaffAdmin(admin.ModelAdmin):
     
     inlines = [EducationTabularInline]
 
+class DepartmentAdmin(admin.ModelAdmin):
+    
+    fields = ['name','dept_ord']
+
+    class Meta:
+        model = Department
+
+class DesignationAdmin(admin.ModelAdmin):
+    
+    fields = ['name','desgi_ord']
+
+    class Meta:
+        model = Designation
+
 
 
 admin.site.register(Staff,StaffAdmin)
-admin.site.register(Designation)
-admin.site.register(Department)
+admin.site.register(Designation,DesignationAdmin)
+admin.site.register(Department,DepartmentAdmin)
