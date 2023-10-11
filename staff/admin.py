@@ -22,21 +22,28 @@ class StaffAdmin(admin.ModelAdmin):
     inlines = [EducationTabularInline]
 
 class DepartmentAdmin(admin.ModelAdmin):
-    
+    list_display = ['name','dept_ord']
     fields = ['name','dept_ord']
 
     class Meta:
         model = Department
 
 class DesignationAdmin(admin.ModelAdmin):
-    
+    list_display = ['name','desgi_ord']
     fields = ['name','desgi_ord']
 
     class Meta:
         model = Designation
+        
+class StaffShiftAdmin(admin.ModelAdmin):
+    list_display = ['code','name','start_time','end_time','status']
+    fields = ['name','start_time','end_time','start_date','end_date','remarks']
+    class Meta:
+        model = StaffShift
 
 
 
 admin.site.register(Staff,StaffAdmin)
 admin.site.register(Designation,DesignationAdmin)
 admin.site.register(Department,DepartmentAdmin)
+admin.site.register(StaffShift,StaffShiftAdmin)

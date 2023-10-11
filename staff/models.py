@@ -15,6 +15,18 @@ def staff_no():
     new_guardian_num = guardian_num_int + 1
     new_gd_num = str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_guardian_num).zfill(2)
     return new_gd_num 
+
+def staff_shift_code():
+    last_shift_no = StaffShift.objects.all().order_by('code').last()
+    if not last_shift_no or last_shift_no.code is None:
+        return 'SHIFT'+'000'
+    guardian_num = last_shift_no.code[-3:]
+    guardian_num_int = int(guardian_num)
+    new_guardian_num = guardian_num_int + 1
+    new_gd_num = 'SHIFT'+ str(new_guardian_num).zfill(3)
+    return new_gd_num 
+
+
 class Staff(models.Model):
     GENDER_TYPE = (('M','Male'),('F','Female'),('O','Other'))
     RELIGION_TYPE = (('M','Muslim'),('H','Hindu'))
@@ -106,5 +118,29 @@ class Department(models.Model):
     class Meta:
         db_table = 'sta_department'
 
+    def __str__(self):
+        return self.name
+
+class StaffShift(models.Model):
+    code = models.CharField(max_length=20,blank=True,null=True,default=staff_shift_code)
+    name = models.CharField(max_length=50,verbose_name='Shift Name')
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    start_buf_min = models.IntegerField(default=0)
+    end_buf_min = models.IntegerField(default=0)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True,null=True)
+    remarks = models.CharField(max_length=255,blank=True,null=True)
+    Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='staff_shift_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='staff_shift_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'sta_shift'
+        
     def __str__(self):
         return self.name
