@@ -131,7 +131,7 @@ class StaffShift(models.Model):
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True,null=True)
     remarks = models.CharField(max_length=255,blank=True,null=True)
-    Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='staff_shift_creator', editable=False, blank=True, null=True)

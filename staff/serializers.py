@@ -46,3 +46,8 @@ class staffSerializer(serializers.ModelSerializer):
         model = Staff
         # fields = ['first_nmae','last_name']
         fields = '__all__'
+        
+class StaffShiftSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffShift
+        exclude = ['status','code','start_date','end_date','start_buf_min','end_buf_min','institution','branch']

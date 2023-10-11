@@ -1,7 +1,8 @@
 from django.urls import path,include
 from .views import (StaffDepartmentListCreate,StaffDepartmentList, DepartmentDetail,DepartmentDelete,
                     StaffDesignationListCreate,StaffDesignationList,DesignationDetail,DesignationDelete,
-                    staffCreateView)
+                    staffCreateView,
+                    StaffShiftListCreate,)
 
 urlpatterns = [
     # Department api
@@ -15,5 +16,8 @@ urlpatterns = [
     path('api/designation/detail/<int:pk>', DesignationDetail.as_view(), name='designation-detail'),
     path('api/designation/delete/<int:pk>', DesignationDelete.as_view(), name='designation-delete'),
     #staff API
-    path('api/create', staffCreateView.as_view(), name='staff-create')
+    path('api/create', staffCreateView.as_view(), name='staff-create'),
+    
+    # staff shift API
+    path('api/shift', StaffShiftListCreate.as_view(), name='staff-shift-list-create'),
 ]
