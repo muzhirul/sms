@@ -39,7 +39,7 @@ class Staff(models.Model):
     dob = models.DateField(null=True, blank=True, verbose_name='Date of Birth')
     photo = models.ImageField(upload_to='staff_photo/',blank=True, null=True, verbose_name='Photo')
     mobile_no = models.CharField(max_length=11,blank=True,null=True,verbose_name='Mobile No')
-    religion = models.ForeignKey(Relation,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
+    religion = models.ForeignKey(Religion,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
     email = models.EmailField(max_length=255,blank=True,null=True, verbose_name='Email Address')
     blood_group = models.ForeignKey(BloodGroup,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_b_group')
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
