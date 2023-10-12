@@ -66,7 +66,7 @@ class Section(models.Model):
         verbose_name = '3. Section'
     
     def __str__(self):
-        return self.section
+        return str(self.section)
     
 
 class Subject(models.Model):
@@ -95,9 +95,9 @@ class Subject(models.Model):
 class ClassName(models.Model):
     code = models.CharField(max_length=10,blank=True,null=True,verbose_name='Class Code')
     name = models.CharField(max_length=50,blank=True,null=True, verbose_name='Class Name')
-    section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True,null=True)
-    version = models.ForeignKey(Version, on_delete=models.SET_NULL,blank=True,null=True)
-    session = models.ForeignKey(Session, on_delete=models.SET_NULL,blank=True,null=True)
+    # section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True,null=True)
+    # version = models.ForeignKey(Version, on_delete=models.SET_NULL,blank=True,null=True)
+    # session = models.ForeignKey(Session, on_delete=models.SET_NULL,blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     # section = models.ManyToManyField(Section)
@@ -198,7 +198,7 @@ class ClassSubject(models.Model):
         verbose_name = '9. Class Subject'
 
     def __str__(self):
-        return (self.class_name.name)
+        return str(self.class_name.name)
     
 class ClassRoutine(models.Model):
     DAY_TYPE = (('SUNDAY','SUNDAY'),('MONDAY','MONDAY'),('TUESDAY','TUESDAY'),('WEDNESDAY','WEDNESDAY'),('THURSDAY','THURSDAY'))

@@ -48,13 +48,13 @@ class SubjectAdmin(admin.ModelAdmin):
 
 class ClassAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Class Information",{'fields':[('name','section','version','session'),]}),
+        ("Class Information",{'fields':[('name'),]}),
         # ("Class Information",{'fields':[('code','name','section','version','session','institution','branch','status'),]}),
         # ("Subject Information",{'fields':[('subject',)]}),
         # ("Section Information",{'fields':[('section',)]}),
     ]
-    list_display = ['code','name','section','institution','status']
-    search_fields = ['code','name','institution']
+    list_display = ['name','status']
+    search_fields = ['name']
     # filter_horizontal = ('section','subject')
     save_on_top = True
     list_per_page = 15

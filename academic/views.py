@@ -656,7 +656,6 @@ class ClassList(generics.ListCreateAPIView):
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        print(serializer)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
