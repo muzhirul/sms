@@ -101,3 +101,9 @@ class ClassSubjectSerializer(serializers.ModelSerializer):
         model = ClassSubject
         # Exclude the specified fields from serialization
         exclude = ['status','code']
+        
+class ClassRoutineSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ClassRoutine
+        fields = ['id','teacher','class_name','section','session','version','subject','class_period','day','class_room']
