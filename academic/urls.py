@@ -8,7 +8,7 @@ from .views import (VersionList, VersionDetail, VersionDelete,
                     ClassPeriodList,ClassPeriodDetail,ClassPeriodDelete,
                     ClassSectionList,ClassSectionDetail,ClassSectionDelete,
                     ClassSubjectList,ClassSubjectDetail,ClassSubjectDelete,
-                    ClassRoutineCreateList,ClassRoutineDetail,)
+                    ClassRoutineCreateList,ClassRoutineDetail,ClassRoutineDelete)
 
 urlpatterns = [
     # For version
@@ -50,4 +50,5 @@ urlpatterns = [
     # For Class Routine
     path('api/class-routine', ClassRoutineCreateList.as_view(), name='class-routine-list'),
     path('api/class-routine/detail/<int:pk>', ClassRoutineDetail.as_view(), name='class-routine-detail'),
+    path('api/class-routine/delete/<int:pk>', ClassRoutineDelete.as_view(), name='class-routine-delete'),
 ]
