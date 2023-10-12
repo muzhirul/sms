@@ -1250,7 +1250,7 @@ class ClassRoutineCreateList(generics.ListCreateAPIView):
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
 class ClassRoutineDetail(generics.RetrieveUpdateAPIView):
-    queryset = ClassRoutine.objects.all()
+    queryset = ClassRoutine.objects.filter(status=True)
     serializer_class = ClassRoutineSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
@@ -1259,10 +1259,13 @@ class ClassRoutineDetail(generics.RetrieveUpdateAPIView):
         permission_check = check_permission(self.request.user.id, 'Class Routine', 'view')
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        '''Check user has permission to retrive End'''
-        instance = self.get_object()
-        # Customize the response format for retrieving a single instance
-        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassRoutineSerializer(instance).data)
+        try:
+            '''Check user has permission to retrive End'''
+            instance = self.get_object()
+            # Customize the response format for retrieving a single instance
+            return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassRoutineSerializer(instance).data)
+        except:
+            return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
 
     def update(self, request, *args, **kwargs):
         '''Check user has permission to update start'''
