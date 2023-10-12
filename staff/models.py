@@ -26,64 +26,6 @@ def staff_shift_code():
     new_gd_num = 'SHIFT'+ str(new_guardian_num).zfill(3)
     return new_gd_num 
 
-
-class Staff(models.Model):
-    GENDER_TYPE = (('M','Male'),('F','Female'),('O','Other'))
-    RELIGION_TYPE = (('M','Muslim'),('H','Hindu'))
-    BLOOD_GROUP_TYPE = (('A+','A+'),('A-','A-'))
-    code = models.CharField(max_length=20, blank=True, null=True,verbose_name='Staff Code')
-    staff_id = models.CharField(max_length=20, blank=True,null=True,editable=False, verbose_name='Staff ID',default=staff_no)
-    first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='First Name')
-    last_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Last Name')
-    gender = models.ForeignKey(Gender,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
-    dob = models.DateField(null=True, blank=True, verbose_name='Date of Birth')
-    photo = models.ImageField(upload_to='staff_photo/',blank=True, null=True, verbose_name='Photo')
-    mobile_no = models.CharField(max_length=11,blank=True,null=True,verbose_name='Mobile No')
-    religion = models.ForeignKey(Religion,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
-    email = models.EmailField(max_length=255,blank=True,null=True, verbose_name='Email Address')
-    blood_group = models.ForeignKey(BloodGroup,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_b_group')
-    present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
-    permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
-    user = models.OneToOneField(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
-    Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
-    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
-    status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='staff_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='staff_update_by', editable=False, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'sta_staff'
-
-    def __str__(self):
-        return self.first_name
-    
-class Education(models.Model):
-    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_education')
-    order_seq = models.IntegerField(blank=True,null=True)
-    institution_name = models.CharField(max_length=255, blank=True, null=True)
-    registration_no = models.CharField(max_length=50, blank=True,null=True)
-    title = models.CharField(max_length=255,blank=True,null=True)
-    board = models.CharField(max_length=50, blank=True,null=True)
-    start_date = models.DateField(blank=True, null=True)
-    end_date = models.DateField(blank=True,null=True)
-    passing_year = models.IntegerField(blank=True, null=True)
-    result = models.CharField(max_length=20, blank=True,null=True)
-    result_out_of = models.CharField(max_length=50, blank=True,null=True)
-    remarks = models.CharField(max_length=255, blank=True, null=True)
-    status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='education_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='education_update_by', editable=False, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'sta_education'
-
-    # def __str__(self):
-    #     return self.title
-    
 class Designation(models.Model):
     code = models.CharField(max_length=20, blank=True, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
@@ -144,3 +86,65 @@ class StaffShift(models.Model):
         
     def __str__(self):
         return self.name
+
+
+class Staff(models.Model):
+    GENDER_TYPE = (('M','Male'),('F','Female'),('O','Other'))
+    RELIGION_TYPE = (('M','Muslim'),('H','Hindu'))
+    BLOOD_GROUP_TYPE = (('A+','A+'),('A-','A-'))
+    code = models.CharField(max_length=20, blank=True, null=True,verbose_name='Staff Code')
+    staff_id = models.CharField(max_length=20, blank=True,null=True,editable=False, verbose_name='Staff ID',default=staff_no)
+    first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='First Name')
+    last_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Last Name')
+    gender = models.ForeignKey(Gender,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
+    dob = models.DateField(null=True, blank=True, verbose_name='Date of Birth')
+    photo = models.ImageField(upload_to='staff_photo/',blank=True, null=True, verbose_name='Photo')
+    mobile_no = models.CharField(max_length=11,blank=True,null=True,verbose_name='Mobile No')
+    religion = models.ForeignKey(Religion,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
+    email = models.EmailField(max_length=255,blank=True,null=True, verbose_name='Email Address')
+    blood_group = models.ForeignKey(BloodGroup,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_b_group')
+    present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
+    permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
+    designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, blank=True, null=True)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
+    shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
+    user = models.OneToOneField(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
+    Institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='staff_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='staff_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'sta_staff'
+
+    def __str__(self):
+        return self.first_name
+    
+class Education(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_education')
+    order_seq = models.IntegerField(blank=True,null=True)
+    institution_name = models.CharField(max_length=255, blank=True, null=True)
+    registration_no = models.CharField(max_length=50, blank=True,null=True)
+    title = models.CharField(max_length=255,blank=True,null=True)
+    board = models.CharField(max_length=50, blank=True,null=True)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True,null=True)
+    passing_year = models.IntegerField(blank=True, null=True)
+    result = models.CharField(max_length=20, blank=True,null=True)
+    result_out_of = models.CharField(max_length=50, blank=True,null=True)
+    remarks = models.CharField(max_length=255, blank=True, null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='education_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='education_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'sta_education'
+
+    def __str__(self):
+        return self.title
+    
