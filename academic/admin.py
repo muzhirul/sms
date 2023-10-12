@@ -105,8 +105,8 @@ class ClassSubjectAdmin(admin.ModelAdmin):
         model = ClassSubject
         
 class ClassRoutineAdmin(admin.ModelAdmin):
-    fields = ['teacher','class_name','section','session','version','subject','class_period','day','class_room']
-    list_display = ['teacher','class_name','section','session','version','subject','class_period','day','class_room']
+    fields = ['teacher','class_name','section','subject','class_period','day','class_room','session','version']
+    list_display = ['teacher','class_name','section','subject','class_period','day','class_room','session','version']
     
     class Meta:
         model = ClassRoutine
