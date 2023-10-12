@@ -4,6 +4,8 @@ from django_userforeignkey.models.fields import UserForeignKey
 import uuid
 from django.contrib.auth.models import User
 
+from staff.models import Staff
+
 def generate_unique_code():
     return str(uuid.uuid4().hex[:10])  # Adjust the length as needed
 
@@ -111,7 +113,7 @@ class ClassName(models.Model):
         verbose_name = '5. Class'
 
     def __str__(self):
-        return str(self.name) + ' | ' +str(self.section)
+        return str(self.name)
     
 class ClassRoom(models.Model):
     LOCATION_TYPE = (('GROUND','Ground Floor'),('1st','1st Floor'),('2nd','2nd Floor'))
@@ -197,3 +199,29 @@ class ClassSubject(models.Model):
 
     def __str__(self):
         return (self.class_name.name)
+    
+class ClassRoutine(models.Model):
+    DAY_TYPE = (('SUNDAY','SUNDAY'),('MONDAY','MONDAY'),('TUESDAY','TUESDAY'),('WEDNESDAY','WEDNESDAY'),('THURSDAY','THURSDAY'))
+    teacher = models.ForeignKey(Staff, on_delete=models.CASCADE, verbose_name='Teacher Name')
+    class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session')
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='Version')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Subject')
+    class_period = models.ForeignKey(ClassPeriod, on_delete=models.CASCADE, verbose_name='Class Period')
+    day = models.CharField(max_length=20, verbose_name='Day', choices=DAY_TYPE)
+    class_room = models.ForeignKey(ClassRoom, on_delete=models.CASCADE,blank=True, null=True, verbose_name='Class Room')
+    institution = models.ForeignKey(Institution,on_delete=models.CASCADE,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.CASCADE,blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_routine_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_routine_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'ac_class_routine'
+        verbose_name = 'Class Routine'
+    
+    def __str__(self):
+        return self.day

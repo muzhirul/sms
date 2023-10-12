@@ -121,7 +121,7 @@ class Staff(models.Model):
         db_table = 'sta_staff'
 
     def __str__(self):
-        return self.first_name
+        return self.first_name+ ' '+self.last_name
     
 class Education(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_education')
