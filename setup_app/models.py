@@ -161,6 +161,8 @@ class Day(models.Model):
     long_name = models.CharField(max_length=20)
     sl_no = models.IntegerField()
     status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='day_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='day_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -171,5 +173,4 @@ class Day(models.Model):
         
     def __str__(self):
         return self.long_name
-    
     

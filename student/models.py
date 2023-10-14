@@ -8,11 +8,11 @@ from setup_app.models import *
 def generate_student_no():
     last_stuent_no = Student.objects.all().order_by('student_no').last()
     if not last_stuent_no or last_stuent_no.student_no is None:
-        return 'ST-'+str(datetime.date.today().year) + str(datetime.date.today().month).zfill(2) + '00'
+        return '77'+str(datetime.date.today().year) + str(datetime.date.today().month).zfill(2) + '00'
     student_num = str(last_stuent_no.student_no)[-2:]
     student_num_int = int(student_num)
     new_student_num = student_num_int + 1
-    new_std_num = 'ST-'+str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_student_num).zfill(2)
+    new_std_num = '77'+str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_student_num).zfill(2)
     return new_std_num
 # Create your models here.
 class Student(models.Model):
@@ -53,11 +53,11 @@ class Student(models.Model):
 def generate_guardian_no():
     last_guardian_no = Guardian.objects.all().order_by('guardian_no').last()
     if not last_guardian_no or last_guardian_no.guardian_no is None:
-        return 'G-'+str(datetime.date.today().year) + str(datetime.date.today().month).zfill(2) + '00'
+        return '11'+str(datetime.date.today().year) + str(datetime.date.today().month).zfill(2) + '00'
     guardian_num = str(last_guardian_no.guardian_no)[-2:]
     guardian_num_int = int(guardian_num)
     new_guardian_num = guardian_num_int + 1
-    new_gd_num = 'G-'+str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_guardian_num).zfill(2)
+    new_gd_num = '11'+str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_guardian_num).zfill(2)
     return new_gd_num   
 class Guardian(models.Model):
     guardian_no = models.CharField(max_length=15,blank=True,null=True,editable=False, verbose_name='Guardian No', default=generate_guardian_no)

@@ -9,11 +9,11 @@ from authentication.models import Authentication
 def staff_no():
     last_guardian_no = Staff.objects.all().order_by('staff_id').last()
     if not last_guardian_no or last_guardian_no.staff_id is None:
-        return str(datetime.date.today().year) + str(datetime.date.today().month).zfill(2) + '00'
+        return '99' + str(datetime.date.today().year) + str(datetime.date.today().month).zfill(2) + '00'
     guardian_num = str(last_guardian_no.staff_id)[-2:]
     guardian_num_int = int(guardian_num)
     new_guardian_num = guardian_num_int + 1
-    new_gd_num = str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_guardian_num).zfill(2)
+    new_gd_num = '99' + str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_guardian_num).zfill(2)
     return new_gd_num 
 
 def staff_shift_code():

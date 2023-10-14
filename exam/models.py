@@ -19,7 +19,7 @@ class Grade(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        db_table = 's_grade'
+        db_table = 'e_grade'
         constraints = [
             models.CheckConstraint(check=models.Q(point__gte=0), name='grade_point_non_negative'),
             models.CheckConstraint(check=models.Q(point__lte=5), name='grade_point_not_over_five'),
