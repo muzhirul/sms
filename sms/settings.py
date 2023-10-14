@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'staff',
     'admission',
     'setup_app',
+    'exam',
 ]
 
 MIDDLEWARE = [

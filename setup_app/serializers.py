@@ -51,3 +51,5 @@ class DaySerializer(serializers.ModelSerializer):
         model = Day
         fields = ['short_name','long_name']
         
+
+        

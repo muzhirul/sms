@@ -276,5 +276,6 @@ class DayList(generics.ListAPIView):
 
         return Response(response_data)
     
-    
-    
+
+
+

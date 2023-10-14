@@ -1,4 +1,3 @@
-from importlib.abc import Traversable
 from django.db import models
 from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
@@ -172,3 +171,5 @@ class Day(models.Model):
         
     def __str__(self):
         return self.long_name
+    
+    
