@@ -48,6 +48,14 @@ class MenuAdmin(admin.ModelAdmin):
         
 class PermissionAdmin(admin.ModelAdmin):
     list_display = ['role','menu','can_create','can_view','can_update','can_delete','status']
+    class Meta:
+        model = Permission
+        
+class DayAdmin(admin.ModelAdmin):
+    list_display = ['short_name','long_name','created_by','created_at']
+    
+    class Meta:
+        model = Day
 
 admin.site.register(Setup,SetupAdmin)
 admin.site.register(Gender,GenderAdmin)
@@ -58,3 +66,4 @@ admin.site.register(Relation,RelationAdmin)
 admin.site.register(Menu,MenuAdmin)
 admin.site.register(Role)
 admin.site.register(Permission,PermissionAdmin)
+admin.site.register(Day,DayAdmin)

@@ -45,3 +45,9 @@ class RelationSerializer(serializers.ModelSerializer):
         model = Relation
         fields = ['id','name']
         
+class DaySerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Day
+        fields = ['short_name','long_name']
+        

@@ -3,7 +3,7 @@ from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 import uuid
 from django.contrib.auth.models import User
-
+from setup_app.models import Day
 from staff.models import Staff
 
 def generate_unique_code():
@@ -209,7 +209,7 @@ class ClassRoutine(models.Model):
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='Version')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Subject')
     class_period = models.ForeignKey(ClassPeriod, on_delete=models.CASCADE, verbose_name='Class Period')
-    day = models.CharField(max_length=20, verbose_name='Day', choices=DAY_TYPE)
+    day = models.ForeignKey(Day,on_delete=models.CASCADE, verbose_name='Day')
     class_room = models.ForeignKey(ClassRoom, on_delete=models.CASCADE,blank=True, null=True, verbose_name='Class Room')
     institution = models.ForeignKey(Institution,on_delete=models.CASCADE,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.CASCADE,blank=True,null=True)
@@ -224,4 +224,4 @@ class ClassRoutine(models.Model):
         verbose_name = 'Class Routine'
     
     def __str__(self):
-        return self.day
+        return self.day.short_name

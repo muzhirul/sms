@@ -160,6 +160,7 @@ class Permission(models.Model):
 class Day(models.Model):
     short_name = models.CharField(max_length=5,primary_key=True)
     long_name = models.CharField(max_length=20)
+    sl_no = models.IntegerField()
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='day_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='day_update_by', editable=False, blank=True, null=True)
