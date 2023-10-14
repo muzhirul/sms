@@ -146,9 +146,28 @@ class Permission(models.Model):
     can_update = models.BooleanField(default=False, verbose_name='Update')
     can_delete = models.BooleanField(default=False, verbose_name='Delete')
     status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='permission_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='permission_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True,blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True,blank=True, null=True)
     
     class Meta:
         db_table = 's_permission'
         
     def __str__(self):
-        return self.role.name
+        return str(self.id)
+    
+class Day(models.Model):
+    short_name = models.CharField(max_length=5,primary_key=True)
+    long_name = models.CharField(max_length=20)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='day_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='day_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 's_days'
+        
+    def __str__(self):
+        return self.long_name
