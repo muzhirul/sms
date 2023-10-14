@@ -8,4 +8,11 @@ class GradeAdmin(admin.ModelAdmin):
     class Meta:
         model = Grade
         
+class ExamNameAdmin(admin.ModelAdmin):
+    list_display = ['name','sl_no','session']
+    
+    class Meta:
+        model = ExamName
+
 admin.site.register(Grade,GradeAdmin)
+admin.site.register(ExamName, ExamNameAdmin)

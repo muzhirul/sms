@@ -1,5 +1,6 @@
 from django.db import models
 from institution.models import Institution, Branch
+from academic.models import Session
 from django_userforeignkey.models.fields import UserForeignKey
 # Create your models here.
 class Grade(models.Model):
@@ -27,3 +28,23 @@ class Grade(models.Model):
     
     def __str__(self):
         return self.name
+    
+class ExamName(models.Model):
+    name = models.CharField(max_length=50, verbose_name='Exam Name')
+    sl_no = models.IntegerField(blank=True, null=True)
+    session = models.ForeignKey(Session,on_delete=models.SET_NULL, blank=True, null=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.CASCADE,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.CASCADE,blank=True,null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='exam_name_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='exam_name_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'e_exam_name'
+    
+    def __str__(self):
+        return self.name
+    
+    
