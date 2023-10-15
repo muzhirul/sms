@@ -859,7 +859,7 @@ class ClassRoomDetail(generics.RetrieveUpdateAPIView):
 
 class ClassRoomDelete(generics.UpdateAPIView):
     queryset = ClassRoom.objects.all()
-    serializer_class = ClassRoomSerializer
+    serializer_class = ClassRoomSerializer3
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def partial_update(self, request, *args, **kwargs):
@@ -1067,8 +1067,8 @@ class ClassSectionList(generics.ListCreateAPIView):
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
-        serializer = self.get_serializer(data=request.data)
-        print(serializer)
+        serializer_class = ClassSectionSerializer3
+        serializer = serializer_class(data=request.data)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
