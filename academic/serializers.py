@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from academic.models import *
+from setup_app.serializers import FloorTypeSerializer
 
 class VersionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -65,10 +66,12 @@ class ClassRoomSerializer(serializers.ModelSerializer):
     updated_username = serializers.ReadOnlyField(source='created_by.username')
     institution_name = serializers.ReadOnlyField(source='institution.name')
     branch_name = serializers.ReadOnlyField(source='branch.name')
+    floor_type = FloorTypeSerializer(read_only=True)
     class Meta:
         model = ClassRoom
         # Exclude the specified fields from serialization
-        exclude = ['status']
+        exclude = ('status',)
+        # fields = ('building', 'room_no', 'floor_type','floor')
 
 
 class ClassPeriodSerializer(serializers.ModelSerializer):

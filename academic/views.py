@@ -630,10 +630,11 @@ class ClassList(generics.ListCreateAPIView):
         return queryset
         
     def list(self,request,*args, **kwargs):
-        # serializer_class = TokenObtainPairView  # Create this serializer
-        if not request.user.groups.filter(name='Admin').exists():
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class', 'view')
+        if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
+        '''Check user has permission to View end'''
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -655,6 +656,11 @@ class ClassList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         serializer = self.get_serializer(data=request.data)
         try:
             if serializer.is_valid():
@@ -679,11 +685,21 @@ class ClassDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassSerializer(instance).data)
 
     def update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -707,6 +723,11 @@ class ClassDelete(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         if not instance.status:
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class {instance.name} already Deleted", data=None)
@@ -744,10 +765,11 @@ class ClassRoomList(generics.ListCreateAPIView):
         return queryset
         
     def list(self,request,*args, **kwargs):
-        # serializer_class = TokenObtainPairView  # Create this serializer
-        if not request.user.groups.filter(name='Admin').exists():
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Room', 'view')
+        if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
+        '''Check user has permission to View end'''
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -769,6 +791,11 @@ class ClassRoomList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Room', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         serializer = self.get_serializer(data=request.data)
         print(serializer)
         try:
@@ -794,11 +821,21 @@ class ClassRoomDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Room', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassRoomSerializer(instance).data)
 
     def update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Room', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -859,10 +896,11 @@ class ClassPeriodList(generics.ListCreateAPIView):
         return queryset
         
     def list(self,request,*args, **kwargs):
-        # serializer_class = TokenObtainPairView  # Create this serializer
-        if not request.user.groups.filter(name='Admin').exists():
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Period', 'view')
+        if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
+        '''Check user has permission to View end'''
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -884,6 +922,11 @@ class ClassPeriodList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Period', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         serializer = self.get_serializer(data=request.data)
         print(serializer)
         try:
@@ -909,11 +952,21 @@ class ClassPeriodDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Period', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassPeriodSerializer(instance).data)
 
     def update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Period', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -937,6 +990,11 @@ class ClassPeriodDelete(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Period', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         if not instance.status:
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Period {instance.name} already Deleted", data=None)
@@ -974,10 +1032,11 @@ class ClassSectionList(generics.ListCreateAPIView):
         return queryset
         
     def list(self,request,*args, **kwargs):
-        # serializer_class = TokenObtainPairView  # Create this serializer
-        if not request.user.groups.filter(name='Admin').exists():
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Section', 'view')
+        if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
+        '''Check user has permission to View end'''
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -999,6 +1058,11 @@ class ClassSectionList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Section', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         serializer = self.get_serializer(data=request.data)
         print(serializer)
         try:
@@ -1024,11 +1088,21 @@ class ClassSectionDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Section', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassSectionSerializer(instance).data)
 
     def update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Section', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -1052,6 +1126,11 @@ class ClassSectionDelete(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Section', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         if not instance.status:
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Section {instance.class_name} {instance.section} already Deleted", data=None)
@@ -1089,10 +1168,11 @@ class ClassSubjectList(generics.ListCreateAPIView):
         return queryset
         
     def list(self,request,*args, **kwargs):
-        # serializer_class = TokenObtainPairView  # Create this serializer
-        if not request.user.groups.filter(name='Admin').exists():
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Subject', 'view')
+        if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        # queryset = Session.objects.filter(status=True,institution=request.user.institution).order_by('-id')
+        '''Check user has permission to View end'''
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -1114,6 +1194,11 @@ class ClassSubjectList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Subject', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         serializer = self.get_serializer(data=request.data)
         print(serializer)
         try:
@@ -1139,11 +1224,21 @@ class ClassSubjectDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Subject', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassSubjectSerializer(instance).data)
 
     def update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Subject', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -1167,6 +1262,11 @@ class ClassSubjectDelete(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     
     def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Class Subject', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         instance = self.get_object()
         if not instance.status:
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Subject {instance.subject} already Deleted", data=None)
@@ -1175,6 +1275,7 @@ class ClassSubjectDelete(generics.UpdateAPIView):
         instance.save()
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Section {instance.subject} Delete successfully", data=None)
+
 
 class ClassRoutineCreateList(generics.ListCreateAPIView):
     serializer_class = ClassRoutineSerializer

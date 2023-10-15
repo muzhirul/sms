@@ -116,10 +116,8 @@ class ClassName(models.Model):
         return str(self.name)
     
 class ClassRoom(models.Model):
-    LOCATION_TYPE = (('GROUND','Ground Floor'),('1st','1st Floor'),('2nd','2nd Floor'))
     code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Room Code')
-    location = models.CharField(max_length=20, blank=True,null=True,choices=LOCATION_TYPE)
-    floor_type = models.ForeignKey(FloorType, on_delete=models.SET_NULL,blank=True, null=True)
+    floor_type = models.ForeignKey(FloorType, on_delete=models.SET_NULL,blank=True, null=True, related_name="floor")
     building = models.CharField(max_length=100, blank=True,null=True, verbose_name='Building Name')
     room_no = models.CharField(max_length=10, blank=True, null=True, verbose_name='Room No.')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
