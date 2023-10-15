@@ -56,6 +56,12 @@ class DayAdmin(admin.ModelAdmin):
     
     class Meta:
         model = Day
+        
+class FloorTypeAdmin(admin.ModelAdmin):
+    list_display = ['name','sl_no','status','created_at']
+    
+    class Meta:
+        model = FloorType
 
 admin.site.register(Setup,SetupAdmin)
 admin.site.register(Gender,GenderAdmin)
@@ -67,3 +73,4 @@ admin.site.register(Menu,MenuAdmin)
 admin.site.register(Role)
 admin.site.register(Permission,PermissionAdmin)
 admin.site.register(Day,DayAdmin)
+admin.site.register(FloorType,FloorTypeAdmin)

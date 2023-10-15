@@ -51,5 +51,9 @@ class DaySerializer(serializers.ModelSerializer):
         model = Day
         fields = ['short_name','long_name']
         
-
+class FloorTypeSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = FloorType
+        fields = ['id','name','sl_no']
         

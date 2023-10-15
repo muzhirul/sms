@@ -64,11 +64,11 @@ class ClassAdmin(admin.ModelAdmin):
     
 class ClassRoomAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Class Room Information",{"fields":[('room_no','building','location',),]})
+        ("Class Room Information",{"fields":[('room_no','building','floor_type',),]})
         # ("Class Room Information",{"fields":[('code','building','location'),('start_date','end_date'),('room_no','institution','branch','status')]})
     ]
-    list_display = ['code','building','location','room_no','status']
-    search_fields = ['code','building','location','room_no','status']
+    list_display = ['building','floor_type','room_no','status']
+    search_fields = ['building','floor_type','room_no','status']
     save_on_top = True
     list_per_page = 15
 
