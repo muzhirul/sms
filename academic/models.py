@@ -181,7 +181,8 @@ class ClassSection(models.Model):
 
 class ClassSubject(models.Model):
     class_name = models.ForeignKey(ClassName, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Class Name')
-    class_section = models.ForeignKey(ClassSection, on_delete=models.SET_NULL, blank=True,null=True)
+    section = models.ForeignKey(Section, on_delete=models.SET_NULL, blank=True,null=True)
+    code = models.CharField(max_length=20, blank=True, null=True, verbose_name='Subject Code')
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, blank=True, null=True)
     image = models.ImageField(upload_to='book_images/', blank=True, null=True, verbose_name='Book Image')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)

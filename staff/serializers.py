@@ -38,7 +38,12 @@ class EducationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Education
         fields = '__all__'
-    
+        
+class StaffTeacherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Staff
+        fields = ['id','first_name','last_name','staff_id','user']
+
 class staffSerializer(serializers.ModelSerializer):
     staff_education = EducationSerializer(many=True, required=False, read_only=True)
 
