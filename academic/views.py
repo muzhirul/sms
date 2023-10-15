@@ -666,13 +666,16 @@ class ClassList(generics.ListCreateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
-                # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Class created successfully", data=ClassSerializer(instance).data)
+                class_count = ClassName.objects.filter(name=name,institution=institution,branch=branch,status=True).count()
+                if(class_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class created successfully", data=ClassSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class {name} already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -796,8 +799,8 @@ class ClassRoomList(generics.ListCreateAPIView):
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
-        serializer = self.get_serializer(data=request.data)
-        print(serializer)
+        serializer_class = ClassRoomSerializer3
+        serializer = serializer_class(data=request.data)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
@@ -808,7 +811,7 @@ class ClassRoomList(generics.ListCreateAPIView):
 
                 instance = serializer.save(institution=institution, branch=branch)
                 # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Room created successfully", data=ClassRoomSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_200_OK, message="Class Room created successfully", data=ClassRoomSerializer3(instance).data)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -838,7 +841,8 @@ class ClassRoomDetail(generics.RetrieveUpdateAPIView):
         '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer_class = ClassRoomSerializer3
+        serializer = serializer_class(instance, data=request.data, partial=partial)
         
         try:
             if serializer.is_valid():

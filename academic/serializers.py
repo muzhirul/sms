@@ -81,17 +81,25 @@ class ClassRoomSerializer2(serializers.ModelSerializer):
         model = ClassRoom
         fields =['id','room_no']
 
+
 class ClassRoomSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
     institution_name = serializers.ReadOnlyField(source='institution.name')
     branch_name = serializers.ReadOnlyField(source='branch.name')
-    floor_type = FloorTypeSerializer(read_only=True)
+    floor_type= FloorTypeSerializer(read_only=True)
     class Meta:
         model = ClassRoom
         # Exclude the specified fields from serialization
         exclude = ('status',)
         # fields = ('building', 'room_no', 'floor_type','floor')
+        
+class ClassRoomSerializer3(serializers.ModelSerializer):
+    class Meta:
+        model = ClassRoom
+        # Exclude the specified fields from serialization
+        exclude = ('status',)
+        
 class ClassPeriodSerializer2(serializers.ModelSerializer):
     class Meta:
         model = ClassPeriod
@@ -116,6 +124,12 @@ class ClassSectionSerializer(serializers.ModelSerializer):
     class_name = ClassSerializer2(read_only=True)
     session = SessionSerializer2(read_only=True)
     section = SectionSerializer2(read_only=True)
+    class Meta:
+        model = ClassSection
+        # Exclude the specified fields from serialization
+        exclude = ['status']
+        
+class ClassSectionSerializer3(serializers.ModelSerializer):
     class Meta:
         model = ClassSection
         # Exclude the specified fields from serialization

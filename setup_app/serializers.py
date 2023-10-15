@@ -55,5 +55,5 @@ class FloorTypeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = FloorType
-        fields = ['id','name','sl_no']
+        fields = ['id','name']
         
