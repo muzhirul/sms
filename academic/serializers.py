@@ -18,6 +18,7 @@ class VersionSerializer(serializers.ModelSerializer):
         # Exclude the 'status' field and other fields you want to exclude
         exclude = ['status','code','start_date','end_date']
         # exclude = ['created_by', 'updated_by', 'created_at', 'updated_at']
+        
 class SessionSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Session
@@ -60,6 +61,11 @@ class SubjectSerializer(serializers.ModelSerializer):
         model = Subject
         # Exclude the specified fields from serialization
         exclude = ['status','start_date','end_date']
+        
+class SubjectSerializer2(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ['id','type','name','picture']
 
 class ClassSerializer2(serializers.ModelSerializer):
     class Meta:
@@ -80,7 +86,6 @@ class ClassRoomSerializer2(serializers.ModelSerializer):
     class Meta:
         model = ClassRoom
         fields =['id','room_no']
-
 
 class ClassRoomSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -134,11 +139,7 @@ class ClassSectionSerializer3(serializers.ModelSerializer):
         model = ClassSection
         # Exclude the specified fields from serialization
         exclude = ['status']
- 
-class SubjectSerializer2(serializers.ModelSerializer):
-    class Meta:
-        model = Subject
-        fields = ['id','type','name','picture']
+
         
 class ClassSubjectSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -147,10 +148,20 @@ class ClassSubjectSerializer(serializers.ModelSerializer):
     branch_name = serializers.ReadOnlyField(source='branch.name')
     class_name = ClassSerializer2(read_only=True)
     section = SectionSerializer2(read_only=True)
+    session = SessionSerializer2(read_only=True)
+    version = VersionSerializer2(read_only=True)
     class Meta:
         model = ClassSubject
         # Exclude the specified fields from serialization
         exclude = ['status']
+
+class ClassSubjectSerializer2(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ClassSubject
+        # Exclude the specified fields from serialization
+        exclude = ['status']
+
         
 class ClassRoutineSerializer(serializers.ModelSerializer):
     teacher = StaffTeacherSerializer(read_only=True)
@@ -162,6 +173,12 @@ class ClassRoutineSerializer(serializers.ModelSerializer):
     class_period = ClassPeriodSerializer2(read_only=True)
     day = DaySerializer(read_only=True)
     class_room = ClassRoomSerializer2(read_only=True)
+    class Meta:
+        model = ClassRoutine
+        fields = ['id','teacher','class_name','section','session','version','subject','class_period','day','class_room']
+        
+class ClassRoutineSerializer2(serializers.ModelSerializer):
+    
     class Meta:
         model = ClassRoutine
         fields = ['id','teacher','class_name','section','session','version','subject','class_period','day','class_room']

@@ -164,6 +164,7 @@ class ClassSection(models.Model):
     class_name = models.ForeignKey(ClassName, on_delete=models.SET_NULL, blank=True, null=True)
     section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True, null=True)
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, blank=True, null=True)
+    version = models.ForeignKey(Version, on_delete=models.SET_NULL, blank=True, null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
@@ -177,11 +178,13 @@ class ClassSection(models.Model):
         verbose_name = '8. Class section'
 
     def __str__(self):
-        return str(self.class_name.name) +' | '+str(self.section.section)
+        return str(self.id)
 
 class ClassSubject(models.Model):
     class_name = models.ForeignKey(ClassName, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Class Name')
-    section = models.ForeignKey(Section, on_delete=models.SET_NULL, blank=True,null=True)
+    section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True, null=True)
+    session = models.ForeignKey(Session, on_delete=models.SET_NULL, blank=True, null=True)
+    version = models.ForeignKey(Version, on_delete=models.SET_NULL, blank=True, null=True)
     code = models.CharField(max_length=20, blank=True, null=True, verbose_name='Subject Code')
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, blank=True, null=True)
     image = models.ImageField(upload_to='book_images/', blank=True, null=True, verbose_name='Book Image')
@@ -198,7 +201,7 @@ class ClassSubject(models.Model):
         verbose_name = '9. Class Subject'
 
     def __str__(self):
-        return str(self.class_name.name)
+        return str(self.id)
     
 class ClassRoutine(models.Model):
     DAY_TYPE = (('SUNDAY','SUNDAY'),('MONDAY','MONDAY'),('TUESDAY','TUESDAY'),('WEDNESDAY','WEDNESDAY'),('THURSDAY','THURSDAY'))

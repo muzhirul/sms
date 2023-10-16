@@ -133,7 +133,6 @@ class VersionDetail(generics.RetrieveUpdateAPIView):
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
                 version_count = Version.objects.filter(version=version,institution=institution,branch=branch,status=True).count()
-                print(version_count)
                 if(version_count==0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
@@ -571,10 +570,21 @@ class SubjectDetail(generics.RetrieveUpdateAPIView):
         
         try:
             if serializer.is_valid():
-                # Perform any custom update logic here if needed
-                instance = serializer.save()
-                # Customize the response format for successful update
-                return CustomResponse(code=status.HTTP_200_OK, message="Section updated successfully", data=SubjectSerializer(instance).data)
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                code = serializer.validated_data.get('code')
+                type = serializer.validated_data.get('type')
+                name = serializer.validated_data.get('name')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                subject_count = Subject.objects.filter(code=code,type=type,name=name,institution=institution,branch=branch,status=True).count()
+                if(subject_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Subject updated successfully", data=SubjectSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Subject {name} {type} already exits", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
@@ -709,10 +719,19 @@ class ClassDetail(generics.RetrieveUpdateAPIView):
         
         try:
             if serializer.is_valid():
-                # Perform any custom update logic here if needed
-                instance = serializer.save()
-                # Customize the response format for successful update
-                return CustomResponse(code=status.HTTP_200_OK, message="Class updated successfully", data=ClassSerializer(instance).data)
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                name = serializer.validated_data.get('name')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                class_count = ClassName.objects.filter(name=name,institution=institution,branch=branch,status=True).count()
+                if(class_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class {name} updated successfully", data=ClassSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class {name} already exits", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
@@ -805,13 +824,18 @@ class ClassRoomList(generics.ListCreateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                floor_type = serializer.validated_data.get('floor_type')
+                building = serializer.validated_data.get('building')
+                room_no = serializer.validated_data.get('room_no')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
-                # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Room created successfully", data=ClassRoomSerializer3(instance).data)
+                class_room_count = ClassRoom.objects.filter(floor_type=floor_type,building=building,room_no=room_no,institution=institution,branch=branch,status=True).count()
+                if(class_room_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Room created successfully", data=ClassRoomSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Room already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -846,10 +870,21 @@ class ClassRoomDetail(generics.RetrieveUpdateAPIView):
         
         try:
             if serializer.is_valid():
-                # Perform any custom update logic here if needed
-                instance = serializer.save()
-                # Customize the response format for successful update
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Room updated successfully", data=ClassRoomSerializer(instance).data)
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                floor_type = serializer.validated_data.get('floor_type')
+                building = serializer.validated_data.get('building')
+                room_no = serializer.validated_data.get('room_no')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                class_room_count = ClassRoom.objects.filter(floor_type=floor_type,building=building,room_no=room_no,institution=institution,branch=branch,status=True).count()
+                if(class_room_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Room updated successfully", data=ClassRoomSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Room already exits", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
@@ -932,18 +967,21 @@ class ClassPeriodList(generics.ListCreateAPIView):
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
         serializer = self.get_serializer(data=request.data)
-        print(serializer)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                start_time = serializer.validated_data.get('start_time')
+                end_time = serializer.validated_data.get('end_time')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
-                # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Period created successfully", data=ClassPeriodSerializer(instance).data)
+                class_period_count = ClassPeriod.objects.filter(start_time=start_time, end_time=end_time, institution=institution,branch=branch, status=True).count()
+                if (class_period_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Period created successfully", data=ClassPeriodSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Period already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -977,10 +1015,20 @@ class ClassPeriodDetail(generics.RetrieveUpdateAPIView):
         
         try:
             if serializer.is_valid():
-                # Perform any custom update logic here if needed
-                instance = serializer.save()
-                # Customize the response format for successful update
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Period updated successfully", data=ClassPeriodSerializer(instance).data)
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                start_time = serializer.validated_data.get('start_time')
+                end_time = serializer.validated_data.get('end_time')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                class_period_count = ClassPeriod.objects.filter(start_time=start_time, end_time=end_time, institution=institution,branch=branch, status=True).count()
+                if (class_period_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Period updated successfully", data=ClassPeriodSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Period already exits", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
@@ -1073,13 +1121,19 @@ class ClassSectionList(generics.ListCreateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                session = serializer.validated_data.get('session')
+                version = serializer.validated_data.get('version')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
-                # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Section created successfully", data=ClassSectionSerializer(instance).data)
+                class_section_count = ClassSection.objects.filter(class_name=class_name,section=section,session=session,version=version,institution=institution,branch=branch, status=True).count()
+                if (class_section_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Section created successfully", data=ClassSectionSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Section already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -1108,15 +1162,27 @@ class ClassSectionDetail(generics.RetrieveUpdateAPIView):
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer_class = ClassSectionSerializer3
+        serializer = serializer_class(instance, data=request.data, partial=partial)
         
         try:
             if serializer.is_valid():
-                # Perform any custom update logic here if needed
-                instance = serializer.save()
-                # Customize the response format for successful update
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Section updated successfully", data=ClassSectionSerializer(instance).data)
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                session = serializer.validated_data.get('session')
+                version = serializer.validated_data.get('version')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                class_section_count = ClassSection.objects.filter(class_name=class_name,section=section,session=session,version=version,institution=institution,branch=branch, status=True).count()
+                if (class_section_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Section updated successfully", data=ClassSectionSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Section already exits", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
@@ -1203,19 +1269,27 @@ class ClassSubjectList(generics.ListCreateAPIView):
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
-        serializer = self.get_serializer(data=request.data)
-        print(serializer)
+        serializer_class = ClassSubjectSerializer2
+        serializer = serializer_class(data=request.data)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                session = serializer.validated_data.get('session')
+                version = serializer.validated_data.get('version')
+                code = serializer.validated_data.get('code')
+                subject = serializer.validated_data.get('subject')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
-                # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Subject created successfully", data=ClassSubjectSerializer(instance).data)
+                class_sub_count = ClassSubject.objects.filter(class_name=class_name,section=section,session=session,version=version,code=code,subject=subject,institution=institution,branch=branch, status=True).count()
+                if (class_sub_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Subject created successfully", data=ClassSubjectSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Subject already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -1244,15 +1318,29 @@ class ClassSubjectDetail(generics.RetrieveUpdateAPIView):
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer_class = ClassSubjectSerializer2
+        serializer = serializer_class(instance, data=request.data, partial=partial)
         
         try:
             if serializer.is_valid():
-                # Perform any custom update logic here if needed
-                instance = serializer.save()
-                # Customize the response format for successful update
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Subject updated successfully", data=ClassSubjectSerializer(instance).data)
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                session = serializer.validated_data.get('session')
+                version = serializer.validated_data.get('version')
+                code = serializer.validated_data.get('code')
+                subject = serializer.validated_data.get('subject')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                class_sub_count = ClassSubject.objects.filter(class_name=class_name,section=section,session=session,version=version,code=code,subject=subject,institution=institution,branch=branch, status=True).count()
+                if (class_sub_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Subject updated successfully", data=ClassSubjectSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Subject already exits", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
@@ -1336,18 +1424,30 @@ class ClassRoutineCreateList(generics.ListCreateAPIView):
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
-        serializer = self.get_serializer(data=request.data)
+        serializer_class = ClassRoutineSerializer2
+        serializer = serializer_class(data=request.data)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                teacher = serializer.validated_data.get('teacher')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                session = serializer.validated_data.get('session')
+                version = serializer.validated_data.get('version')
+                subject = serializer.validated_data.get('subject')
+                class_period = serializer.validated_data.get('class_period')
+                day = serializer.validated_data.get('day')
+                class_room = serializer.validated_data.get('class_room')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
-                # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Routine created successfully", data=ClassRoutineSerializer(instance).data)
+                routine_count = ClassRoutine.objects.filter(class_room=class_room,day=day,class_period=class_period,teacher=teacher,class_name=class_name,section=section,session=session,version=version,subject=subject,institution=institution, branch=branch, status=True)
+                if(routine_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Routine created successfully", data=ClassRoutineSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Class Routine already exists", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -1379,8 +1479,8 @@ class ClassRoutineDetail(generics.RetrieveUpdateAPIView):
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to retrive End'''
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer_class = ClassRoutineSerializer2
+        serializer = serializer_class(instance, data=request.data, partial=partial)
         
         try:
             if serializer.is_valid():

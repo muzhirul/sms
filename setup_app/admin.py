@@ -48,6 +48,7 @@ class MenuAdmin(admin.ModelAdmin):
         
 class PermissionAdmin(admin.ModelAdmin):
     list_display = ['role','menu','can_create','can_view','can_update','can_delete','status']
+    list_editable = ['can_create','can_view','can_update','can_delete']
     class Meta:
         model = Permission
         

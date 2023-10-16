@@ -80,8 +80,8 @@ class ClassPeriodAdmin(admin.ModelAdmin):
         ("Class Period Information",{"fields":[('name'),('start_time','end_time'),('duration')]})
         # ("Class Period Information",{"fields":[('code','name'),('start_time','end_time'),('duration','status')]})
     ]
-    list_display = ['code','name','start_time','end_time','duration','status']
-    search_fields = ['code','name','start_time','end_time','duration']
+    list_display = ['name','start_time','end_time','duration','status']
+    search_fields = ['name','start_time','end_time','duration']
     save_on_top = True
     list_per_page = 15
 
@@ -89,17 +89,17 @@ class ClassPeriodAdmin(admin.ModelAdmin):
         model = ClassPeriod
         
 class ClassSectionAdmin(admin.ModelAdmin):
-    fields = ['class_name','section','session']
-    list_display = ['class_name','section','session','status']
+    fields = ['class_name','section','session','version']
+    list_display = ['class_name','section','session','version','status']
     search_fields = ['class_name__name','section__section','session__session']
     class Meta:
         model = ClassSection
         
 class ClassSubjectAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Class Subject Information",{"fields":[('class_name'),('subject','image')]})
+        ("Class Subject Information",{"fields":[('class_name'),('code','subject','image'),('section','session','version')]})
     ]
-    list_display = ['class_name','subject','created_by','updated_at','status']
+    list_display = ['class_name','code','subject','section','session','version']
     search_fields = ['subject__name']
     class Meta:
         model = ClassSubject
