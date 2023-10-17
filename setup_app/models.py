@@ -106,10 +106,6 @@ class Menu(models.Model):
     slug = models.SlugField(max_length=55, blank=True, null=True)
     icon = models.ImageField(upload_to='menu_icon/',blank=True, null=True, verbose_name='Icon')
     level = models.IntegerField(blank=True,null=True,verbose_name='Menu Level')
-    # create_permission = models.BooleanField(default=False)
-    # view_permission = models.BooleanField(default=False)
-    # edit_permission = models.BooleanField(default=False)
-    # delete_permission = models.BooleanField(default=False)
     sl_no = models.IntegerField(blank=True,null=True,verbose_name='Ordering')
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='menu_creator', editable=False, blank=True, null=True)
@@ -187,6 +183,22 @@ class FloorType(models.Model):
     
     class Meta:
         db_table = 's_floor_type'
+        
+    def __str__(self):
+        return self.name
+    
+class SubjectType(models.Model):
+    name = models.CharField(max_length=20, verbose_name='Subject Type')
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sub_type_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='sub_type_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 's_subject_type'
         
     def __str__(self):
         return self.name

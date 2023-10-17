@@ -63,6 +63,11 @@ class FloorTypeAdmin(admin.ModelAdmin):
     
     class Meta:
         model = FloorType
+        
+class SubjectTypeAdmin(admin.ModelAdmin):
+    fields = ['name','status']
+    class Meta:
+        model = SubjectType
 
 admin.site.register(Setup,SetupAdmin)
 admin.site.register(Gender,GenderAdmin)
@@ -75,3 +80,4 @@ admin.site.register(Role)
 admin.site.register(Permission,PermissionAdmin)
 admin.site.register(Day,DayAdmin)
 admin.site.register(FloorType,FloorTypeAdmin)
+admin.site.register(SubjectType,SubjectTypeAdmin)

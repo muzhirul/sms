@@ -95,13 +95,8 @@ class Subject(models.Model):
 class ClassName(models.Model):
     code = models.CharField(max_length=10,blank=True,null=True,verbose_name='Class Code')
     name = models.CharField(max_length=50,blank=True,null=True, verbose_name='Class Name')
-    # section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True,null=True)
-    # version = models.ForeignKey(Version, on_delete=models.SET_NULL,blank=True,null=True)
-    # session = models.ForeignKey(Session, on_delete=models.SET_NULL,blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
-    # section = models.ManyToManyField(Section)
-    # subject = models.ManyToManyField(Subject)
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_update_by', editable=False, blank=True, null=True)
