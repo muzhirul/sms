@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import ReligionList,BloodGroupList,GenderList,OccupationList,RelationList,DayList,FloorList
+from .views import ReligionList,BloodGroupList,GenderList,OccupationList,RelationList,DayList,FloorList,SubjectTypeList
 
 urlpatterns = [
     path('api/religion/list', ReligionList.as_view(), name='religion-list'),
@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/relation/list', RelationList.as_view(), name='relation-list'),
     path('api/day/list', DayList.as_view(), name='day-list'),
     path('api/floor/list', FloorList.as_view(), name='floor-list'),
+    path('api/subject-type/list', SubjectTypeList.as_view(), name='subject-type-list'),
 ]

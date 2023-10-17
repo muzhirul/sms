@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from academic.models import *
-from setup_app.serializers import FloorTypeSerializer, DaySerializer
+from setup_app.serializers import FloorTypeSerializer, DaySerializer, SubjectTypeSerializer
 from staff.serializers import StaffTeacherSerializer
 
 class VersionSerializer2(serializers.ModelSerializer):
@@ -51,12 +51,18 @@ class SectionSerializer(serializers.ModelSerializer):
         exclude = ['status','code']
         read_only_fields = ('code',)
 
+class SubjectSerializer3(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        # Exclude the specified fields from serialization
+        exclude = ['status','start_date','end_date']
 
 class SubjectSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
     institution_name = serializers.ReadOnlyField(source='institution.name')
     branch_name = serializers.ReadOnlyField(source='branch.name')
+    type = SubjectTypeSerializer(read_only=True)
     class Meta:
         model = Subject
         # Exclude the specified fields from serialization

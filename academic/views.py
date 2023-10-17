@@ -520,7 +520,8 @@ class SubjectList(generics.ListCreateAPIView):
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
-        serializer = self.get_serializer(data=request.data)
+        serializer_class = SubjectSerializer3
+        serializer = serializer_class(data=request.data)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
@@ -565,8 +566,8 @@ class SubjectDetail(generics.RetrieveUpdateAPIView):
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer_class = SubjectSerializer3
+        serializer = serializer_class(instance, data=request.data, partial=partial)
         
         try:
             if serializer.is_valid():

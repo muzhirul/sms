@@ -3,7 +3,7 @@ from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 import uuid
 from django.contrib.auth.models import User
-from setup_app.models import Day, FloorType
+from setup_app.models import Day, FloorType, SubjectType
 from staff.models import Staff
 
 def generate_unique_code():
@@ -70,9 +70,8 @@ class Section(models.Model):
     
 
 class Subject(models.Model):
-    SUBJECT_TYPE = (('THEORY','Theory'),('PARCTICAL','Practical'))
     code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Subject Code')
-    type = models.CharField(max_length=20, blank=True, null=True,verbose_name='Subject Type',choices=SUBJECT_TYPE)
+    type = models.ForeignKey(SubjectType,on_delete=models.SET_NULL,blank=True, null=True,verbose_name='Subject Type')
     name = models.CharField(max_length=100, blank=True,null=True,verbose_name='Subject Name')
     picture = models.ImageField(upload_to='subject_img/',blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)

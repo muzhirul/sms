@@ -56,4 +56,9 @@ class FloorTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = FloorType
         fields = ['id','name']
-        
+
+class SubjectTypeSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = SubjectType
+        fields = ['id','name']        
