@@ -15,6 +15,7 @@ class ExamNameAdmin(admin.ModelAdmin):
         model = ExamName
         
 class ExamRoutineAdmin(admin.ModelAdmin):
+    list_display = ['start_time','day','end_time','duration']
     class Meta:
         model = ExamRoutine
 

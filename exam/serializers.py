@@ -13,8 +13,8 @@ class ExamNameSerializer(serializers.ModelSerializer):
         model = ExamName
         exclude = ['status','institution','branch','created_by','updated_by','created_at','updated_at']
         
-class ExamRoutineSerializer(serializers.ModelSerializer):
+# class ExamRoutineSerializer(serializers.ModelSerializer):
     
-    class Meta:
-        model = ExamRoutine
-        exclude = ['status','institution','branch','created_by','updated_by','created_at','updated_at']
+#     class Meta:
+#         model = ExamRoutine
+#         exclude = ['status','institution','branch','created_by','updated_by','created_at','updated_at']

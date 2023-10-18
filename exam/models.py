@@ -2,7 +2,9 @@ from django.db import models
 from institution.models import Institution, Branch
 from academic.models import ClassName, ClassRoom, Section, Session, Subject, Version
 from django_userforeignkey.models.fields import UserForeignKey
-
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from datetime import datetime, timedelta
 from staff.models import Staff
 # Create your models here.
 class Grade(models.Model):
@@ -51,7 +53,7 @@ class ExamName(models.Model):
     
 class ExamRoutine(models.Model):
     exam_date = models.DateField()
-    day = models.CharField(max_length=20,verbose_name='Exam Day')
+    day = models.CharField(max_length=20,verbose_name='Exam Day',blank=True,null=True, editable=False)
     version = models.ForeignKey(Version, on_delete=models.CASCADE)
     class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE)
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
@@ -60,7 +62,7 @@ class ExamRoutine(models.Model):
     room = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
     start_time = models.TimeField()
     end_time = models.TimeField()
-    duration = models.IntegerField()
+    duration = models.DurationField(blank=True,null=True)
     exam = models.ForeignKey(ExamName, on_delete=models.CASCADE)
     teacher = models.ManyToManyField(Staff, verbose_name='Teacher')
     status = models.BooleanField(default=True)
@@ -71,8 +73,47 @@ class ExamRoutine(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    
+    # @property
+    # def duration(self):
+    #     if self.start_time and self.end_time:
+    #         return self.end_time - self.start_time
+    #     return None
+        
     class Meta:
         db_table = 'e_exam_routine'
         
+@receiver(pre_save, sender=ExamRoutine)        
+def calculate_duration(sender, instance, **kwargs):
+    if instance.start_time and instance.end_time:
+        # Get the current date for the calculation
+        current_date = datetime.now().date()
+
+        # Convert start_time and end_time to datetime objects
+        start_datetime = datetime.combine(current_date, instance.start_time)
+        end_datetime = datetime.combine(current_date, instance.end_time)
+
+        # Ensure both start_time and end_time are on the same date
+        if start_datetime > end_datetime:
+            # In case end_time is on the next day, adjust it
+            end_datetime += timedelta(days=1)
+
+        duration = end_datetime - start_datetime
+        instance.duration = duration
+    else:
+        instance.duration = None
+        
+@receiver(pre_save, sender=ExamRoutine)          
+def find_day(sender, instance, **kwargs):
+    
+    if instance.exam_date:
+        date_string = str(instance.exam_date)
+        date = datetime.strptime(date_string, "%Y-%m-%d")
+        # Get the day name
+        day_name = date.strftime("%A")
+        instance.day = day_name
+    else:
+        instance.day = None
+
     
     
