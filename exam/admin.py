@@ -13,6 +13,11 @@ class ExamNameAdmin(admin.ModelAdmin):
     
     class Meta:
         model = ExamName
+        
+class ExamRoutineAdmin(admin.ModelAdmin):
+    class Meta:
+        model = ExamRoutine
 
 admin.site.register(Grade,GradeAdmin)
 admin.site.register(ExamName, ExamNameAdmin)
+admin.site.register(ExamRoutine, ExamRoutineAdmin)

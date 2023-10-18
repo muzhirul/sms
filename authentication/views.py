@@ -63,7 +63,6 @@ class UserV4LoginView(APIView):
             if parent:
                 parent_id.append(parent)
         main_menus = []
-        print(parent_id)
         parent_menus = Menu.objects.filter(id__in=parent_id,parent_id__isnull=True,status=True).order_by('sl_no')
         for parent_menu in parent_menus:
             # print(parent_menu.name)
@@ -92,7 +91,7 @@ class UserV4LoginView(APIView):
                 sub_memu['order'] = child_menu.sl_no
                 sub_memu['permission'] = []
                 userPermission = []
-                user_permissions = Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True),menu= child_menu.id,status=True)
+                user_permissions = Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True), role__in=role_id,menu= child_menu.id,status=True)
                 for user_permission in user_permissions:
                     if user_permission.can_create:
                         userPermission.append('create')
