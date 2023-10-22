@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer
 from staff.models import *
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -37,7 +38,8 @@ class EducationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Education
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ['status','created_at','updated_at','created_by','updated_by']
         
 class StaffTeacherSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,7 +52,26 @@ class staffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         # fields = ['first_nmae','last_name']
-        fields = '__all__'
+        exclude = ['code','user','institution','branch','status']
+
+class StaffShiftListSerializer2(serializers.ModelSerializer):
+    class Meta:
+        model = StaffShift
+        fields = ['id','name']
+        
+class staffSerializer2(serializers.ModelSerializer):
+    staff_education = EducationSerializer(many=True, required=False, read_only=True)
+    gender = GenderSerializer(read_only=True)
+    religion = ReligionSerializer(read_only=True)
+    blood_group = BloodGroupSerializer(read_only=True)
+    designation = DesignationListSerializer(read_only=True)
+    department = DepartmentListSerializer(read_only=True)
+    shift = StaffShiftListSerializer2(read_only=True)
+    # shift = StaffShiftListCreate(read_only=True)
+    class Meta:
+        model = Staff
+        # fields = ['first_nmae','last_name']
+        exclude = ['code','user','institution','branch','status']
         
 class StaffShiftSerializer(serializers.ModelSerializer):
     class Meta:

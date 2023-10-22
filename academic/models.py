@@ -5,6 +5,10 @@ import uuid
 from django.contrib.auth.models import User
 from setup_app.models import Day, FloorType, SubjectType
 from staff.models import Staff
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from datetime import datetime, timedelta
+from staff.models import Staff
 
 def generate_unique_code():
     return str(uuid.uuid4().hex[:10])  # Adjust the length as needed
@@ -136,7 +140,7 @@ class ClassPeriod(models.Model):
     name = models.CharField(max_length=100, blank=True,null=True,verbose_name='Class Period Name')
     start_time = models.TimeField(blank=True,null=True)
     end_time = models.TimeField(blank=True,null=True)
-    duration = models.IntegerField(blank=True,null=True,verbose_name='Class Duration')
+    duration = models.DurationField(blank=True,null=True, verbose_name='Class Duraion', editable=False)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
@@ -153,6 +157,27 @@ class ClassPeriod(models.Model):
 
     def __str__(self):
         return self.name
+
+@receiver(pre_save, sender=ClassPeriod)        
+def calculate_duration(sender, instance, **kwargs):
+    if instance.start_time and instance.end_time:
+        # Get the current date for the calculation
+        current_date = datetime.now().date()
+
+        # Convert start_time and end_time to datetime objects
+        start_datetime = datetime.combine(current_date, instance.start_time)
+        end_datetime = datetime.combine(current_date, instance.end_time)
+
+        # Ensure both start_time and end_time are on the same date
+        if start_datetime > end_datetime:
+            # In case end_time is on the next day, adjust it
+            end_datetime += timedelta(days=1)
+
+        duration = end_datetime - start_datetime
+        instance.duration = duration
+    else:
+        instance.duration = None
+
 
 class ClassSection(models.Model):
     class_name = models.ForeignKey(ClassName, on_delete=models.SET_NULL, blank=True, null=True)
@@ -198,7 +223,6 @@ class ClassSubject(models.Model):
         return str(self.id)
     
 class ClassRoutine(models.Model):
-    DAY_TYPE = (('SUNDAY','SUNDAY'),('MONDAY','MONDAY'),('TUESDAY','TUESDAY'),('WEDNESDAY','WEDNESDAY'),('THURSDAY','THURSDAY'))
     teacher = models.ForeignKey(Staff, on_delete=models.CASCADE, verbose_name='Teacher Name')
     class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
@@ -222,3 +246,43 @@ class ClassRoutine(models.Model):
     
     def __str__(self):
         return self.day.short_name
+
+class ClassRoutineMst(models.Model):
+    class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
+    day = models.ForeignKey(Day,on_delete=models.CASCADE, verbose_name='Day')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session')
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='Version')
+    institution = models.ForeignKey(Institution,on_delete=models.CASCADE,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.CASCADE,blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_routine_mst_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_routine_mst_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'ac_class_routine_mst'
+        verbose_name = 'Class Routine'
+    
+    def __str__(self):
+        return str(self.id)
+    
+class ClassRoutiineDtl(models.Model):
+    class_routine_mst = models.ForeignKey(ClassRoutineMst, on_delete=models.CASCADE, related_name='routine_dtl')
+    teacher = models.ForeignKey(Staff, on_delete=models.CASCADE, verbose_name='Teacher Name')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Subject')
+    class_period = models.ForeignKey(ClassPeriod, on_delete=models.CASCADE, verbose_name='Class Period')
+    class_room = models.ForeignKey(ClassRoom, on_delete=models.CASCADE,blank=True, null=True, verbose_name='Class Room')
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_routine_dtl_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_routine_dtl_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'ac_class_routine_dtl'
+    
+    def __str__(self):
+        return str(self.id)
+    

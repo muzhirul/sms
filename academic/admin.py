@@ -77,7 +77,7 @@ class ClassRoomAdmin(admin.ModelAdmin):
 
 class ClassPeriodAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Class Period Information",{"fields":[('name'),('start_time','end_time'),('duration')]})
+        ("Class Period Information",{"fields":[('name'),('start_time','end_time')]})
         # ("Class Period Information",{"fields":[('code','name'),('start_time','end_time'),('duration','status')]})
     ]
     list_display = ['name','start_time','end_time','duration','status']
@@ -110,6 +110,18 @@ class ClassRoutineAdmin(admin.ModelAdmin):
     
     class Meta:
         model = ClassRoutine
+        
+class ClassRoutineDtlAdmin(admin.TabularInline):
+    model = ClassRoutiineDtl
+    fields = ['teacher','subject','class_period','class_room','status']
+    extra = 6
+    
+class ClassRoutineMstAdmin(admin.ModelAdmin):
+    list_display = ['class_name','section','day','session','version','institution','branch']
+    class Meta:
+        model = ClassRoutineMst
+        
+    inlines = [ClassRoutineDtlAdmin]
 
 admin.site.register(Version,VersionAdmin)
 admin.site.register(Session,SessionAdmin)
@@ -121,3 +133,4 @@ admin.site.register(ClassPeriod,ClassPeriodAdmin)
 admin.site.register(ClassSection,ClassSectionAdmin)
 admin.site.register(ClassSubject,ClassSubjectAdmin)
 admin.site.register(ClassRoutine,ClassRoutineAdmin)
+admin.site.register(ClassRoutineMst, ClassRoutineMstAdmin)

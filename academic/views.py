@@ -567,6 +567,7 @@ class SubjectDetail(generics.RetrieveUpdateAPIView):
         '''Check user has permission to View end'''
         partial = kwargs.pop('partial', False)
         serializer_class = SubjectSerializer3
+        instance = self.get_object()
         serializer = serializer_class(instance, data=request.data, partial=partial)
         
         try:

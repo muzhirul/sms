@@ -52,6 +52,22 @@ class PermissionAdmin(admin.ModelAdmin):
     class Meta:
         model = Permission
         
+class PermissionTabularAdmin(admin.TabularInline):
+    
+    # list_editable = ['can_create','can_view','can_update','can_delete']
+    model = Permission
+    fields = ['menu','can_create','can_view','can_update','can_delete','status']
+    extra = 0
+
+class RoleAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ("Role Information",{'fields':[('name','status'),]})
+    ]
+    list_display = ['name','status','created_at']
+    class Meta:
+        model = Role
+    inlines = [PermissionTabularAdmin]
+        
 class DayAdmin(admin.ModelAdmin):
     list_display = ['short_name','long_name','created_by','created_at']
     
@@ -76,7 +92,7 @@ admin.site.register(BloodGroup,BloodGroupAdmin)
 admin.site.register(Occupation,OccupationAdmin)
 admin.site.register(Relation,RelationAdmin)
 admin.site.register(Menu,MenuAdmin)
-admin.site.register(Role)
+admin.site.register(Role,RoleAdmin)
 admin.site.register(Permission,PermissionAdmin)
 admin.site.register(Day,DayAdmin)
 admin.site.register(FloorType,FloorTypeAdmin)
