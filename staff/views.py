@@ -441,15 +441,31 @@ class staffCreateView(generics.CreateAPIView):
                 try:
                     std_user_data = Staff.objects.values('staff_id').get(id=staff.id)
                     std_username = std_user_data['staff_id']
-                    print(std_username)
-                    user = Authentication(username=std_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
-                        # Set a default password (you can change this as needed)
-                    default_password = '12345678'
-                    user.set_password(default_password)
-                    user.save()
-                        # Update the student's user_id field
-                    staff.user_id = user.id
-                    staff.save()
+                    user_count = Authentication.objects.filter(username=std_username).count()
+                    print(user_count)
+                    if (user_count==0):
+                        user = Authentication(username=std_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
+                            # Set a default password (you can change this as needed)
+                        default_password = '12345678'
+                        user.set_password(default_password)
+                        user.save()
+                            # Update the student's user_id field
+                        staff.user_id = user.id
+                        staff.save()
+                    else:
+                        last_username = Authentication.objects.filter(username__startswith='99').order_by('username').last()
+                        # int_last_username = int(last_username)
+                        int_last_username = int(last_username.username)
+                        new_username = (int_last_username+1)
+                        user = Authentication(username=new_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
+                            # Set a default password (you can change this as needed)
+                        default_password = '12345678'
+                        user.set_password(default_password)
+                        user.save()
+                            # Update the student's user_id field
+                        staff.user_id = user.id
+                        staff.staff_id = new_username
+                        staff.save()
                 except:
                     pass
                 staff_educations = []
