@@ -438,18 +438,17 @@ class staffCreateView(generics.CreateAPIView):
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
                 staff = staff_serializer.save(institution=institution,branch=branch)
+                default_password = '12345678'
                 try:
                     std_user_data = Staff.objects.values('staff_id').get(id=staff.id)
                     std_username = std_user_data['staff_id']
                     user_count = Authentication.objects.filter(username=std_username).count()
-                    print(user_count)
                     if (user_count==0):
                         user = Authentication(username=std_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
-                            # Set a default password (you can change this as needed)
-                        default_password = '12345678'
+                        # Set a default password (you can change this as needed)
                         user.set_password(default_password)
                         user.save()
-                            # Update the student's user_id field
+                        # Update the student's user_id field
                         staff.user_id = user.id
                         staff.save()
                     else:
@@ -458,11 +457,10 @@ class staffCreateView(generics.CreateAPIView):
                         int_last_username = int(last_username.username)
                         new_username = (int_last_username+1)
                         user = Authentication(username=new_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
-                            # Set a default password (you can change this as needed)
-                        default_password = '12345678'
+                        # Set a default password (you can change this as needed)
                         user.set_password(default_password)
                         user.save()
-                            # Update the student's user_id field
+                        # Update the student's user_id field
                         staff.user_id = user.id
                         staff.staff_id = new_username
                         staff.save()
@@ -559,7 +557,7 @@ class StaffShiftListCreate(generics.ListCreateAPIView):
         
     def list(self,request,*args, **kwargs):
         '''Check user has permission to View start'''
-        permission_check = check_permission(self.request.user.id, 'Staff Shift', 'view')
+        permission_check = check_permission(self.request.user.id, 'Shift', 'view')
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
@@ -586,7 +584,7 @@ class StaffShiftListCreate(generics.ListCreateAPIView):
     
     def create(self, request, *args, **kwargs):
         '''Check user has permission to View start'''
-        permission_check = check_permission(self.request.user.id, 'Staff Shift', 'create')
+        permission_check = check_permission(self.request.user.id, 'Shift', 'create')
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
@@ -620,7 +618,7 @@ class StaffShiftDetail(generics.RetrieveUpdateAPIView):
     
     def retrieve(self, request, *args, **kwargs):
         '''Check user has permission to retrive start'''
-        permission_check = check_permission(self.request.user.id, 'Session', 'view')
+        permission_check = check_permission(self.request.user.id, 'Shift', 'view')
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to retrive End'''
@@ -630,7 +628,7 @@ class StaffShiftDetail(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         '''Check user has permission to update start'''
-        permission_check = check_permission(self.request.user.id, 'Session', 'update')
+        permission_check = check_permission(self.request.user.id, 'Shift', 'update')
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to retrive End'''
@@ -652,12 +650,12 @@ class StaffShiftDetail(generics.RetrieveUpdateAPIView):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
                     # Customize the response format for successful update
-                    return CustomResponse(code=status.HTTP_200_OK, message="Session updated successfully", data=StaffShiftSerializer(instance).data)
-                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Session {name} already exits", data=serializer.errors)
+                    return CustomResponse(code=status.HTTP_200_OK, message="Shift updated successfully", data=StaffShiftSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Shift {name} already exits", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
- 
+
