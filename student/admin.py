@@ -8,7 +8,11 @@ class GuardianTabularInline(admin.TabularInline):
     model = Guardian
     fields = ['first_name','last_name','mobile_no','relation','gender','occupation','nid','photo','photo_thumbnail','is_guardian']
     extra = 0
-    
+
+class StudentEnrollTabularInline(admin.TabularInline):
+    model = StudentEnroll
+    fields = ['version','session','class_name','section','roll','start_date','end_date','remarks']
+    extra = 0
 
 @admin_thumbnails.thumbnail('photo')
 class StudentAdmin(admin.ModelAdmin):
@@ -25,7 +29,7 @@ class StudentAdmin(admin.ModelAdmin):
     save_on_top = True
     list_per_page = 15
 
-    inlines = [GuardianTabularInline]
+    inlines = [GuardianTabularInline,StudentEnrollTabularInline]
     
     class Meta:
         model = Student

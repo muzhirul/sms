@@ -1,4 +1,5 @@
 from django.db import models
+from academic.models import ClassName, Section, Session, Version
 from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 from authentication.models import Authentication
@@ -59,6 +60,7 @@ def generate_guardian_no():
     new_guardian_num = guardian_num_int + 1
     new_gd_num = '11'+str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_guardian_num).zfill(2)
     return new_gd_num   
+
 class Guardian(models.Model):
     guardian_no = models.CharField(max_length=15,blank=True,null=True,editable=False, verbose_name='Guardian No', default=generate_guardian_no)
     student = models.ForeignKey(Student, on_delete=models.CASCADE,related_name="guardians")
@@ -83,3 +85,28 @@ class Guardian(models.Model):
 
     def __str__(self):
         return self.first_name
+
+class StudentEnroll(models.Model):
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='version')
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session')
+    class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, verbose_name='Student')
+    roll = models.CharField(max_length=15,verbose_name='Class Roll')
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+    remarks = models.CharField(max_length=255,blank=True, null=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='student_enroll_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='student_enroll_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'st_enroll'
+        
+    def __str__(self):
+        return str(self.roll)
+    
