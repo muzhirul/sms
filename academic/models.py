@@ -9,11 +9,11 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from datetime import datetime, timedelta
 from staff.models import Staff
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 
 def generate_unique_code():
     return str(uuid.uuid4().hex[:10])  # Adjust the length as needed
-
-
 
 # Create your models here.
 class Version(models.Model):
@@ -199,6 +199,26 @@ class ClassSection(models.Model):
     def __str__(self):
         return str(self.id)
 
+def validate_pdf_extension(value):
+    if not value.name.lower().endswith('.pdf'):
+        raise ValidationError('Only PDF files are allowed.')
+
+def validate_pdf_file_size(value):
+    if value.size > 20 * 1024 * 1024:  # 20MB in bytes
+        raise ValidationError('File size cannot exceed 20MB.')
+
+# class PDFFileField(models.FileField):
+#     def __init__(self, *args, **kwargs):
+#         kwargs.setdefault('validators', []).append(FileExtensionValidator(allowed_extensions=['pdf']))
+#         super().__init__(*args, **kwargs)
+
+class PDFFileField(models.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('validators', []).extend([
+            FileExtensionValidator(allowed_extensions=['pdf']),
+        ])
+        super().__init__(*args, **kwargs)
+
 class ClassSubject(models.Model):
     class_name = models.ForeignKey(ClassName, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Class Name')
     section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True, null=True)
@@ -207,6 +227,7 @@ class ClassSubject(models.Model):
     code = models.CharField(max_length=20, blank=True, null=True, verbose_name='Subject Code')
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, blank=True, null=True)
     image = models.ImageField(upload_to='book_images/', blank=True, null=True, verbose_name='Book Image')
+    book_file = PDFFileField(upload_to='book_file/', blank=True, null=True, verbose_name='Book File',validators=[validate_pdf_file_size])
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
@@ -285,4 +306,5 @@ class ClassRoutiineDtl(models.Model):
     
     def __str__(self):
         return str(self.id)
-    
+
+

@@ -97,7 +97,7 @@ class ClassSectionAdmin(admin.ModelAdmin):
         
 class ClassSubjectAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Class Subject Information",{"fields":[('class_name'),('code','subject','image'),('section','session','version')]})
+        ("Class Subject Information",{"fields":[('class_name'),('code','subject','image','book_file'),('section','session','version')]})
     ]
     list_display = ['class_name','code','subject','section','session','version']
     search_fields = ['subject__name']

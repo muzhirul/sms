@@ -57,6 +57,11 @@ class SubjectSerializer3(serializers.ModelSerializer):
         # Exclude the specified fields from serialization
         exclude = ['status','start_date','end_date']
 
+class SubjectViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ['id','name']
+
 class SubjectSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
@@ -156,6 +161,7 @@ class ClassSubjectSerializer(serializers.ModelSerializer):
     section = SectionSerializer2(read_only=True)
     session = SessionSerializer2(read_only=True)
     version = VersionSerializer2(read_only=True)
+    subject = SubjectViewSerializer(read_only=True)
     class Meta:
         model = ClassSubject
         # Exclude the specified fields from serialization
