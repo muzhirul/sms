@@ -10,5 +10,9 @@ urlpatterns = [
     path('api/day/list', DayList.as_view(), name='day-list'),
     path('api/floor/list', FloorList.as_view(), name='floor-list'),
     path('api/subject-type/list', SubjectTypeList.as_view(), name='subject-type-list'),
-    path('api/board/list', EduBoardList.as_view(), name='education-board-list')
+    # For Education Board
+    path('api/board/list', EduBoardList.as_view(), name='education-board-list'),
+    path('api/board', BoardCreateList.as_view(), name='Board-create-list'),
+    path('api/board/detail/<int:pk>', BoardDetail.as_view(), name='board-detail'),
+    path('api/board/delete/<int:pk>', BoardDelete.as_view(), name='board-delete'),
 ]

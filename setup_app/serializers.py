@@ -63,8 +63,15 @@ class SubjectTypeSerializer(serializers.ModelSerializer):
         model = SubjectType
         fields = ['id','name']        
         
-class EducationBoardSerializer(serializers.ModelSerializer):
+class EducationBoardViewSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = EducationBoard
         fields = ['id','board_code','name']
+        
+class EducationBoardSerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+    class Meta:
+        model = EducationBoard
+        exclude = ['status','institution','branch']
