@@ -100,5 +100,5 @@ class CountrySerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
     class Meta:
-        model = District
+        model = Country
         exclude = ['status','institution','branch']
