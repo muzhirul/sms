@@ -84,6 +84,12 @@ class SubjectTypeAdmin(admin.ModelAdmin):
     fields = ['name','status']
     class Meta:
         model = SubjectType
+        
+class EducationBoardAdmin(admin.ModelAdmin):
+    list_display = ['board_code','name','status']
+    
+    class Meta:
+        model = EducationBoard
 
 admin.site.register(Setup,SetupAdmin)
 admin.site.register(Gender,GenderAdmin)
@@ -97,3 +103,4 @@ admin.site.register(Permission,PermissionAdmin)
 admin.site.register(Day,DayAdmin)
 admin.site.register(FloorType,FloorTypeAdmin)
 admin.site.register(SubjectType,SubjectTypeAdmin)
+admin.site.register(EducationBoard, EducationBoardAdmin)

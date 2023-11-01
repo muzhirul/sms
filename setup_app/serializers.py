@@ -62,3 +62,9 @@ class SubjectTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubjectType
         fields = ['id','name']        
+        
+class EducationBoardSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = EducationBoard
+        fields = ['id','board_code','name']
