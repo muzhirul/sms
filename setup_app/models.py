@@ -1,6 +1,24 @@
 from django.db import models
 from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
+
+def validate_no_numbers(value):
+    if any(char.isdigit() for char in value):
+        raise ValidationError(
+            _('The field cannot contain numbers.'),
+            code='no_numbers',
+        )
+        
+def validate_alpha_chars_only(value):
+    if not value.isalpha():
+        raise ValidationError(
+            _('The field can only contain alphabetic characters.'),
+            code='alpha_chars_only'
+        )
+        
 
 # Create your models here.
 class Setup(models.Model):
@@ -205,7 +223,7 @@ class SubjectType(models.Model):
     
 class EducationBoard(models.Model):
     board_code = models.CharField(max_length=3, verbose_name='Board Code')
-    name = models.CharField(max_length=50, verbose_name='Board Name')
+    name = models.CharField(max_length=50, verbose_name='Board Name',validators=[validate_alpha_chars_only])
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
@@ -219,3 +237,22 @@ class EducationBoard(models.Model):
     
     def __str__(self):
         return self.name
+    
+class District(models.Model):
+    dist_code = models.CharField(max_length=4, verbose_name='District Code')
+    name = models.CharField(max_length=50, verbose_name='District Name',validators=[validate_alpha_chars_only])
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='district_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='district_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 's_district'
+        
+    def __str__(self):
+        return self.name
+
+    

@@ -75,3 +75,17 @@ class EducationBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = EducationBoard
         exclude = ['status','institution','branch']
+        
+        
+class DistrictdViewSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = District
+        fields = ['id','dist_code','name']
+        
+class DistrictSerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+    class Meta:
+        model = District
+        exclude = ['status','institution','branch']

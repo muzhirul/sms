@@ -90,6 +90,12 @@ class EducationBoardAdmin(admin.ModelAdmin):
     
     class Meta:
         model = EducationBoard
+        
+class DistrictAdmin(admin.ModelAdmin):
+    list_display = ['dist_code','name','status']
+    
+    class Meta:
+        model = District
 
 admin.site.register(Setup,SetupAdmin)
 admin.site.register(Gender,GenderAdmin)
@@ -104,3 +110,4 @@ admin.site.register(Day,DayAdmin)
 admin.site.register(FloorType,FloorTypeAdmin)
 admin.site.register(SubjectType,SubjectTypeAdmin)
 admin.site.register(EducationBoard, EducationBoardAdmin)
+admin.site.register(District, DistrictAdmin)
