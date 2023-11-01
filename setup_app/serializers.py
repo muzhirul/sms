@@ -89,3 +89,16 @@ class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
         model = District
         exclude = ['status','institution','branch']
+        
+class CountryViewSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Country
+        fields = ['id','coun_code','name']
+        
+class CountrySerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+    class Meta:
+        model = District
+        exclude = ['status','institution','branch']

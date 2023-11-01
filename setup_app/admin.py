@@ -98,7 +98,7 @@ class DistrictAdmin(admin.ModelAdmin):
         model = District
         
 class CountryAdmin(admin.ModelAdmin):
-    list_display = ['dist_code','name','status']
+    list_display = ['coun_code','name','status']
     
     class Meta:
         model = Country

@@ -256,7 +256,7 @@ class District(models.Model):
         return self.name
 
 class Country(models.Model):
-    dist_code = models.CharField(max_length=4, verbose_name='Country Code')
+    coun_code = models.CharField(max_length=4, verbose_name='Country Code')
     name = models.CharField(max_length=50, verbose_name='Country Name',validators=[validate_alpha_chars_only])
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
