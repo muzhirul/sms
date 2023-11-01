@@ -96,6 +96,12 @@ class DistrictAdmin(admin.ModelAdmin):
     
     class Meta:
         model = District
+        
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ['dist_code','name','status']
+    
+    class Meta:
+        model = Country
 
 admin.site.register(Setup,SetupAdmin)
 admin.site.register(Gender,GenderAdmin)
@@ -111,3 +117,4 @@ admin.site.register(FloorType,FloorTypeAdmin)
 admin.site.register(SubjectType,SubjectTypeAdmin)
 admin.site.register(EducationBoard, EducationBoardAdmin)
 admin.site.register(District, DistrictAdmin)
+admin.site.register(Country, CountryAdmin)
