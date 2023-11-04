@@ -32,6 +32,7 @@ class AttendanceRaw(models.Model):
     card_no = models.CharField(max_length=50)
     atnd_date = models.DateField()
     atnd_time = models.TimeField()
+    status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
