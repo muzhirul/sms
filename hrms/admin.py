@@ -17,5 +17,13 @@ class AttendanceRawAdmin(admin.ModelAdmin):
         model = AttendanceRaw
 
 
+class AttendanceDetailAdmin(admin.ModelAdmin):
+    list_display = ['emp_no', 'att_date']
+
+    class Meta:
+        model = AttendanceDetail
+
+
 admin.site.register(AccountBank, AccountBankAdmin)
 admin.site.register(AttendanceRaw, AttendanceRawAdmin)
+admin.site.register(AttendanceDetail, AttendanceDetailAdmin)
