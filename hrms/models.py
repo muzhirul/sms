@@ -1,5 +1,3 @@
-from hashlib import blake2b
-from importlib.abc import Traversable
 from django.db import models
 from django_userforeignkey.models.fields import UserForeignKey
 from institution.models import Institution, Branch
@@ -82,3 +80,58 @@ class AttendanceDetail(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+# class Department(models.Model):
+#     dept_id = models.CharField(max_length=10)
+#     name = models.CharField(max_length=255)
+#     sect_id = models.CharField(max_length=10, blank=True, null=True)
+#     section_id = models.CharField(max_length=10, blank=True, null=True)
+#     status = models.BooleanField(default=True)
+#     institution = models.ForeignKey(
+#         Institution, on_delete=models.CASCADE, blank=True, null=True)
+#     branch = models.ForeignKey(
+#         Branch, on_delete=models.CASCADE, blank=True, null=True)
+#     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
+#                                 related_name='dept_creator', editable=False, blank=True, null=True)
+#     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
+#                                 related_name='depat_update_by', editable=False, blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+
+#     class Meta:
+#         db_table = 'hr_department'
+
+#     def __str__(self):
+#         return self.name
+
+class Desig(models.Model):
+    desig_id = models.CharField(max_length=10)
+    name = models.CharField(max_length=255, verbose_name='Designation Name')
+    dgroup_id = models.CharField(max_length=10, blank=True, null=True)
+    sdate = models.DateField(blank=True, null=True)
+    attn = models.IntegerField(blank=True, null=True)
+    holiday_allow = models.BooleanField(default=True)
+    night_allow = models.BooleanField(default=False)
+    tiffin_allow = models.BooleanField(default=False)
+    festival_allow = models.BooleanField(default=True)
+    sal_grade = models.IntegerField(blank=True, null=True)
+    work_type = models.CharField(max_length=255, blank=True, null=True)
+    ifter_allow = models.BooleanField(default=False)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(
+        Institution, on_delete=models.CASCADE, blank=True, null=True)
+    branch = models.ForeignKey(
+        Branch, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
+                                related_name='degi_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
+                                related_name='degi_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hr_desig'
+
+    def __str__(self):
+        return self.name

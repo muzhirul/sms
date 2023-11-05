@@ -24,6 +24,14 @@ class AttendanceDetailAdmin(admin.ModelAdmin):
         model = AttendanceDetail
 
 
+class DesigAdmin(admin.ModelAdmin):
+    list_display = ['desig_id', 'name']
+
+    class Meta:
+        model = Desig
+
+
 admin.site.register(AccountBank, AccountBankAdmin)
 admin.site.register(AttendanceRaw, AttendanceRawAdmin)
 admin.site.register(AttendanceDetail, AttendanceDetailAdmin)
+admin.site.register(Desig, DesigAdmin)
