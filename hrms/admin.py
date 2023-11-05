@@ -36,8 +36,16 @@ class ElPaymentAdmin(admin.ModelAdmin):
         model = ElPayment
 
 
+class LeaveTypeAdmin(admin.ModelAdmin):
+    list_display = ['leave_type_code', 'name', 'm_days', 'status']
+
+    class Meta:
+        model = LeaveType
+
+
 admin.site.register(AccountBank, AccountBankAdmin)
 admin.site.register(AttendanceRaw, AttendanceRawAdmin)
 admin.site.register(AttendanceDetail, AttendanceDetailAdmin)
 admin.site.register(Desig, DesigAdmin)
 admin.site.register(ElPayment, ElPaymentAdmin)
+admin.site.register(LeaveType, LeaveTypeAdmin)
