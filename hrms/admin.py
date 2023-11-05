@@ -31,7 +31,13 @@ class DesigAdmin(admin.ModelAdmin):
         model = Desig
 
 
+class ElPaymentAdmin(admin.ModelAdmin):
+    class Meta:
+        model = ElPayment
+
+
 admin.site.register(AccountBank, AccountBankAdmin)
 admin.site.register(AttendanceRaw, AttendanceRawAdmin)
 admin.site.register(AttendanceDetail, AttendanceDetailAdmin)
 admin.site.register(Desig, DesigAdmin)
+admin.site.register(ElPayment, ElPaymentAdmin)

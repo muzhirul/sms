@@ -135,3 +135,16 @@ class Desig(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ElPayment(models.Model):
+    emp_id = models.CharField(max_length=20, blank=True, null=True)
+    days = models.IntegerField(blank=True, null=True)
+    payment_date = models.DateField(blank=True, null=True)
+    pay_for_year = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'hr_el_payment'
+
+    def __str__(self):
+        return str(self.id)
