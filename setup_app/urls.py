@@ -17,6 +17,8 @@ urlpatterns = [
     path('api/board/detail/<int:pk>', BoardDetail.as_view(), name='board-detail'),
     path('api/board/delete/<int:pk>', BoardDelete.as_view(), name='board-delete'),
     # For District
+    path('api/division/list', DivisionList.as_view(), name='division-list'),
+    # For District
     path('api/district/list', DistrictList.as_view(), name='district-list'),
     path('api/district', DistrictCreateList.as_view(),
          name='district-create-list'),

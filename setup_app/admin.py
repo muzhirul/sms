@@ -113,6 +113,13 @@ class EducationBoardAdmin(admin.ModelAdmin):
         model = EducationBoard
 
 
+class DivisionAdmin(admin.ModelAdmin):
+    list_display = ['divi_code', 'name', 'status']
+
+    class Meta:
+        model = Division
+
+
 class DistrictAdmin(admin.ModelAdmin):
     list_display = ['dist_code', 'name', 'status']
 
@@ -147,6 +154,7 @@ admin.site.register(Day, DayAdmin)
 admin.site.register(FloorType, FloorTypeAdmin)
 admin.site.register(SubjectType, SubjectTypeAdmin)
 admin.site.register(EducationBoard, EducationBoardAdmin)
+admin.site.register(Division, DivisionAdmin)
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(Thana, ThanaAdmin)

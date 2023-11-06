@@ -282,14 +282,11 @@ class SubjectType(models.Model):
 
 
 class EducationBoard(models.Model):
-    board_code = models.CharField(max_length=3, verbose_name='Board Code')
+    board_code = models.CharField(max_length=3, verbose_name='Board Code', validators=[
+        validate_alpha_chars_only])
     name = models.CharField(max_length=50, verbose_name='Board Name', validators=[
                             validate_alpha_chars_only])
     status = models.BooleanField(default=True)
-    institution = models.ForeignKey(
-        Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
-    branch = models.ForeignKey(
-        Branch, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Branch Name')
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
                                 related_name='edu_board_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
@@ -305,7 +302,8 @@ class EducationBoard(models.Model):
 
 
 class Country(models.Model):
-    coun_code = models.CharField(max_length=4, verbose_name='Country Code')
+    coun_code = models.CharField(max_length=4, verbose_name='Country Code', validators=[
+        validate_alpha_chars_only])
     name = models.CharField(max_length=50, verbose_name='Country Name', validators=[
                             validate_alpha_chars_only])
     status = models.BooleanField(default=True)
@@ -324,7 +322,8 @@ class Country(models.Model):
 
 
 class Division(models.Model):
-    divi_code = models.CharField(max_length=4, verbose_name='Division Code')
+    divi_code = models.CharField(max_length=4, verbose_name='Division Code', validators=[
+        validate_alpha_chars_only])
     name = models.CharField(max_length=50, verbose_name='Division Name', validators=[
                             validate_alpha_chars_only])
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
@@ -344,7 +343,8 @@ class Division(models.Model):
 
 
 class District(models.Model):
-    dist_code = models.CharField(max_length=4, verbose_name='District Code')
+    dist_code = models.CharField(max_length=4, verbose_name='District Code', validators=[
+        validate_alpha_chars_only])
     name = models.CharField(max_length=50, verbose_name='District Name', validators=[
                             validate_alpha_chars_only])
     status = models.BooleanField(default=True)
@@ -363,7 +363,8 @@ class District(models.Model):
 
 
 class Thana(models.Model):
-    thana_code = models.CharField(max_length=4, verbose_name='Thana Code')
+    thana_code = models.CharField(max_length=4, verbose_name='Thana Code', validators=[
+        validate_alpha_chars_only])
     name = models.CharField(max_length=50, verbose_name='Thana Name', validators=[
                             validate_alpha_chars_only])
     status = models.BooleanField(default=True)

@@ -90,6 +90,29 @@ class EducationBoardSerializer(serializers.ModelSerializer):
         exclude = ['status']
 
 
+class CountryViewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Country
+        fields = ['id', 'coun_code', 'name']
+
+
+class DivisionViewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Division
+        fields = ['id', 'divi_code', 'name']
+
+
+class CountrySerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+
+    class Meta:
+        model = Country
+        exclude = ['status']
+
+
 class DistrictdViewSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -103,22 +126,6 @@ class DistrictSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = District
-        exclude = ['status']
-
-
-class CountryViewSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Country
-        fields = ['id', 'coun_code', 'name']
-
-
-class CountrySerializer(serializers.ModelSerializer):
-    created_username = serializers.ReadOnlyField(source='created_by.username')
-    updated_username = serializers.ReadOnlyField(source='created_by.username')
-
-    class Meta:
-        model = Country
         exclude = ['status']
 
 
