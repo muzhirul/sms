@@ -87,7 +87,7 @@ class EducationBoardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EducationBoard
-        exclude = ['status', 'institution', 'branch']
+        exclude = ['status']
 
 
 class DistrictdViewSerializer(serializers.ModelSerializer):
@@ -103,7 +103,7 @@ class DistrictSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = District
-        exclude = ['status', 'institution', 'branch']
+        exclude = ['status']
 
 
 class CountryViewSerializer(serializers.ModelSerializer):
@@ -119,7 +119,7 @@ class CountrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Country
-        exclude = ['status', 'institution', 'branch']
+        exclude = ['status']
 
 
 class ThanaViewSerializer(serializers.ModelSerializer):
@@ -135,4 +135,4 @@ class ThanaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Thana
-        exclude = ['status', 'institution', 'branch']
+        exclude = ['status']

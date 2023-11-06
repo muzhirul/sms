@@ -414,23 +414,6 @@ class EduBoardList(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = EducationBoard.objects.filter(status=True).order_by('-id')
-        try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
-            elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
-            elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
-            else:
-                queryset
-        except:
-            pass
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -464,23 +447,6 @@ class BoardCreateList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = EducationBoard.objects.filter(status=True).order_by('-id')
-        try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
-            elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
-            elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
-            else:
-                queryset
-        except:
-            pass
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -522,17 +488,12 @@ class BoardCreateList(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         try:
             if serializer.is_valid():
-                institution_data = serializer.validated_data.get('institution')
-                branch_data = serializer.validated_data.get('branch')
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
-                institution = institution_data if institution_data is not None else self.request.user.institution
-                branch = branch_data if branch_data is not None else self.request.user.branch
                 board_count = EducationBoard.objects.filter(
-                    name=name, institution=institution, branch=branch, status=True).count()
+                    name=name, status=True).count()
                 if (board_count == 0):
-                    instance = serializer.save(
-                        institution=institution, branch=branch)
+                    instance = serializer.save()
                     # Customize the response data
                     return CustomResponse(code=status.HTTP_200_OK, message="Board created successfully", data=EducationBoardSerializer(instance).data)
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Board {name} already exits", data=serializer.errors)
@@ -576,14 +537,10 @@ class BoardDetail(generics.RetrieveUpdateAPIView):
 
         try:
             if serializer.is_valid():
-                institution_data = serializer.validated_data.get('institution')
-                branch_data = serializer.validated_data.get('branch')
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
-                institution = institution_data if institution_data is not None else self.request.user.institution
-                branch = branch_data if branch_data is not None else self.request.user.branch
                 board_count = EducationBoard.objects.filter(
-                    name=name, institution=institution, branch=branch, status=True).count()
+                    name=name, status=True).count()
                 if (board_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
@@ -636,23 +593,6 @@ class DistrictList(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = District.objects.filter(status=True).order_by('-id')
-        try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
-            elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
-            elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
-            else:
-                queryset
-        except:
-            pass
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -686,23 +626,6 @@ class DistrictCreateList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = District.objects.filter(status=True).order_by('-id')
-        try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
-            elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
-            elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
-            else:
-                queryset
-        except:
-            pass
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -744,17 +667,12 @@ class DistrictCreateList(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         try:
             if serializer.is_valid():
-                institution_data = serializer.validated_data.get('institution')
-                branch_data = serializer.validated_data.get('branch')
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
-                institution = institution_data if institution_data is not None else self.request.user.institution
-                branch = branch_data if branch_data is not None else self.request.user.branch
                 district_count = District.objects.filter(
-                    name=name, institution=institution, branch=branch, status=True).count()
+                    name=name, status=True).count()
                 if (district_count == 0):
-                    instance = serializer.save(
-                        institution=institution, branch=branch)
+                    instance = serializer.save()
                     # Customize the response data
                     return CustomResponse(code=status.HTTP_200_OK, message="District created successfully", data=DistrictSerializer(instance).data)
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"District {name} already exits", data=serializer.errors)
@@ -798,14 +716,9 @@ class DistrictDetail(generics.RetrieveUpdateAPIView):
 
         try:
             if serializer.is_valid():
-                institution_data = serializer.validated_data.get('institution')
-                branch_data = serializer.validated_data.get('branch')
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
-                institution = institution_data if institution_data is not None else self.request.user.institution
-                branch = branch_data if branch_data is not None else self.request.user.branch
-                district_count = District.objects.filter(
-                    name=name, institution=institution, branch=branch, status=True).count()
+                district_count = District.objects.filter().count()
                 if (district_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
@@ -858,23 +771,6 @@ class CountryList(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Country.objects.filter(status=True).order_by('-id')
-        try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
-            elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
-            elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
-            else:
-                queryset
-        except:
-            pass
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -908,23 +804,6 @@ class CountryCreateList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Country.objects.filter(status=True).order_by('-id')
-        try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
-            elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
-            elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
-            else:
-                queryset
-        except:
-            pass
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -966,17 +845,12 @@ class CountryCreateList(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         try:
             if serializer.is_valid():
-                institution_data = serializer.validated_data.get('institution')
-                branch_data = serializer.validated_data.get('branch')
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
-                institution = institution_data if institution_data is not None else self.request.user.institution
-                branch = branch_data if branch_data is not None else self.request.user.branch
                 country_count = Country.objects.filter(
-                    name=name, institution=institution, branch=branch, status=True).count()
+                    name=name, status=True).count()
                 if (country_count == 0):
-                    instance = serializer.save(
-                        institution=institution, branch=branch)
+                    instance = serializer.save()
                     # Customize the response data
                     return CustomResponse(code=status.HTTP_200_OK, message="Country created successfully", data=CountrySerializer(instance).data)
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Country {name} already exits", data=serializer.errors)
@@ -1020,14 +894,10 @@ class CountryDetail(generics.RetrieveUpdateAPIView):
 
         try:
             if serializer.is_valid():
-                institution_data = serializer.validated_data.get('institution')
-                branch_data = serializer.validated_data.get('branch')
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
-                institution = institution_data if institution_data is not None else self.request.user.institution
-                branch = branch_data if branch_data is not None else self.request.user.branch
                 country_count = Country.objects.filter(
-                    name=name, institution=institution, branch=branch, status=True).count()
+                    name=name, status=True).count()
                 if (country_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
@@ -1080,23 +950,6 @@ class ThanaList(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Thana.objects.filter(status=True).order_by('-id')
-        try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
-            elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
-            elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
-            else:
-                queryset
-        except:
-            pass
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -1130,23 +983,6 @@ class ThanaCreateList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Thana.objects.filter(status=True).order_by('-id')
-        try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
-            elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
-            elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
-            else:
-                queryset
-        except:
-            pass
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -1188,17 +1024,12 @@ class ThanaCreateList(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         try:
             if serializer.is_valid():
-                institution_data = serializer.validated_data.get('institution')
-                branch_data = serializer.validated_data.get('branch')
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
-                institution = institution_data if institution_data is not None else self.request.user.institution
-                branch = branch_data if branch_data is not None else self.request.user.branch
                 thana_count = Thana.objects.filter(
-                    name=name, institution=institution, branch=branch, status=True).count()
+                    name=name, status=True).count()
                 if (thana_count == 0):
-                    instance = serializer.save(
-                        institution=institution, branch=branch)
+                    instance = serializer.save()
                     # Customize the response data
                     return CustomResponse(code=status.HTTP_200_OK, message="Thana created successfully", data=ThanaSerializer(instance).data)
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Thana {name} already exits", data=serializer.errors)
@@ -1242,14 +1073,10 @@ class ThanaDetail(generics.RetrieveUpdateAPIView):
 
         try:
             if serializer.is_valid():
-                institution_data = serializer.validated_data.get('institution')
-                branch_data = serializer.validated_data.get('branch')
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
-                institution = institution_data if institution_data is not None else self.request.user.institution
-                branch = branch_data if branch_data is not None else self.request.user.branch
                 thana_count = Thana.objects.filter(
-                    name=name, institution=institution, branch=branch, status=True).count()
+                    name=name, status=True).count()
                 if (thana_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()

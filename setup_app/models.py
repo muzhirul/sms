@@ -309,10 +309,6 @@ class Country(models.Model):
     name = models.CharField(max_length=50, verbose_name='Country Name', validators=[
                             validate_alpha_chars_only])
     status = models.BooleanField(default=True)
-    institution = models.ForeignKey(
-        Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
-    branch = models.ForeignKey(
-        Branch, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Branch Name')
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
                                 related_name='country_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
@@ -327,15 +323,31 @@ class Country(models.Model):
         return self.name
 
 
+class Division(models.Model):
+    divi_code = models.CharField(max_length=4, verbose_name='Division Code')
+    name = models.CharField(max_length=50, verbose_name='Division Name', validators=[
+                            validate_alpha_chars_only])
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
+                                related_name='division_creator', editable=False)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
+                                related_name='division_update_by', editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 's_division'
+
+    def __str__(self):
+        return self.name
+
+
 class District(models.Model):
     dist_code = models.CharField(max_length=4, verbose_name='District Code')
     name = models.CharField(max_length=50, verbose_name='District Name', validators=[
                             validate_alpha_chars_only])
     status = models.BooleanField(default=True)
-    institution = models.ForeignKey(
-        Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
-    branch = models.ForeignKey(
-        Branch, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Branch Name')
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
                                 related_name='district_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
@@ -355,10 +367,6 @@ class Thana(models.Model):
     name = models.CharField(max_length=50, verbose_name='Thana Name', validators=[
                             validate_alpha_chars_only])
     status = models.BooleanField(default=True)
-    institution = models.ForeignKey(
-        Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
-    branch = models.ForeignKey(
-        Branch, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Branch Name')
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
                                 related_name='thana_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
