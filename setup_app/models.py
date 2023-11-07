@@ -14,7 +14,7 @@ def validate_no_numbers(value):
 
 
 def validate_alpha_chars_only(value):
-    if not value.isalpha():
+    if not value.replace(' ', '').isalpha():
         raise ValidationError(
             _('The field can only contain alphabetic characters.'),
             code='alpha_chars_only'
@@ -347,6 +347,8 @@ class District(models.Model):
         validate_alpha_chars_only])
     name = models.CharField(max_length=50, verbose_name='District Name', validators=[
                             validate_alpha_chars_only])
+    division = models.ForeignKey(
+        Division, on_delete=models.SET_NULL, blank=True, null=True)
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
                                 related_name='district_creator', editable=False, blank=True, null=True)
@@ -367,6 +369,8 @@ class Thana(models.Model):
         validate_alpha_chars_only])
     name = models.CharField(max_length=50, verbose_name='Thana Name', validators=[
                             validate_alpha_chars_only])
+    district = models.ForeignKey(
+        District, on_delete=models.SET_NULL, blank=True, null=True)
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
                                 related_name='thana_creator', editable=False, blank=True, null=True)

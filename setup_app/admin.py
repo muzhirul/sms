@@ -114,14 +114,14 @@ class EducationBoardAdmin(admin.ModelAdmin):
 
 
 class DivisionAdmin(admin.ModelAdmin):
-    list_display = ['divi_code', 'name', 'status']
+    list_display = ['divi_code', 'name', 'country', 'status']
 
     class Meta:
         model = Division
 
 
 class DistrictAdmin(admin.ModelAdmin):
-    list_display = ['dist_code', 'name', 'status']
+    list_display = ['dist_code', 'name', 'division', 'status']
 
     class Meta:
         model = District
@@ -135,7 +135,7 @@ class CountryAdmin(admin.ModelAdmin):
 
 
 class ThanaAdmin(admin.ModelAdmin):
-    list_display = ['thana_code', 'name', 'status']
+    list_display = ['thana_code', 'name', 'district', 'status']
 
     class Meta:
         model = Thana

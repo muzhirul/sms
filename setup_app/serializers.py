@@ -97,6 +97,15 @@ class CountryViewSerializer(serializers.ModelSerializer):
         fields = ['id', 'coun_code', 'name']
 
 
+class CountrySerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+
+    class Meta:
+        model = Country
+        exclude = ['status']
+
+
 class DivisionViewSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -122,15 +131,6 @@ class DivisionSerializer(serializers.ModelSerializer):
         exclude = ['status']
 
 
-class CountrySerializer(serializers.ModelSerializer):
-    created_username = serializers.ReadOnlyField(source='created_by.username')
-    updated_username = serializers.ReadOnlyField(source='created_by.username')
-
-    class Meta:
-        model = Country
-        exclude = ['status']
-
-
 class DistrictdViewSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -138,9 +138,18 @@ class DistrictdViewSerializer(serializers.ModelSerializer):
         fields = ['id', 'dist_code', 'name']
 
 
+class DistrictCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = District
+        exclude = ['status', 'created_by',
+                   'updated_by', 'created_at', 'updated_at']
+
+
 class DistrictSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    division = DivisionViewSerializer(read_only=True)
 
     class Meta:
         model = District
@@ -154,9 +163,18 @@ class ThanaViewSerializer(serializers.ModelSerializer):
         fields = ['id', 'thana_code', 'name']
 
 
+class ThanaCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Thana
+        exclude = ['status', 'created_by',
+                   'updated_by', 'created_at', 'updated_at']
+
+
 class ThanaSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    district = DistrictdViewSerializer()
 
     class Meta:
         model = Thana

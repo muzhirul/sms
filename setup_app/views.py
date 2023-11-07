@@ -663,14 +663,16 @@ class DistrictCreateList(generics.ListCreateAPIView):
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to Create End'''
-
-        serializer = self.get_serializer(data=request.data)
+        serializer_class = DistrictCreateSerializer
+        serializer = serializer_class(data=request.data)
+        # serializer = self.get_serializer(data=request.data)
         try:
             if serializer.is_valid():
                 name = serializer.validated_data.get('name')
+                division = serializer.validated_data.get('division')
                 # If data is provided, use it; otherwise, use the values from the request user
                 district_count = District.objects.filter(
-                    name__iexact=name, status=True).count()
+                    name__iexact=name, division=division, status=True).count()
                 if (district_count == 0):
                     instance = serializer.save()
                     # Customize the response data
@@ -711,15 +713,17 @@ class DistrictDetail(generics.RetrieveUpdateAPIView):
 
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(
+        serializer_class = DistrictCreateSerializer
+        serializer = serializer_class(
             instance, data=request.data, partial=partial)
 
         try:
             if serializer.is_valid():
                 name = serializer.validated_data.get('name')
+                division = serializer.validated_data.get('division')
                 # If data is provided, use it; otherwise, use the values from the request user
                 district_count = District.objects.filter(
-                    name__iexact=name, status=True).count()
+                    name__iexact=name, division=division, status=True).count()
                 if (district_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
@@ -1198,14 +1202,15 @@ class ThanaCreateList(generics.ListCreateAPIView):
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to Create End'''
-
-        serializer = self.get_serializer(data=request.data)
+        serializer_class = ThanaCreateSerializer
+        serializer = serializer_class(data=request.data)
         try:
             if serializer.is_valid():
                 name = serializer.validated_data.get('name')
+                district = serializer.validated_data.get('district')
                 # If data is provided, use it; otherwise, use the values from the request user
                 thana_count = Thana.objects.filter(
-                    name__iexact=name, status=True).count()
+                    name__iexact=name, district=district, status=True).count()
                 if (thana_count == 0):
                     instance = serializer.save()
                     # Customize the response data
@@ -1246,15 +1251,17 @@ class ThanaDetail(generics.RetrieveUpdateAPIView):
 
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(
+        serializer_class = ThanaCreateSerializer
+        serializer = serializer_class(
             instance, data=request.data, partial=partial)
 
         try:
             if serializer.is_valid():
                 name = serializer.validated_data.get('name')
+                district = serializer.validated_data.get('district')
                 # If data is provided, use it; otherwise, use the values from the request user
                 thana_count = Thana.objects.filter(
-                    name__iexact=name, status=True).count()
+                    name__iexact=name, district=district, status=True).count()
                 if (thana_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
