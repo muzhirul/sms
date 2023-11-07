@@ -104,6 +104,24 @@ class DivisionViewSerializer(serializers.ModelSerializer):
         fields = ['id', 'divi_code', 'name']
 
 
+class DivisionCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Division
+        exclude = ['status', 'created_by',
+                   'updated_by', 'created_at', 'updated_at']
+
+
+class DivisionSerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+    country = CountryViewSerializer(read_only=True)
+
+    class Meta:
+        model = Division
+        exclude = ['status']
+
+
 class CountrySerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')

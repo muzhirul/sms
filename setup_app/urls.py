@@ -18,6 +18,12 @@ urlpatterns = [
     path('api/board/delete/<int:pk>', BoardDelete.as_view(), name='board-delete'),
     # For District
     path('api/division/list', DivisionList.as_view(), name='division-list'),
+    path('api/division', DivisionCreateList.as_view(),
+         name='division-create-list'),
+    path('api/division/detail/<int:pk>',
+         DivisionDetail.as_view(), name='division-detail'),
+    path('api/division/delete/<int:pk>',
+         DivisionDelete.as_view(), name='division-delete'),
     # For District
     path('api/district/list', DistrictList.as_view(), name='district-list'),
     path('api/district', DistrictCreateList.as_view(),

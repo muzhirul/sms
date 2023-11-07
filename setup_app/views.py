@@ -491,7 +491,7 @@ class BoardCreateList(generics.ListCreateAPIView):
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
                 board_count = EducationBoard.objects.filter(
-                    name=name, status=True).count()
+                    name__iexact=name, status=True).count()
                 if (board_count == 0):
                     instance = serializer.save()
                     # Customize the response data
@@ -540,7 +540,7 @@ class BoardDetail(generics.RetrieveUpdateAPIView):
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
                 board_count = EducationBoard.objects.filter(
-                    name=name, status=True).count()
+                    name__iexact=name, status=True).count()
                 if (board_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
@@ -670,7 +670,7 @@ class DistrictCreateList(generics.ListCreateAPIView):
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
                 district_count = District.objects.filter(
-                    name=name, status=True).count()
+                    name__iexact=name, status=True).count()
                 if (district_count == 0):
                     instance = serializer.save()
                     # Customize the response data
@@ -718,7 +718,8 @@ class DistrictDetail(generics.RetrieveUpdateAPIView):
             if serializer.is_valid():
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
-                district_count = District.objects.filter().count()
+                district_count = District.objects.filter(
+                    name__iexact=name, status=True).count()
                 if (district_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
@@ -794,6 +795,145 @@ class DivisionList(generics.ListAPIView):
 
         return Response(response_data)
 
+
+class DivisionCreateList(generics.ListCreateAPIView):
+    # queryset = Version.objects.filter(status=True).order_by('id')
+    serializer_class = DivisionSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = Division.objects.filter(status=True).order_by('-id')
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Division', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+    def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Division', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        serializer_class = DivisionCreateSerializer
+        serializer = serializer_class(data=request.data)
+        try:
+            if serializer.is_valid():
+                name = serializer.validated_data.get('name')
+                country = serializer.validated_data.get('country')
+                # If data is provided, use it; otherwise, use the values from the request user
+                division_count = Division.objects.filter(
+                    name__iexact=name, country=country, status=True).count()
+                if (division_count == 0):
+                    instance = serializer.save()
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Division created successfully", data=DivisionSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Division already exits", data=serializer.errors)
+            # If the serializer is not valid, return an error response
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+
+class DivisionDetail(generics.RetrieveUpdateAPIView):
+    queryset = Division.objects.all()
+    serializer_class = DivisionSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Division', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=DivisionSerializer(instance).data)
+
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Division', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer_class = DivisionCreateSerializer
+        serializer = serializer_class(
+            instance, data=request.data, partial=partial)
+
+        try:
+            if serializer.is_valid():
+                name = serializer.validated_data.get('name')
+                country = serializer.validated_data.get('country')
+                # If data is provided, use it; otherwise, use the values from the request user
+                division_count = Division.objects.filter(
+                    name__iexact=name, country=country, status=True).count()
+                if (division_count == 0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Division updated successfully", data=DivisionSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Division already exits", data=serializer.errors)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
+
+class DivisionDelete(generics.UpdateAPIView):
+    queryset = Division.objects.all()
+    serializer_class = DivisionSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Division', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        instance = self.get_object()
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Division {instance.name} already Deleted", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Division {instance.name} Delete successfully", data=None)
 
 
 '''
@@ -886,7 +1026,7 @@ class CountryCreateList(generics.ListCreateAPIView):
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
                 country_count = Country.objects.filter(
-                    name=name, status=True).count()
+                    name__iexact=name, status=True).count()
                 if (country_count == 0):
                     instance = serializer.save()
                     # Customize the response data
@@ -935,7 +1075,7 @@ class CountryDetail(generics.RetrieveUpdateAPIView):
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
                 country_count = Country.objects.filter(
-                    name=name, status=True).count()
+                    name__iexact=name, status=True).count()
                 if (country_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
@@ -1065,7 +1205,7 @@ class ThanaCreateList(generics.ListCreateAPIView):
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
                 thana_count = Thana.objects.filter(
-                    name=name, status=True).count()
+                    name__iexact=name, status=True).count()
                 if (thana_count == 0):
                     instance = serializer.save()
                     # Customize the response data
@@ -1114,7 +1254,7 @@ class ThanaDetail(generics.RetrieveUpdateAPIView):
                 name = serializer.validated_data.get('name')
                 # If data is provided, use it; otherwise, use the values from the request user
                 thana_count = Thana.objects.filter(
-                    name=name, status=True).count()
+                    name__iexact=name, status=True).count()
                 if (thana_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
