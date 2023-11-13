@@ -12,3 +12,11 @@ class AccountBankSerializer(serializers.ModelSerializer):
         # Exclude the 'status' field and other fields you want to exclude
         exclude = ['status']
         # exclude = ['created_by', 'updated_by', 'created_at', 'updated_at']
+
+class HolidaySerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+    
+    class Meta:
+        model = Holiday
+        exclude = ['status']

@@ -4,10 +4,12 @@ django-admin-thumbnails==0.2.8
 django-cors-headers==4.2.0
 django-userforeignkey==0.5.0
 djangorestframework==3.14.0
+djangorestframework-recursive==0.1.2
 djangorestframework-simplejwt==5.3.0
 Pillow==10.0.0
 PyJWT==2.8.0
 pytz==2023.3
+setuptools==68.2.2
 six==1.16.0
 sqlparse==0.4.4
 tzdata==2023.3
