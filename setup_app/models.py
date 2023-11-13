@@ -219,6 +219,7 @@ class Day(models.Model):
     short_name = models.CharField(max_length=5, primary_key=True)
     long_name = models.CharField(max_length=20)
     sl_no = models.IntegerField()
+    week_end = models.BooleanField(default=False) 
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(
         Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')

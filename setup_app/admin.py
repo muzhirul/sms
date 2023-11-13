@@ -86,7 +86,7 @@ class RoleAdmin(admin.ModelAdmin):
 
 
 class DayAdmin(admin.ModelAdmin):
-    list_display = ['short_name', 'long_name', 'created_by', 'created_at']
+    list_display = ['short_name', 'long_name','week_end','created_by', 'created_at']
 
     class Meta:
         model = Day
