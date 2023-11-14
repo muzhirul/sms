@@ -153,7 +153,7 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         # Customize the response format for retrieving a single instance
-        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=StudentSerializer(instance).data)
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=StudentViewSerializer(instance).data)
     
     def update(self, request, *args, **kwargs):
         # Get the student instance
@@ -164,6 +164,20 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
         instance = student_serializer.save()
         # Deserialize the updated guardian data
         guardian_data = request.data.get('guardians')
+        enroll_data = request.data.get('enroll')
+        if enroll_data:
+            for enroll_item in enroll_data:
+                enroll_id = enroll_item.get('id')
+                if enroll_id:
+                    enroll = StudentEnroll.objects.get(id=enroll_id, student=student)
+                    enroll_serializer = StudentEnrollSerialize(enroll, data=enroll_item, partial=True)
+                    enroll_serializer.is_valid(raise_exception=True)
+                    enroll_serializer.save()
+                else:
+                    enroll_serializer = StudentEnrollSerialize(data=enroll_item)
+                    enroll_serializer.is_valid(raise_exception=True)
+                    enroll_serializer.save()
+
         if guardian_data:
             for guardian_item in guardian_data:
                 guardian_id = guardian_item.get('id')
@@ -200,4 +214,4 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
                             guardian.save()
                         except:
                             pass
-        return CustomResponse(code=status.HTTP_200_OK, message="Student updated successfully", data=StudentSerializer(instance).data)
+        return CustomResponse(code=status.HTTP_200_OK, message="Student updated successfully", data=StudentViewSerializer(instance).data)
