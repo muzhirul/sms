@@ -7,6 +7,7 @@ from sms.pagination import CustomPagination
 from rest_framework import status
 from authentication.models import Authentication
 from rest_framework.response import Response
+from sms.permission import check_permission
 
 # Create your views here.
 class StudentList(generics.ListCreateAPIView):
@@ -24,7 +25,14 @@ class StudentList(generics.ListCreateAPIView):
         except:
             pass
         return queryset
+    
     def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Student Details', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         # serializer_class = TokenObtainPairView  # Create this serializer
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -47,6 +55,12 @@ class StudentList(generics.ListCreateAPIView):
         return Response(response_data)
     
     def create(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Student Admission', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
         data = request.data
         student_data = data.copy()
         first_name = student_data.get('first_name')
@@ -54,6 +68,7 @@ class StudentList(generics.ListCreateAPIView):
         is_active = student_data.get('is_active', True) 
         user_type = student_data.get('user_type', 'STUDENT') 
         guardians_data = student_data.pop('guardians', [])
+        enrolls_data = request.data.get('enroll')
         # Create the student
         serializer_class = StudentSerializer
         student_serializer = serializer_class(data=student_data)
@@ -138,13 +153,26 @@ class StudentList(generics.ListCreateAPIView):
                     guardians.append(guardian)
                 response_data = student_serializer.data
                 response_data['guardians'] = GuardianSerializer(guardians, many=True).data
+                enrolls = []
+                if enrolls_data:
+                    for enroll_item in enrolls_data:
+                        enroll_item['student'] = student.id
+                        enroll_serializer = StudentEnrollSerialize(data=enroll_item)
+                        enroll_serializer.is_valid(raise_exception=True)
+                        std_roll = StudentEnroll.objects.filter(status=True,institution=institution,branch=branch).order_by('roll').last()
+                        if not std_roll or std_roll.roll is None:
+                            class_roll = str(1)
+                        int_roll = int(std_roll.roll)
+                        class_roll = str(int_roll+1)
+                        enroll = enroll_serializer.save(roll=class_roll,institution=institution,branch=branch)
+                        enrolls.append(enroll)
+                    response_data['enroll'] = StudentEnrollSerialize(enrolls, many=True).data
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
             
         return Response(response_data, status=status.HTTP_201_CREATED)
-    
-    
+       
 class StudentDetail(generics.RetrieveUpdateAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
@@ -215,3 +243,58 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
                         except:
                             pass
         return CustomResponse(code=status.HTTP_200_OK, message="Student updated successfully", data=StudentViewSerializer(instance).data)
+
+
+class StudentImageUpload(generics.UpdateAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Student Admission', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        # Retrieve the instance
+        instance = self.get_object()
+
+        # Get the image data from the request
+        image_data = request.data.get('photo', None)
+
+        # Validate and update the image field
+        if image_data:
+            instance.photo = image_data
+            instance.save()
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Student Image Update successfully", data=None)
+        return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"No Image for Update", data=None)
+
+
+class GuardianImageUpload(generics.UpdateAPIView):
+    queryset = Guardian.objects.all()
+    serializer_class = GuardianSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Student Admission', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        # Retrieve the instance
+        instance = self.get_object()
+
+        # Get the image data from the request
+        image_data = request.data.get('photo', None)
+
+        # Validate and update the image field
+        if image_data:
+            instance.photo = image_data
+            instance.save()
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Guardian Image Update successfully", data=None)
+        return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"No Guardian Image for Update", data=None)    
+
