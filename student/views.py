@@ -156,14 +156,16 @@ class StudentList(generics.ListCreateAPIView):
                 enrolls = []
                 if enrolls_data:
                     for enroll_item in enrolls_data:
+                        print(enroll_item)
                         enroll_item['student'] = student.id
                         enroll_serializer = StudentEnrollSerialize(data=enroll_item)
                         enroll_serializer.is_valid(raise_exception=True)
-                        std_roll = StudentEnroll.objects.filter(status=True,institution=institution,branch=branch).order_by('roll').last()
+                        std_roll = StudentEnroll.objects.filter(status=True,section=enroll_item.get('section'),class_name=enroll_item.get('class_name'),version=enroll_item.get('version'),session=enroll_item.get('session'),institution=institution,branch=branch).order_by('roll').last()
                         if not std_roll or std_roll.roll is None:
                             class_roll = str(1)
-                        int_roll = int(std_roll.roll)
-                        class_roll = str(int_roll+1)
+                        else:
+                            int_roll = int(std_roll.roll)
+                            class_roll = str(int_roll+1)
                         enroll = enroll_serializer.save(roll=class_roll,institution=institution,branch=branch)
                         enrolls.append(enroll)
                     response_data['enroll'] = StudentEnrollSerialize(enrolls, many=True).data
