@@ -8,6 +8,14 @@ class VersionSerializer2(serializers.ModelSerializer):
         model = Version
         fields = ['id','version']
 
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
+
 class VersionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
@@ -24,6 +32,14 @@ class SessionSerializer2(serializers.ModelSerializer):
         model = Session
         fields = ['id','session']
 
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
+
 class SessionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
@@ -39,6 +55,14 @@ class SectionSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Section
         fields = ['id','section']
+
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
 
 class SectionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -57,10 +81,26 @@ class SubjectSerializer3(serializers.ModelSerializer):
         # Exclude the specified fields from serialization
         exclude = ['status','start_date','end_date']
 
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
+
 class SubjectViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = ['id','name']
+    
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
 
 class SubjectSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -78,10 +118,26 @@ class SubjectSerializer2(serializers.ModelSerializer):
         model = Subject
         fields = ['id','type','name','picture']
 
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
+
 class ClassSerializer2(serializers.ModelSerializer):
     class Meta:
         model = ClassName
         fields = ['id','name']
+
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
 
 class ClassSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -97,6 +153,14 @@ class ClassRoomSerializer2(serializers.ModelSerializer):
     class Meta:
         model = ClassRoom
         fields =['id','room_no']
+
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
 
 class ClassRoomSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -115,11 +179,27 @@ class ClassRoomSerializer3(serializers.ModelSerializer):
         model = ClassRoom
         # Exclude the specified fields from serialization
         exclude = ('status',)
+
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
         
 class ClassPeriodSerializer2(serializers.ModelSerializer):
     class Meta:
         model = ClassPeriod
         fields = ['id','name','start_time','end_time','duration']
+
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
 
 class ClassPeriodSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -137,6 +217,7 @@ class ClassSectionSerializer(serializers.ModelSerializer):
     updated_username = serializers.ReadOnlyField(source='created_by.username')
     institution_name = serializers.ReadOnlyField(source='institution.name')
     branch_name = serializers.ReadOnlyField(source='branch.name')
+    version = VersionSerializer2(read_only=True)
     class_name = ClassSerializer2(read_only=True)
     session = SessionSerializer2(read_only=True)
     section = SectionSerializer2(read_only=True)
@@ -150,6 +231,14 @@ class ClassSectionSerializer3(serializers.ModelSerializer):
         model = ClassSection
         # Exclude the specified fields from serialization
         exclude = ['status']
+
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
 
         
 class ClassSubjectSerializer(serializers.ModelSerializer):
@@ -174,6 +263,14 @@ class ClassSubjectSerializer2(serializers.ModelSerializer):
         # Exclude the specified fields from serialization
         exclude = ['status']
 
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}
+
         
 class ClassRoutineSerializer(serializers.ModelSerializer):
     teacher = StaffTeacherSerializer(read_only=True)
@@ -194,3 +291,11 @@ class ClassRoutineSerializer2(serializers.ModelSerializer):
     class Meta:
         model = ClassRoutine
         fields = ['id','teacher','class_name','section','session','version','subject','class_period','day','class_room']
+
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return {}

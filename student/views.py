@@ -156,7 +156,6 @@ class StudentList(generics.ListCreateAPIView):
                 enrolls = []
                 if enrolls_data:
                     for enroll_item in enrolls_data:
-                        print(enroll_item)
                         enroll_item['student'] = student.id
                         enroll_serializer = StudentEnrollSerialize(data=enroll_item)
                         enroll_serializer.is_valid(raise_exception=True)
