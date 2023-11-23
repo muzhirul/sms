@@ -2,6 +2,17 @@ from django.contrib import admin
 from student.models import *
 import admin_thumbnails
 
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ['name','status']
+    save_on_top = True
+    list_per_page = 15
+
+    class Meta:
+        model = Category
+
+
+
 # Register your models here.
 @admin_thumbnails.thumbnail('photo')
 class GuardianTabularInline(admin.TabularInline):
@@ -35,3 +46,4 @@ class StudentAdmin(admin.ModelAdmin):
         model = Student
 
 admin.site.register(Student,StudentAdmin)
+admin.site.register(Category,CategoryAdmin)

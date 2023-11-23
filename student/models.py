@@ -110,4 +110,19 @@ class StudentEnroll(models.Model):
         
     def __str__(self):
         return str(self.roll)
-    
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=50,verbose_name='Category Name')
+    sl_no = models.IntegerField(default=0)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL, related_name='st_category_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='st_category_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'st_category'
+
+    def __str__(self):
+        return self.name
