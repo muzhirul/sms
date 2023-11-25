@@ -1,6 +1,7 @@
 from django.db import models
 from academic.models import ClassName, Section, Session, Version, ClassGroup
 from institution.models import Institution, Branch
+from staff.models import StaffShift
 from django_userforeignkey.models.fields import UserForeignKey
 from authentication.models import Authentication
 import datetime
@@ -49,6 +50,7 @@ class Student(models.Model):
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
     category = models.ForeignKey(Category,on_delete=models.SET_NULL,blank=True,null=True)
+    shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
     step = models.IntegerField(default=1)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)

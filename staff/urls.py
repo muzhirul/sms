@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/image/<int:pk>', StaffImageUpload.as_view(), name='staff-image-upload'),
 
     # staff shift API
+    path('api/shift/list', StaffShiftList.as_view(),name='shift-list'),
     path('api/shift', StaffShiftListCreate.as_view(),name='staff-shift-list-create'),
     path('api/shift/detail/<int:pk>',StaffShiftDetail.as_view(), name='staff-shift-detail'),
     path('api/shift/delete/<int:pk>',StaffShiftDelete.as_view(), name='staff-shift-delete'),
