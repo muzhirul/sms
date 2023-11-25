@@ -15,6 +15,12 @@ from django.core.validators import FileExtensionValidator
 def generate_unique_code():
     return str(uuid.uuid4().hex[:10])  # Adjust the length as needed
 
+def validate_alpha_chars_only(value):
+    if not value.replace(' ', '').isalpha():
+        raise ValidationError(
+            _('The field can only contain alphabetic characters.'),
+            code='alpha_chars_only'
+        )
 # Create your models here.
 class Version(models.Model):
     code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Version Code', unique=True, default=generate_unique_code)
@@ -71,7 +77,24 @@ class Section(models.Model):
     
     def __str__(self):
         return str(self.section)
+
+class ClassGroup(models.Model):
+    code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Group Code')
+    name = models.CharField(max_length=50,verbose_name='Group Name',validators=[validate_alpha_chars_only])
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_group_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_group_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ac_group'
+        verbose_name = 'Class Group'
     
+    def __str__(self):
+        return str(self.name)
 
 class Subject(models.Model):
     code = models.CharField(max_length=20, blank=True,null=True,verbose_name='Subject Code')

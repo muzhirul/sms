@@ -1,14 +1,5 @@
 from django.urls import path,include
-from .views import (VersionList, VersionDetail, VersionDelete,
-                    SessionList, SessionDetail, SessionDelete,
-                    SectionList,SectionDetail,SectionDelete,
-                    SubjectList,SubjectDetail,SubjectDelete,
-                    ClassList,ClassDetail,ClassDelete,
-                    ClassRoomList,ClassRoomDetail,ClassRoomDelete,
-                    ClassPeriodList,ClassPeriodDetail,ClassPeriodDelete,
-                    ClassSectionList,ClassSectionDetail,ClassSectionDelete,
-                    ClassSubjectList,ClassSubjectDetail,ClassSubjectDelete,
-                    ClassRoutineCreateList,ClassRoutineDetail,ClassRoutineDelete)
+from .views import *
 
 urlpatterns = [
     # For version
@@ -51,4 +42,8 @@ urlpatterns = [
     path('api/class-routine', ClassRoutineCreateList.as_view(), name='class-routine-list'),
     path('api/class-routine/detail/<int:pk>', ClassRoutineDetail.as_view(), name='class-routine-detail'),
     path('api/class-routine/delete/<int:pk>', ClassRoutineDelete.as_view(), name='class-routine-delete'),
+    # For Student Group
+    path('api/group', GroupListCreate.as_view(), name='group-list'),
+    path('api/group/detail/<int:pk>', GroupUpdateDetail.as_view(), name='group-detail'),
+    path('api/group/delete/<int:pk>', GroupDelete.as_view(), name='group-delete'),
 ]

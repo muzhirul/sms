@@ -16,10 +16,24 @@ def generate_student_no():
     new_std_num = '77'+str(str(datetime.date.today().year)) + str(datetime.date.today().month).zfill(2) + str(new_student_num).zfill(2)
     return new_std_num
 # Create your models here.
+
+class Category(models.Model):
+    name = models.CharField(max_length=50,verbose_name='Category Name')
+    sl_no = models.IntegerField(default=0)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL, related_name='st_category_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='st_category_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'st_category'
+
+    def __str__(self):
+        return self.name
+    
+
 class Student(models.Model):
-    GENDER_TYPE = (('M','Male'),('F','Female'),('O','Other'))
-    RELIGION_TYPE = (('M','Muslim'),('H','Hindu'))
-    BLOOD_GROUP_TYPE = (('A+','A+'),('A-','A-'))
     code = models.CharField(max_length=10,blank=True,null=True)
     student_no = models.CharField(max_length=15,blank=True,null=True,editable=False, verbose_name='Student No', default=generate_student_no)
     first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='First Name')
@@ -34,6 +48,7 @@ class Student(models.Model):
     blood_group = models.ForeignKey(BloodGroup,on_delete=models.SET_NULL,blank=True,null=True,related_name='student_b_group')
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
+    category = models.ForeignKey(Category,on_delete=models.SET_NULL,blank=True,null=True)
     step = models.IntegerField(default=1)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
@@ -112,17 +127,3 @@ class StudentEnroll(models.Model):
         return str(self.roll)
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=50,verbose_name='Category Name')
-    sl_no = models.IntegerField(default=0)
-    status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL, related_name='st_category_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='st_category_update_by', editable=False, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'st_category'
-
-    def __str__(self):
-        return self.name

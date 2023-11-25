@@ -299,3 +299,22 @@ class ClassRoutineSerializer2(serializers.ModelSerializer):
         else:
             # If status is False, return an empty dictionary
             return {}
+
+class ClassGroupViewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ClassGroup
+        exclude = ['status']
+
+    def to_representation(self, instance):
+
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return {}
+
+class ClassGroupCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ClassGroup
+        exclude = ['status']

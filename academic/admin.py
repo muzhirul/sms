@@ -23,6 +23,12 @@ class SessionAdmin(admin.ModelAdmin):
     save_on_top = True
     list_per_page = 15
 
+class ClassGroupAdmin(admin.ModelAdmin):
+    list_display = ['name', 'status']
+
+    class Meta:
+        model = ClassGroup
+
 class SectionAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Section Information",{'fields':[('section','status'),]})
@@ -126,6 +132,7 @@ class ClassRoutineMstAdmin(admin.ModelAdmin):
 admin.site.register(Version,VersionAdmin)
 admin.site.register(Session,SessionAdmin)
 admin.site.register(Section,SectionAdmin)
+admin.site.register(ClassGroup,ClassGroupAdmin)
 admin.site.register(ClassName,ClassAdmin)
 admin.site.register(Subject,SubjectAdmin)
 admin.site.register(ClassRoom,ClassRoomAdmin)

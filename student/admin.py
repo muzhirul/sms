@@ -28,7 +28,7 @@ class StudentEnrollTabularInline(admin.TabularInline):
 @admin_thumbnails.thumbnail('photo')
 class StudentAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Basic Information",{'fields':[('first_name','last_name','gender'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','admission_date','blood_group'),]}),
+        ("Basic Information",{'fields':[('first_name','last_name','gender','category'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','admission_date','blood_group'),]}),
         # ("Basic Information",{'fields':[('code','first_name','last_name','gender'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','admission_date','blood_group','Institution','status','is_online'),]}),
         ("Address",{'fields':[('present_address','permanent_address'),]})        
     ]
