@@ -530,6 +530,72 @@ class staffListView(generics.ListAPIView):
 
         return Response(response_data)
 
+class staffDetailView(generics.RetrieveUpdateAPIView):
+    queryset = Staff.objects.all()
+    serializer_class = staffSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        # permission_check = check_permission(self.request.user.id, 'Shift', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=staffSerializer2(instance).data)
+    
+    def update(self, request, *args, **kwargs):
+        # Get the student instance
+        staff = self.get_object()
+        # Deserialize the updated student data
+        staff_serializer = self.get_serializer(staff, data=request.data, partial=True)
+        staff_serializer.is_valid(raise_exception=True)
+        instance = staff_serializer.save()
+        educations_data = request.data.get('staff_education')
+        if educations_data:
+            for education_data in educations_data:
+                education_id = education_data.get('id')
+                if education_id:
+                    education = Education.objects.get(id=education_id, staff=staff)
+                    enroll_serializer = EducationSerializer(education, data=education_data, partial=True)
+                    enroll_serializer.is_valid(raise_exception=True)
+                    enroll_serializer.save()
+                else:
+                    education_data['staff'] = staff.id
+                    enroll_serializer = EducationSerializer(data=education_data)
+                    enroll_serializer.is_valid(raise_exception=True)
+                    enroll_serializer.save()
+        return CustomResponse(code=status.HTTP_200_OK, message="Staff information updated successfully", data=staffSerializer2(instance).data)
+
+class StaffImageUpload(generics.UpdateAPIView):
+    queryset = Staff.objects.all()
+    serializer_class = staffSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(
+        #     self.request.user.id, 'Student Admission', 'create')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        # Retrieve the instance
+        instance = self.get_object()
+
+        # Get the image data from the request
+        image_data = request.data.get('photo', None)
+
+        # Validate and update the image field
+        if image_data:
+            instance.photo = image_data
+            instance.save()
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Staff Image Update successfully", data=None)
+        return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"No Image for Update", data=None)
+
+
+        
 
 class StaffShiftListCreate(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')

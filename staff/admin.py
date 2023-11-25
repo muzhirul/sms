@@ -5,7 +5,7 @@ import admin_thumbnails
 # Register your models here.
 class EducationTabularInline(admin.TabularInline):
     model = Education
-    fields = ['institution_name','registration_no','title','board','start_date','end_date','passing_year','result','result_out_of','remarks','status']
+    fields = ['institution_name','registration_no','title','edu_board','start_date','end_date','passing_year','result','result_out_of','remarks','status']
     extra = 1
     
 @admin_thumbnails.thumbnail('photo')

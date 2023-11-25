@@ -1,5 +1,5 @@
 from django.db import models
-from academic.models import ClassName, Section, Session, Version
+from academic.models import ClassName, Section, Session, Version, ClassGroup
 from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 from authentication.models import Authentication
@@ -106,6 +106,7 @@ class StudentEnroll(models.Model):
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='version')
     session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session')
     class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
+    group = models.ForeignKey(ClassGroup,on_delete=models.SET_NULL, blank=True,null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, verbose_name='Student',related_name="enroll")
     roll = models.CharField(max_length=15,verbose_name='Class Roll',blank=True,null=True)

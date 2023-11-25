@@ -1,5 +1,6 @@
 from django.db import models
 from institution.models import Institution, Branch
+from setup_app.models import EducationBoard
 from django_userforeignkey.models.fields import UserForeignKey
 from setup_app.models import *
 import datetime
@@ -89,9 +90,6 @@ class StaffShift(models.Model):
 
 
 class Staff(models.Model):
-    GENDER_TYPE = (('M','Male'),('F','Female'),('O','Other'))
-    RELIGION_TYPE = (('M','Muslim'),('H','Hindu'))
-    BLOOD_GROUP_TYPE = (('A+','A+'),('A-','A-'))
     code = models.CharField(max_length=20, blank=True, null=True,verbose_name='Staff Code')
     staff_id = models.CharField(max_length=20, blank=True,null=True,editable=False, verbose_name='Staff ID',default=staff_no)
     first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='First Name')
@@ -108,6 +106,7 @@ class Staff(models.Model):
     designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, blank=True, null=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
     shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
+    step = models.IntegerField(default=1)
     user = models.OneToOneField(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
@@ -129,7 +128,7 @@ class Education(models.Model):
     institution_name = models.CharField(max_length=255, blank=True, null=True)
     registration_no = models.CharField(max_length=50, blank=True,null=True)
     title = models.CharField(max_length=255,blank=True,null=True)
-    board = models.CharField(max_length=50, blank=True,null=True)
+    edu_board = models.ForeignKey(EducationBoard,on_delete=models.SET_NULL, blank=True,null=True, verbose_name='Board')
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True,null=True)
     passing_year = models.IntegerField(blank=True, null=True)

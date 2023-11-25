@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer
+from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer,EducationBoardViewSerializer
 from staff.models import *
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -33,9 +33,15 @@ class DesignationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Designation
         fields = ['id','name']
-        
+
+class EducationViewSerializer(serializers.ModelSerializer):
+    edu_board = EducationBoardViewSerializer(read_only=True)
+    class Meta:
+        model = Education
+        exclude = ['status','created_at','updated_at','created_by','updated_by']
+
 class EducationSerializer(serializers.ModelSerializer):
-    
+        
     class Meta:
         model = Education
         # fields = '__all__'
@@ -60,7 +66,7 @@ class StaffShiftListSerializer2(serializers.ModelSerializer):
         fields = ['id','name']
         
 class staffSerializer2(serializers.ModelSerializer):
-    staff_education = EducationSerializer(many=True, required=False, read_only=True)
+    staff_education = EducationViewSerializer(many=True, required=False, read_only=True)
     gender = GenderSerializer(read_only=True)
     religion = ReligionSerializer(read_only=True)
     blood_group = BloodGroupSerializer(read_only=True)
