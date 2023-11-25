@@ -25,6 +25,7 @@ class SessionAdmin(admin.ModelAdmin):
 
 class ClassGroupAdmin(admin.ModelAdmin):
     list_display = ['name', 'status']
+    fields = ['code','name','status']
 
     class Meta:
         model = ClassGroup

@@ -1731,10 +1731,10 @@ class ClassRoutineDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Routine Delete successfully", data=None)
 
-'''
-For Category
-'''
 
+'''
+For Group
+'''
 
 class GroupListCreate(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')

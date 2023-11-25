@@ -42,7 +42,7 @@ urlpatterns = [
     path('api/class-routine', ClassRoutineCreateList.as_view(), name='class-routine-list'),
     path('api/class-routine/detail/<int:pk>', ClassRoutineDetail.as_view(), name='class-routine-detail'),
     path('api/class-routine/delete/<int:pk>', ClassRoutineDelete.as_view(), name='class-routine-delete'),
-    # For Student Group
+    # For Group
     path('api/group', GroupListCreate.as_view(), name='group-list'),
     path('api/group/detail/<int:pk>', GroupUpdateDetail.as_view(), name='group-detail'),
     path('api/group/delete/<int:pk>', GroupDelete.as_view(), name='group-delete'),

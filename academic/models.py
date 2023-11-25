@@ -79,7 +79,7 @@ class Section(models.Model):
         return str(self.section)
 
 class ClassGroup(models.Model):
-    code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Group Code')
+    code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Code')
     name = models.CharField(max_length=50,verbose_name='Group Name',validators=[validate_alpha_chars_only])
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
