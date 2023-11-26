@@ -3,6 +3,7 @@ from institution.models import Institution, Branch
 from setup_app.models import EducationBoard
 from django_userforeignkey.models.fields import UserForeignKey
 from setup_app.models import *
+from hrms.models import AccountBank
 import datetime
 from authentication.models import Authentication
 # Create your models here.
@@ -173,5 +174,22 @@ class StaffPayroll(models.Model):
 
     def __str__(self):
         return self.staff.first_name
+    
+class StaffBankAccountDetails(models.Model):
+    account_title = models.CharField(max_length=255,verbose_name='Account Title')
+    account_number = models.CharField(max_length=50, verbose_name='Account Number')
+    bank_name = models.ForeignKey(AccountBank,on_delete=models.CASCADE)
+    branch_name = models.CharField(max_length=100, verbose_name='Branch Name')
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='bank_acc_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='bank_acc_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'sta_bank_account'
+
+    def __str__(self):
+        return self.account_title
 
     
