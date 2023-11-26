@@ -386,4 +386,33 @@ class Thana(models.Model):
     def __str__(self):
         return self.name
 
+class ContractType(models.Model):
+    name = models.CharField(max_length=100,verbose_name='Contract Type',validators=[validate_alpha_chars_only])
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='con_type_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='con_type_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 's_contract_type'
+
+    def __str__(self):
+        return self.name
+    
+class MaritalStatus(models.Model):
+    name = models.CharField(max_length=100,verbose_name='Marital Status',validators=[validate_alpha_chars_only])
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='marital_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='marital_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 's_marital_status'
+
+    def __str__(self):
+        return self.name
+
+
 

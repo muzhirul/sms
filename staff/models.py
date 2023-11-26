@@ -97,10 +97,13 @@ class Staff(models.Model):
     gender = models.ForeignKey(Gender,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
     dob = models.DateField(null=True, blank=True, verbose_name='Date of Birth')
     photo = models.ImageField(upload_to='staff_photo/',blank=True, null=True, verbose_name='Photo')
-    mobile_no = models.CharField(max_length=11,blank=True,null=True,verbose_name='Mobile No')
+    mobile_no = models.CharField(max_length=14,blank=True,null=True,verbose_name='Mobile No')
+    emergency_number = models.CharField(max_length=14,blank=True,null=True,verbose_name='Emergency Contact Number')
+    nid = models.CharField(max_length=17,blank=True,null=True,verbose_name='NID')
     religion = models.ForeignKey(Religion,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_gender')
     email = models.EmailField(max_length=255,blank=True,null=True, verbose_name='Email Address')
     blood_group = models.ForeignKey(BloodGroup,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_b_group')
+    marital_status = models.ForeignKey(MaritalStatus,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_marital_status')
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
     designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, blank=True, null=True)
@@ -146,4 +149,29 @@ class Education(models.Model):
 
     def __str__(self):
         return self.title
+
+class StaffPayroll(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_payroll')
+    order_seq = models.IntegerField(default=0)
+    gross = models.IntegerField()
+    basic = models.IntegerField(default=0)
+    medical = models.IntegerField(default=0)
+    convence = models.IntegerField(default=0)
+    others = models.IntegerField(default=0)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+    remarks = models.CharField(max_length=255,blank=True, null=True)
+    contract_type = models.ForeignKey(ContractType, on_delete=models.SET_NULL, blank=True, null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='payroll_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='payroll_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'sta_payroll'
+
+    def __str__(self):
+        return self.staff.first_name
+
     

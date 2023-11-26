@@ -594,9 +594,6 @@ class StaffImageUpload(generics.UpdateAPIView):
             return CustomResponse(code=status.HTTP_200_OK, message=f"Staff Image Update successfully", data=None)
         return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"No Image for Update", data=None)
 
-
-        
-
 class StaffShiftListCreate(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
     serializer_class = StaffShiftSerializer

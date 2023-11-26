@@ -7,12 +7,18 @@ class EducationTabularInline(admin.TabularInline):
     model = Education
     fields = ['institution_name','registration_no','title','edu_board','start_date','end_date','passing_year','result','result_out_of','remarks','status']
     extra = 1
+
+class PayrollTabularInline(admin.TabularInline):
+    model = StaffPayroll
+    fields = ['gross','start_date','end_date','contract_type','remarks']
+    extra = 1
+
     
 @admin_thumbnails.thumbnail('photo')
 class StaffAdmin(admin.ModelAdmin):
     list_display = ['staff_id','first_name','last_name']
     fieldsets = [
-        ("Basic Information",{'fields':[('first_name','last_name','gender'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','blood_group'),]}),
+        ("Basic Information",{'fields':[('first_name','last_name','gender','religion'),('email','dob','mobile_no','emergency_number','nid'),('photo','photo_thumbnail','blood_group','marital_status'),]}),
         ("Address",{'fields':[('present_address','permanent_address'),]}),
         ("Assignment",{'fields':[('department','designation','shift'),]})        
     ]
@@ -20,7 +26,7 @@ class StaffAdmin(admin.ModelAdmin):
     class Meta:
         model = Staff
     
-    inlines = [EducationTabularInline]
+    inlines = [EducationTabularInline,PayrollTabularInline]
 
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ['name','dept_ord']

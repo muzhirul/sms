@@ -141,6 +141,16 @@ class ThanaAdmin(admin.ModelAdmin):
         model = Thana
 
 
+class ContractTypeAdmin(admin.ModelAdmin):
+    list_display = [ 'name', 'status']
+
+    class Meta:
+        model = ContractType
+
+
+        
+
+
 admin.site.register(Setup, SetupAdmin)
 admin.site.register(Gender, GenderAdmin)
 admin.site.register(Religion, ReligionAdmin)
@@ -158,3 +168,4 @@ admin.site.register(Division, DivisionAdmin)
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(Thana, ThanaAdmin)
+admin.site.register(ContractType, ContractTypeAdmin)
