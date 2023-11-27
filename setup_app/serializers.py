@@ -117,8 +117,7 @@ class DivisionCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Division
-        exclude = ['status', 'created_by',
-                   'updated_by', 'created_at', 'updated_at']
+        exclude = ['status', 'created_by','updated_by', 'created_at', 'updated_at']
 
 
 class DivisionSerializer(serializers.ModelSerializer):
@@ -142,8 +141,7 @@ class DistrictCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = District
-        exclude = ['status', 'created_by',
-                   'updated_by', 'created_at', 'updated_at']
+        exclude = ['status', 'created_by','updated_by', 'created_at', 'updated_at']
 
 
 class DistrictSerializer(serializers.ModelSerializer):
@@ -167,8 +165,7 @@ class ThanaCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Thana
-        exclude = ['status', 'created_by',
-                   'updated_by', 'created_at', 'updated_at']
+        exclude = ['status', 'created_by', 'updated_by', 'created_at', 'updated_at']
 
 
 class ThanaSerializer(serializers.ModelSerializer):
@@ -179,3 +176,13 @@ class ThanaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Thana
         exclude = ['status']
+
+class ContractTypeViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContractType
+        fields = ['id','name']
+
+class MaritalStatusViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaritalStatus
+        fields = ['id','name']

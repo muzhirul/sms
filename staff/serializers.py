@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer,EducationBoardViewSerializer
+from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer,EducationBoardViewSerializer, ContractTypeViewSerializer,MaritalStatusViewSerializer
+from hrms.serializers import AccountBankViewSerializer
 from staff.models import *
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -38,7 +39,7 @@ class EducationViewSerializer(serializers.ModelSerializer):
     edu_board = EducationBoardViewSerializer(read_only=True)
     class Meta:
         model = Education
-        exclude = ['status','created_at','updated_at','created_by','updated_by']
+        exclude = ['staff','institution','branch','status','created_at','updated_at','created_by','updated_by']
 
 class EducationSerializer(serializers.ModelSerializer):
         
@@ -46,6 +47,38 @@ class EducationSerializer(serializers.ModelSerializer):
         model = Education
         # fields = '__all__'
         exclude = ['status','created_at','updated_at','created_by','updated_by']
+
+class StaffPayrollViewSerializer(serializers.ModelSerializer):
+    contract_type = ContractTypeViewSerializer(read_only=True)
+    class Meta:
+        model = StaffPayroll
+        exclude = ['staff','status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+class StaffPayrollCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffPayroll
+        exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+class StaffBankViewSerializer(serializers.ModelSerializer):
+    bank_name = AccountBankViewSerializer(read_only=True)
+    class Meta:
+        model = StaffBankAccountDetails
+        exclude = ['staff','status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+class StaffBankCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffBankAccountDetails
+        exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
+        
+class StaffSocialMediaViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffSocialMedia
+        exclude = ['staff','status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+class StaffSocialMediaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffSocialMedia
+        exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
         
 class StaffTeacherSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,6 +87,9 @@ class StaffTeacherSerializer(serializers.ModelSerializer):
 
 class staffSerializer(serializers.ModelSerializer):
     staff_education = EducationSerializer(many=True, required=False, read_only=True)
+    payroll = StaffPayrollCreateSerializer(many=True, required=False, read_only=True)
+    bank_info = StaffBankCreateSerializer(many=True, required=False, read_only=True)
+    social_media = StaffSocialMediaCreateSerializer(many=True, required=False, read_only=True)
 
     class Meta:
         model = Staff
@@ -66,13 +102,17 @@ class StaffShiftListSerializer2(serializers.ModelSerializer):
         fields = ['id','name']
         
 class staffSerializer2(serializers.ModelSerializer):
-    staff_education = EducationViewSerializer(many=True, required=False, read_only=True)
     gender = GenderSerializer(read_only=True)
     religion = ReligionSerializer(read_only=True)
     blood_group = BloodGroupSerializer(read_only=True)
     designation = DesignationListSerializer(read_only=True)
     department = DepartmentListSerializer(read_only=True)
     shift = StaffShiftListSerializer2(read_only=True)
+    marital_status = MaritalStatusViewSerializer(read_only=True)
+    staff_education = EducationViewSerializer(many=True, required=False, read_only=True)
+    payroll =StaffPayrollViewSerializer(many=True, required=False, read_only=True)
+    bank_info = StaffBankViewSerializer(many=True, required=False, read_only=True)
+    social_media = StaffSocialMediaViewSerializer(many=True, required=False, read_only=True)
     # shift = StaffShiftListCreate(read_only=True)
     class Meta:
         model = Staff

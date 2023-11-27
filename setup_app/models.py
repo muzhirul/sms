@@ -12,14 +12,12 @@ def validate_no_numbers(value):
             code='no_numbers',
         )
 
-
 def validate_alpha_chars_only(value):
     if not value.replace(' ', '').isalpha():
         raise ValidationError(
             _('The field can only contain alphabetic characters.'),
             code='alpha_chars_only'
         )
-
 
 # Create your models here.
 class Setup(models.Model):
@@ -52,7 +50,6 @@ class Setup(models.Model):
     def __str__(self):
         return f"self.type"
 
-
 class Religion(models.Model):
     name = models.CharField(max_length=50, blank=True,
                             null=True, verbose_name='Religion Name')
@@ -70,7 +67,6 @@ class Religion(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Gender(models.Model):
     name = models.CharField(max_length=50, blank=True,
@@ -90,7 +86,6 @@ class Gender(models.Model):
     def __str__(self):
         return self.name
 
-
 class BloodGroup(models.Model):
     name = models.CharField(max_length=50, blank=True,
                             null=True, verbose_name='Blood Group Name')
@@ -108,7 +103,6 @@ class BloodGroup(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Occupation(models.Model):
     name = models.CharField(max_length=50, blank=True,
@@ -128,7 +122,6 @@ class Occupation(models.Model):
     def __str__(self):
         return self.name
 
-
 class Relation(models.Model):
     name = models.CharField(max_length=50, blank=True,
                             null=True, verbose_name='Relation')
@@ -146,7 +139,6 @@ class Relation(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Menu(models.Model):
     parent = models.ForeignKey(
@@ -173,7 +165,6 @@ class Menu(models.Model):
     def __str__(self):
         return self.name
 
-
 class Role(models.Model):
     name = models.CharField(max_length=50)
     status = models.BooleanField(default=True)
@@ -189,7 +180,6 @@ class Role(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Permission(models.Model):
     role = models.ForeignKey(
@@ -214,7 +204,6 @@ class Permission(models.Model):
     def __str__(self):
         return str(self.id)
 
-
 class Day(models.Model):
     short_name = models.CharField(max_length=5, primary_key=True)
     long_name = models.CharField(max_length=20)
@@ -238,7 +227,6 @@ class Day(models.Model):
     def __str__(self):
         return self.long_name
 
-
 class FloorType(models.Model):
     name = models.CharField(max_length=20, verbose_name='Floor Type')
     sl_no = models.IntegerField(default=0)
@@ -260,7 +248,6 @@ class FloorType(models.Model):
     def __str__(self):
         return self.name
 
-
 class SubjectType(models.Model):
     name = models.CharField(max_length=20, verbose_name='Subject Type')
     status = models.BooleanField(default=True)
@@ -281,7 +268,6 @@ class SubjectType(models.Model):
     def __str__(self):
         return self.name
 
-
 class EducationBoard(models.Model):
     board_code = models.CharField(max_length=3, verbose_name='Board Code', validators=[
         validate_alpha_chars_only])
@@ -301,7 +287,6 @@ class EducationBoard(models.Model):
     def __str__(self):
         return self.name
 
-
 class Country(models.Model):
     coun_code = models.CharField(max_length=4, verbose_name='Country Code', validators=[
         validate_alpha_chars_only])
@@ -320,7 +305,6 @@ class Country(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Division(models.Model):
     divi_code = models.CharField(max_length=4, verbose_name='Division Code', validators=[
@@ -342,7 +326,6 @@ class Division(models.Model):
     def __str__(self):
         return self.name
 
-
 class District(models.Model):
     dist_code = models.CharField(max_length=4, verbose_name='District Code', validators=[
         validate_alpha_chars_only])
@@ -363,7 +346,6 @@ class District(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Thana(models.Model):
     thana_code = models.CharField(max_length=4, verbose_name='Thana Code', validators=[

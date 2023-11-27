@@ -10,7 +10,17 @@ class EducationTabularInline(admin.TabularInline):
 
 class PayrollTabularInline(admin.TabularInline):
     model = StaffPayroll
-    fields = ['gross','start_date','end_date','contract_type','remarks']
+    fields = ['gross','start_date','end_date','contract_type','is_active','remarks']
+    extra = 1
+
+class BankAccountDetailsTabularInline(admin.TabularInline):
+    model = StaffBankAccountDetails
+    fields = ['account_title','account_number','bank_name','branch_name','is_active','remarks']
+    extra = 1
+
+class StaffSocialMediaTabularInline(admin.TabularInline):
+    model = StaffSocialMedia
+    fields = ['name','username','url']
     extra = 1
 
     
@@ -26,7 +36,7 @@ class StaffAdmin(admin.ModelAdmin):
     class Meta:
         model = Staff
     
-    inlines = [EducationTabularInline,PayrollTabularInline]
+    inlines = [EducationTabularInline,PayrollTabularInline,BankAccountDetailsTabularInline,StaffSocialMediaTabularInline]
 
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ['name','dept_ord']

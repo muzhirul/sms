@@ -44,7 +44,7 @@ class Designation(models.Model):
         db_table = 'sta_designation'
 
     def __str__(self):
-        return self.name
+        return str(self.name)
     
 
 class Department(models.Model):
@@ -63,7 +63,7 @@ class Department(models.Model):
         db_table = 'sta_department'
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 class StaffShift(models.Model):
     code = models.CharField(max_length=20,blank=True,null=True,default=staff_shift_code)
@@ -87,7 +87,7 @@ class StaffShift(models.Model):
         db_table = 'sta_shift'
         
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class Staff(models.Model):
@@ -124,7 +124,7 @@ class Staff(models.Model):
         db_table = 'sta_staff'
 
     def __str__(self):
-        return self.first_name+ ' '+self.last_name
+        return self.first_name
     
 class Education(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_education')
@@ -140,6 +140,8 @@ class Education(models.Model):
     result_out_of = models.CharField(max_length=50, blank=True,null=True)
     remarks = models.CharField(max_length=255, blank=True, null=True)
     status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='education_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='education_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -149,10 +151,10 @@ class Education(models.Model):
         db_table = 'sta_education'
 
     def __str__(self):
-        return self.title
+        return str(self.title)
 
 class StaffPayroll(models.Model):
-    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_payroll')
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='payroll')
     order_seq = models.IntegerField(default=0)
     gross = models.IntegerField()
     basic = models.IntegerField(default=0)
@@ -163,7 +165,10 @@ class StaffPayroll(models.Model):
     end_date = models.DateField(blank=True, null=True)
     remarks = models.CharField(max_length=255,blank=True, null=True)
     contract_type = models.ForeignKey(ContractType, on_delete=models.SET_NULL, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='payroll_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='payroll_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -173,14 +178,19 @@ class StaffPayroll(models.Model):
         db_table = 'sta_payroll'
 
     def __str__(self):
-        return self.staff.first_name
+        return str(self.id)
     
 class StaffBankAccountDetails(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='bank_info')
     account_title = models.CharField(max_length=255,verbose_name='Account Title')
     account_number = models.CharField(max_length=50, verbose_name='Account Number')
     bank_name = models.ForeignKey(AccountBank,on_delete=models.CASCADE)
     branch_name = models.CharField(max_length=100, verbose_name='Branch Name')
+    remarks = models.CharField(max_length=255,blank=True, null=True)
+    is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='bank_acc_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='bank_acc_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -190,6 +200,28 @@ class StaffBankAccountDetails(models.Model):
         db_table = 'sta_bank_account'
 
     def __str__(self):
-        return self.account_title
+        return str(self.account_title)
+    
+
+class StaffSocialMedia(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='social_media')
+    name = models.CharField(max_length=50, verbose_name='Media Name')
+    username = models.CharField(max_length=50, verbose_name='Username/ID')
+    url = models.URLField(max_length=255,verbose_name='URL')
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='socal_media_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='socal_media_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'sta_social_media'
+
+    def __str__(self):
+        return str(self.name)
+
+
 
     
