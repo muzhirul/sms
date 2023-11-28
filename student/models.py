@@ -110,7 +110,7 @@ class StudentEnroll(models.Model):
     class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
     group = models.ForeignKey(ClassGroup,on_delete=models.SET_NULL, blank=True,null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, verbose_name='Student',related_name="enroll")
+    student = models.ForeignKey(Student, on_delete=models.SET_NULL, verbose_name='Student',related_name="enroll",blank=True,null=True)
     roll = models.CharField(max_length=15,verbose_name='Class Roll',blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)

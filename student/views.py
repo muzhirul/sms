@@ -187,6 +187,8 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         # Get the student instance
         student = self.get_object()
+        institution = self.request.user.institution
+        branch = self.request.user.branch
         # Deserialize the updated student data
         student_serializer = self.get_serializer(student, data=request.data, partial=True)
         student_serializer.is_valid(raise_exception=True)
@@ -201,11 +203,18 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
                     enroll = StudentEnroll.objects.get(id=enroll_id, student=student)
                     enroll_serializer = StudentEnrollSerialize(enroll, data=enroll_item, partial=True)
                     enroll_serializer.is_valid(raise_exception=True)
-                    enroll_serializer.save()
+                    enroll_serializer.save(institution=institution,branch=branch)
                 else:
+                    std_roll = StudentEnroll.objects.filter(status=True,section=enroll_item.get('section'),class_name=enroll_item.get('class_name'),version=enroll_item.get('version'),session=enroll_item.get('session'),institution=institution,branch=branch).order_by('roll').last()
+                    if not std_roll or std_roll.roll is None:
+                        class_roll = str(1)
+                    else:
+                        int_roll = int(std_roll.roll)
+                        class_roll = str(int_roll+1)
+                    enroll_item['student'] = student.id
                     enroll_serializer = StudentEnrollSerialize(data=enroll_item)
                     enroll_serializer.is_valid(raise_exception=True)
-                    enroll_serializer.save()
+                    enroll_serializer.save(roll=class_roll,institution=institution,branch=branch)
 
         if guardian_data:
             for guardian_item in guardian_data:
@@ -215,7 +224,7 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
                         guardian = Guardian.objects.get(id=guardian_id, student=student)
                         guardian_serializer = GuardianSerializer(guardian, data=guardian_item, partial=True)
                         guardian_serializer.is_valid(raise_exception=True)
-                        guardian_serializer.save()
+                        guardian_serializer.save(institution=institution,branch=branch)
                     except Guardian.DoesNotExist:
                         pass
                 else:
@@ -228,7 +237,7 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
                     guardian_item['student'] = student.id
                     guardian_serializer = GuardianSerializer(data=guardian_item)
                     guardian_serializer.is_valid(raise_exception=True)
-                    guardian = guardian_serializer.save()
+                    guardian = guardian_serializer.save(institution=institution,branch=branch)
                     if ga_is_guardian:
                         try:
                             ga_user_data = Guardian.objects.values('guardian_no').get(id=guardian.id)
@@ -244,7 +253,6 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
                         except:
                             pass
         return CustomResponse(code=status.HTTP_200_OK, message="Student updated successfully", data=StudentViewSerializer(instance).data)
-
 
 class StudentImageUpload(generics.UpdateAPIView):
     queryset = Student.objects.all()
@@ -271,7 +279,6 @@ class StudentImageUpload(generics.UpdateAPIView):
             instance.save()
             return CustomResponse(code=status.HTTP_200_OK, message=f"Student Image Update successfully", data=None)
         return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"No Image for Update", data=None)
-
 
 class GuardianImageUpload(generics.UpdateAPIView):
     queryset = Guardian.objects.all()
