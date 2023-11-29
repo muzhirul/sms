@@ -3,7 +3,7 @@ from institution.models import Institution, Branch
 from setup_app.models import EducationBoard
 from django_userforeignkey.models.fields import UserForeignKey
 from setup_app.models import *
-from hrms.models import AccountBank
+from hrms.models import AccountBank, LeaveType
 import datetime
 from authentication.models import Authentication
 # Create your models here.
@@ -221,6 +221,40 @@ class StaffSocialMedia(models.Model):
 
     def __str__(self):
         return str(self.name)
+    
+class StaffLeave(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_leave')
+    leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, blank=True, null=True,related_name='staff_leave_type')
+    leave_days = models.IntegerField(default=0)
+    taken_days = models.IntegerField(default=0)
+    start_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='staff_leave_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='staff_leave_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'sta_leave'
+
+    def __str__(self):
+        return str(self.id)
+    
+    def clean(self):
+        super().clean()
+        # Check if leave_days is greater than the max_days for the associated LeaveType
+        if self.leave_type and self.leave_days > self.leave_type.max_days:
+            raise ValidationError({'leave_days': f"Leave days cannot be greater than {self.leave_type.name}'s max_days ({self.leave_type.max_days})."})
+        # Ensure that taken_days is not greater than leave_days
+        if self.taken_days > self.leave_days:
+            raise ValidationError({'taken_days': 'Taken days cannot be greater than leave days'})
+
+
+
 
 
 

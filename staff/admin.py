@@ -23,6 +23,11 @@ class StaffSocialMediaTabularInline(admin.TabularInline):
     fields = ['name','username','url']
     extra = 1
 
+class StaffLeaveTabulrInline(admin.TabularInline):
+    model = StaffLeave
+    fields = ['leave_type','leave_days','taken_days','start_date','end_date','is_active']
+    extra = 1
+
     
 @admin_thumbnails.thumbnail('photo')
 class StaffAdmin(admin.ModelAdmin):
@@ -36,7 +41,7 @@ class StaffAdmin(admin.ModelAdmin):
     class Meta:
         model = Staff
     
-    inlines = [EducationTabularInline,PayrollTabularInline,BankAccountDetailsTabularInline,StaffSocialMediaTabularInline]
+    inlines = [EducationTabularInline,PayrollTabularInline,BankAccountDetailsTabularInline,StaffSocialMediaTabularInline,StaffLeaveTabulrInline]
 
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ['name','dept_ord']
