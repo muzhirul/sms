@@ -123,3 +123,8 @@ class StaffShiftSerializer(serializers.ModelSerializer):
     class Meta:
         model = StaffShift
         exclude = ['status','code','start_date','end_date','start_buf_min','end_buf_min','institution','branch']
+
+class StaffLeaveCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffLeave
+        exclude = ['status']

@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from setup_app.models import *
 from sms.permission import check_permission
 from authentication.models import Authentication
+from datetime import datetime
 # Create your views here.
 
 class StaffDepartmentList(generics.ListAPIView):
@@ -439,6 +440,16 @@ class staffCreateView(generics.CreateAPIView):
                 branch = branch_data if branch_data is not None else self.request.user.branch
                 staff = staff_serializer.save(institution=institution,branch=branch)
                 default_password = '12345678'
+                Leaves_info = LeaveType.objects.filter(status=True)
+                for Leave_data in Leaves_info:
+                    start_date = datetime(datetime.now().year,1,1)
+                    end_date = datetime(datetime.now().year,12,31)
+                    remain_month = 12-datetime.now().month
+                    actual_leave_day = round((Leave_data.max_days/12)*remain_month)
+                    leave = StaffLeave(start_date=start_date,end_date=end_date,leave_days=actual_leave_day,institution=institution,branch=branch)
+                    leave.staff_id = staff.id
+                    leave.leave_type_id = Leave_data.id
+                    leave.save()
                 try:
                     std_user_data = Staff.objects.values('staff_id').get(id=staff.id)
                     std_username = std_user_data['staff_id']
