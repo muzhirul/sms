@@ -27,3 +27,18 @@ class HolidaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Holiday
         exclude = ['status']
+
+class LeaveTypeCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LeaveType
+        exclude = ['status','institution','branch']
+
+
+class LeaveTypeViewSerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+    
+    class Meta:
+        model = LeaveType
+        exclude = ['status','institution','branch']

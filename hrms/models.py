@@ -2,8 +2,16 @@ from ast import mod
 from django.db import models
 from django_userforeignkey.models.fields import UserForeignKey
 from institution.models import Institution, Branch
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
+def validate_alpha_chars_only(value):
+    if not value.replace(' ', '').isalpha():
+        raise ValidationError(
+            _('The field can only contain alphabetic characters.'),
+            code='alpha_chars_only'
+        )
 
 
 class AccountBank(models.Model):
@@ -30,17 +38,14 @@ class AccountBank(models.Model):
 
 class LeaveType(models.Model):
     leave_type_code = models.CharField(max_length=10)
-    name = models.CharField(max_length=50, verbose_name='Leave Type Name')
+    name = models.CharField(max_length=50, verbose_name='Leave Type Name',validators=[validate_alpha_chars_only])
     max_days = models.IntegerField(blank=True, null=True)
+    remarks = models.CharField(max_length=255, blank=True, null=True)
     status = models.BooleanField(default=True)
-    institution = models.ForeignKey(
-        Institution, on_delete=models.CASCADE, blank=True, null=True)
-    branch = models.ForeignKey(
-        Branch, on_delete=models.CASCADE, blank=True, null=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='leave_type_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='leave_type_update_by', editable=False, blank=True, null=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='leave_type_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='leave_type_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

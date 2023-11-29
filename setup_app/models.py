@@ -307,8 +307,7 @@ class Country(models.Model):
         return self.name
 
 class Division(models.Model):
-    divi_code = models.CharField(max_length=4, verbose_name='Division Code', validators=[
-        validate_alpha_chars_only])
+    divi_code = models.CharField(max_length=4, verbose_name='Division Code', validators=[validate_alpha_chars_only])
     name = models.CharField(max_length=50, verbose_name='Division Name', validators=[
                             validate_alpha_chars_only])
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
