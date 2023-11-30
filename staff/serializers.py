@@ -40,13 +40,15 @@ class EducationViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Education
         exclude = ['staff','institution','branch','status','created_at','updated_at','created_by','updated_by']
-
+    
+    
 class EducationSerializer(serializers.ModelSerializer):
         
     class Meta:
         model = Education
         # fields = '__all__'
         exclude = ['status','created_at','updated_at','created_by','updated_by']
+
 
 class StaffPayrollViewSerializer(serializers.ModelSerializer):
     contract_type = ContractTypeViewSerializer(read_only=True)
@@ -75,6 +77,13 @@ class StaffSocialMediaViewSerializer(serializers.ModelSerializer):
         model = StaffSocialMedia
         exclude = ['staff','status','created_at','updated_at','created_by','updated_by','institution','branch']
 
+    def to_representation(self, instance):
+
+        if instance.status:
+            return super().to_representation(instance)
+        
+    
+
 class StaffSocialMediaCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = StaffSocialMedia
@@ -89,12 +98,38 @@ class staffSerializer(serializers.ModelSerializer):
     staff_education = EducationSerializer(many=True, required=False, read_only=True)
     payroll = StaffPayrollCreateSerializer(many=True, required=False, read_only=True)
     bank_info = StaffBankCreateSerializer(many=True, required=False, read_only=True)
-    social_media = StaffSocialMediaCreateSerializer(many=True, required=False, read_only=True)
+    social_media = StaffSocialMediaCreateSerializer(many=True)
 
     class Meta:
         model = Staff
         # fields = ['first_nmae','last_name']
         exclude = ['code','user','institution','branch','status']
+
+    def update(self, instance, validated_data):
+        social_medias = validated_data.pop('social_media')
+        instance.first_name = validated_data.get("first_name", instance.first_name)
+        instance.save()
+        keep_socials = []
+        for social_media in social_medias:
+            if "id" in social_media.keys():
+                if StaffSocialMedia.objects.filter(id=social_media["id"]).exists():
+                    s = StaffSocialMedia.objects.get(id=social_media["id"])
+                    s.name = social_media.get('name', s.name)
+                    s.username = social_media.get('username', s.username)
+                    s.url = social_media.get('url', s.url)
+                    s.save()
+                    keep_socials.append(s.id)
+                else:
+                    continue
+            else:
+                s = StaffSocialMedia.objects.create(**social_media, staff=instance)
+                keep_socials.append(s.id)
+        
+        for media in instance.social_media.all():
+            if media.id not in keep_socials:
+                media.status = False
+                media.save()
+        return instance
 
 class StaffShiftListSerializer2(serializers.ModelSerializer):
     class Meta:
@@ -118,6 +153,7 @@ class staffSerializer2(serializers.ModelSerializer):
         model = Staff
         # fields = ['first_nmae','last_name']
         exclude = ['code','user','institution','branch','status']
+
         
 class StaffShiftSerializer(serializers.ModelSerializer):
     class Meta:

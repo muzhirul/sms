@@ -428,7 +428,7 @@ class staffCreateView(generics.CreateAPIView):
         last_name = staff_data.get('last_name')
         is_active = staff_data.get('is_active', True) 
         user_type = staff_data.get('user_type', '') 
-        education_datas = staff_data.pop('staff_education', [])
+        # education_datas = staff_data.pop('staff_education', [])
         staff_serializer = self.get_serializer(data=staff_data)
         try:
             if staff_serializer.is_valid():
@@ -440,12 +440,17 @@ class staffCreateView(generics.CreateAPIView):
                 branch = branch_data if branch_data is not None else self.request.user.branch
                 staff = staff_serializer.save(institution=institution,branch=branch)
                 default_password = '12345678'
-                Leaves_info = LeaveType.objects.filter(status=True)
+                Leaves_info = LeaveType.objects.filter(status=True,institution=institution,branch=branch,is_active=True)
                 for Leave_data in Leaves_info:
-                    start_date = datetime(datetime.now().year,1,1)
-                    end_date = datetime(datetime.now().year,12,31)
-                    remain_month = 12-datetime.now().month
-                    actual_leave_day = round((Leave_data.max_days/12)*remain_month)
+                    if staff.doj:
+                        start_date = datetime(staff.doj.year,1,1)
+                        end_date = datetime(staff.doj.year,12,31)
+                        remain_month = 13-staff.doj.month
+                    else:
+                        start_date = datetime(datetime.now().year,1,1)
+                        end_date = datetime(datetime.now().year,12,31)
+                        remain_month = 13-datetime.now().month
+                    actual_leave_day = round((Leave_data.max_days/12)*remain_month)    
                     leave = StaffLeave(start_date=start_date,end_date=end_date,leave_days=actual_leave_day,institution=institution,branch=branch)
                     leave.staff_id = staff.id
                     leave.leave_type_id = Leave_data.id
@@ -477,19 +482,18 @@ class staffCreateView(generics.CreateAPIView):
                         staff.save()
                 except:
                     pass
-                staff_educations = []
-                for education_data in education_datas:
-                    education_data['staff'] = staff.id
-                    education_serializer = EducationSerializer(data=education_data)
-                    education_serializer.is_valid(raise_exception=True)
-                    education = education_serializer.save()
-                    staff_educations.append(education)
-                response_data = staff_serializer.data
+                # staff_educations = []
+                # for education_data in education_datas:
+                #     education_data['staff'] = staff.id
+                #     education_serializer = EducationSerializer(data=education_data)
+                #     education_serializer.is_valid(raise_exception=True)
+                #     education = education_serializer.save()
+                #     staff_educations.append(education)
+                # response_data = staff_serializer.data
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
-            
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        return CustomResponse(code=status.HTTP_200_OK, message="Staff created successfully", data=staff_serializer.data)    
 
 class staffListView(generics.ListAPIView):
     serializer_class = staffSerializer2
@@ -568,21 +572,20 @@ class staffDetailView(generics.RetrieveUpdateAPIView):
         educations_data = request.data.get('staff_education')
         payrolls_data = request.data.get('payroll')
         banks_info_data = request.data.get('bank_info')
-        social_medias_data = request.data.get('social_media')
-        # print(social_medias_data)
-        if social_medias_data:
-            for social_media_data in social_medias_data:
-                social_media_id = social_media_data.get('id')
-                if social_media_id:
-                    social_media = StaffSocialMedia.objects.get(id=social_media_id,staff=staff)
-                    social_media_serializer = StaffSocialMediaCreateSerializer(social_media, data=social_media_data, partial=True)
-                    social_media_serializer.is_valid(raise_exception=True)
-                    social_media_serializer.save(institution=institution,branch=branch)
-                else:
-                    social_media_data['staff'] = staff.id
-                    social_media_serializer = StaffSocialMediaCreateSerializer(data=social_media_data)
-                    social_media_serializer.is_valid(raise_exception=True)
-                    social_media_serializer.save(institution=institution,branch=branch)
+        # social_medias_data = request.data.get('social_media')
+        # if social_medias_data:
+        #     for social_media_data in social_medias_data:
+        #         social_media_id = social_media_data.get('id')
+        #         if social_media_id:
+        #             social_media = StaffSocialMedia.objects.get(id=social_media_id,staff=staff)
+        #             social_media_serializer = StaffSocialMediaCreateSerializer(social_media, data=social_media_data, partial=True)
+        #             social_media_serializer.is_valid(raise_exception=True)
+        #             social_media_serializer.save(institution=institution,branch=branch)
+        #         else:
+        #             social_media_data['staff'] = staff.id
+        #             social_media_serializer = StaffSocialMediaCreateSerializer(data=social_media_data)
+        #             social_media_serializer.is_valid(raise_exception=True)
+        #             social_media_serializer.save(institution=institution,branch=branch)
 
         if banks_info_data:
             for bank_info_data in banks_info_data:

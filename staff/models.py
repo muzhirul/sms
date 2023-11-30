@@ -107,6 +107,7 @@ class Staff(models.Model):
     marital_status = models.ForeignKey(MaritalStatus,on_delete=models.SET_NULL,blank=True,null=True,related_name='staff_marital_status')
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
+    doj = models.DateField(blank=True,null=True,verbose_name='Date Of Join')
     designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, blank=True, null=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
     shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
@@ -125,6 +126,12 @@ class Staff(models.Model):
 
     def __str__(self):
         return self.first_name
+    
+    
+
+
+
+
     
 class Education(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_education')
@@ -247,7 +254,7 @@ class StaffLeave(models.Model):
     def clean(self):
         super().clean()
         # Check if leave_days is greater than the max_days for the associated LeaveType
-        if self.leave_type and self.leave_days > self.leave_type.max_days:
+        if self.leave_type and self.leave_days > self.leave_type.max_days and self.leave_type.is_active and self.leave_type.status:
             raise ValidationError({'leave_days': f"Leave days cannot be greater than {self.leave_type.name}'s max_days ({self.leave_type.max_days})."})
         # Ensure that taken_days is not greater than leave_days
         if self.taken_days > self.leave_days:

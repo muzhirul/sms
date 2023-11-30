@@ -20,7 +20,7 @@ class BankAccountDetailsTabularInline(admin.TabularInline):
 
 class StaffSocialMediaTabularInline(admin.TabularInline):
     model = StaffSocialMedia
-    fields = ['name','username','url']
+    fields = ['name','username','url','status']
     extra = 1
 
 class StaffLeaveTabulrInline(admin.TabularInline):
@@ -35,7 +35,7 @@ class StaffAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Basic Information",{'fields':[('first_name','last_name','gender','religion'),('email','dob','mobile_no','emergency_number','nid'),('photo','photo_thumbnail','blood_group','marital_status'),]}),
         ("Address",{'fields':[('present_address','permanent_address'),]}),
-        ("Assignment",{'fields':[('department','designation','shift'),]})        
+        ("Assignment",{'fields':[('doj','department','designation','shift'),]})        
     ]
     
     class Meta:

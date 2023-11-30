@@ -41,6 +41,7 @@ class LeaveType(models.Model):
     name = models.CharField(max_length=50, verbose_name='Leave Type Name',validators=[validate_alpha_chars_only])
     max_days = models.IntegerField(blank=True, null=True)
     remarks = models.CharField(max_length=255, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
