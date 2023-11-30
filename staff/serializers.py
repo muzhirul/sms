@@ -85,6 +85,7 @@ class StaffSocialMediaViewSerializer(serializers.ModelSerializer):
     
 
 class StaffSocialMediaCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
     class Meta:
         model = StaffSocialMedia
         exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
@@ -106,24 +107,26 @@ class staffSerializer(serializers.ModelSerializer):
         exclude = ['code','user','institution','branch','status']
 
     def update(self, instance, validated_data):
-        social_medias = validated_data.pop('social_media')
+        social_medias = validated_data.pop('social_media',[])
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.save()
         keep_socials = []
+        
         for social_media in social_medias:
             if "id" in social_media.keys():
                 if StaffSocialMedia.objects.filter(id=social_media["id"]).exists():
-                    s = StaffSocialMedia.objects.get(id=social_media["id"])
-                    s.name = social_media.get('name', s.name)
-                    s.username = social_media.get('username', s.username)
-                    s.url = social_media.get('url', s.url)
-                    s.save()
-                    keep_socials.append(s.id)
+                    a = StaffSocialMedia.objects.get(id=social_media["id"])
+                    a.name = social_media.get('name', a.name)
+                    a.username = social_media.get('username', a.username)
+                    a.url = social_media.get('url', a.url)
+                    a.save()
+                    keep_socials.append(a.id)
                 else:
                     continue
             else:
                 s = StaffSocialMedia.objects.create(**social_media, staff=instance)
                 keep_socials.append(s.id)
+                pass
         
         for media in instance.social_media.all():
             if media.id not in keep_socials:
