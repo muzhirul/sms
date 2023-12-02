@@ -10,12 +10,12 @@ class EducationTabularInline(admin.TabularInline):
 
 class PayrollTabularInline(admin.TabularInline):
     model = StaffPayroll
-    fields = ['gross','start_date','end_date','contract_type','is_active','remarks']
+    fields = ['gross','start_date','end_date','contract_type','is_active','remarks','status']
     extra = 1
 
 class BankAccountDetailsTabularInline(admin.TabularInline):
     model = StaffBankAccountDetails
-    fields = ['account_title','account_number','bank_name','branch_name','is_active','remarks']
+    fields = ['account_title','account_number','bank_name','branch_name','is_active','remarks','status']
     extra = 1
 
 class StaffSocialMediaTabularInline(admin.TabularInline):
@@ -25,7 +25,7 @@ class StaffSocialMediaTabularInline(admin.TabularInline):
 
 class StaffLeaveTabulrInline(admin.TabularInline):
     model = StaffLeave
-    fields = ['leave_type','leave_days','taken_days','start_date','end_date','is_active']
+    fields = ['leave_type','leave_days','taken_days','start_date','end_date','is_active','status']
     extra = 1
 
     

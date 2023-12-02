@@ -3,6 +3,7 @@ from setup_app.serializers import BloodGroupSerializer, GenderSerializer, Religi
 from hrms.serializers import AccountBankViewSerializer
 from staff.models import *
 
+
 class DepartmentSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
@@ -40,10 +41,16 @@ class EducationViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Education
         exclude = ['staff','institution','branch','status','created_at','updated_at','created_by','updated_by']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
     
     
 class EducationSerializer(serializers.ModelSerializer):
-        
+    id = serializers.IntegerField(required=False)        
     class Meta:
         model = Education
         # fields = '__all__'
@@ -56,7 +63,14 @@ class StaffPayrollViewSerializer(serializers.ModelSerializer):
         model = StaffPayroll
         exclude = ['staff','status','created_at','updated_at','created_by','updated_by','institution','branch']
 
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
 class StaffPayrollCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
     class Meta:
         model = StaffPayroll
         exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
@@ -67,7 +81,14 @@ class StaffBankViewSerializer(serializers.ModelSerializer):
         model = StaffBankAccountDetails
         exclude = ['staff','status','created_at','updated_at','created_by','updated_by','institution','branch']
 
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
 class StaffBankCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
     class Meta:
         model = StaffBankAccountDetails
         exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
@@ -78,11 +99,11 @@ class StaffSocialMediaViewSerializer(serializers.ModelSerializer):
         exclude = ['staff','status','created_at','updated_at','created_by','updated_by','institution','branch']
 
     def to_representation(self, instance):
-
         if instance.status:
             return super().to_representation(instance)
+        else:
+            return None
         
-    
 
 class StaffSocialMediaCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
@@ -96,9 +117,9 @@ class StaffTeacherSerializer(serializers.ModelSerializer):
         fields = ['id','first_name','last_name','staff_id','user']
 
 class staffSerializer(serializers.ModelSerializer):
-    staff_education = EducationSerializer(many=True, required=False, read_only=True)
+    staff_education = EducationSerializer(many=True)
     payroll = StaffPayrollCreateSerializer(many=True, required=False, read_only=True)
-    bank_info = StaffBankCreateSerializer(many=True, required=False, read_only=True)
+    bank_info = StaffBankCreateSerializer(many=True)
     social_media = StaffSocialMediaCreateSerializer(many=True)
 
     class Meta:
@@ -106,11 +127,97 @@ class staffSerializer(serializers.ModelSerializer):
         # fields = ['first_nmae','last_name']
         exclude = ['code','user','institution','branch','status']
 
+
+
     def update(self, instance, validated_data):
+        staff_educations = validated_data.pop('staff_education',[])
+        staff_payrolls = validated_data.pop('payroll',[])
         social_medias = validated_data.pop('social_media',[])
+        bank_infos = validated_data.pop('bank_info',[])
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.save()
         keep_socials = []
+        kepp_banks_id = []
+        keep_edu_id = []
+        keep_payroll_id = []
+
+        for staff_payroll in staff_payrolls:
+            if "id" in staff_payroll.keys():
+                if StaffPayroll.objects.filter(id=staff_payroll["id"]).exists():
+                    p = StaffPayroll.objects.get(id=staff_payroll["id"])
+                    p.order_seq = staff_payroll.get('order_seq',p.order_seq)
+                    p.gross = staff_payroll.get('gross',p.gross)
+                    p.basic = staff_payroll.get('basic',p.basic)
+                    p.medical = staff_payroll.get('medical',p.medical)
+                    p.convence = staff_payroll.get('convence',p.convence)
+                    p.others = staff_payroll.get('others',p.others)
+                    p.start_date = staff_payroll.get('start_date',p.start_date)
+                    p.end_date = staff_payroll.get('end_date',p.end_date)
+                    p.remarks = staff_payroll.get('remarks',p.remarks)
+                    p.contract_type = staff_payroll.get('contract_type',p.contract_type)
+                    p.is_active = staff_payroll.get('is_active',p.is_active)
+                    p.save()
+                    keep_payroll_id.append(p.id)
+                else:
+                    continue
+            else:
+                p = StaffPayroll.objects.create(**staff_payroll,staff=instance,institution=instance.institution,branch=instance.branch)
+                keep_payroll_id.append(p.id)
+
+            for payroll in instance.staff_payroll.all():
+                if payroll.id not in keep_payroll_id:
+                    payroll.status = False
+                    payroll.save()
+
+        for staff_education in staff_educations:
+            if "id" in staff_education.keys():
+                if Education.objects.filter(id=staff_education["id"]).exists():
+                    e = Education.objects.get(id=staff_education["id"])
+                    e.order_seq = staff_education.get('order_seq', e.order_seq)
+                    e.edu_board = staff_education.get('edu_board', e.edu_board)
+                    e.institution_name = staff_education.get('institution_name', e.institution_name)
+                    e.registration_no = staff_education.get('registration_no', e.registration_no)
+                    e.title = staff_education.get('title', e.title)
+                    e.start_date = staff_education.get('start_date', e.start_date)
+                    e.end_date = staff_education.get('end_date', e.end_date)
+                    e.passing_year = staff_education.get('passing_year', e.passing_year)
+                    e.result = staff_education.get('result', e.result)
+                    e.result_out_of = staff_education.get('result_out_of', e.result_out_of)
+                    e.remarks = staff_education.get('remarks', e.remarks)
+                    e.save()
+                    keep_edu_id.append(e.id)
+                else:
+                    continue
+            else:
+                e = Education.objects.create(**staff_education,staff=instance,institution=instance.institution,branch=instance.branch)
+                keep_edu_id.append(e.id)
+            for education in instance.staff_education.all():
+                if education.id not in keep_edu_id:
+                    education.status = False
+                    education.save()
+
+        for bank_info in bank_infos:
+            if "id" in bank_info.keys():
+                if StaffBankAccountDetails.objects.filter(id=bank_info["id"]).exists():
+                    b = StaffBankAccountDetails.objects.get(id=bank_info["id"])
+                    b.bank_name = bank_info.get('bank_name', b.bank_name)
+                    b.account_title = bank_info.get('account_title', b.account_title)
+                    b.account_number = bank_info.get('account_number', b.account_number)
+                    b.branch_name = bank_info.get('branch_name', b.branch_name)
+                    b.remarks = bank_info.get('remarks', b.remarks)
+                    b.is_active = bank_info.get('is_active', b.is_active)
+                    b.save()
+                    kepp_banks_id.append(b.id)
+                else:
+                    continue
+            else:
+                b = StaffBankAccountDetails.objects.create(**bank_info,staff=instance,institution=instance.institution,branch=instance.branch)
+                kepp_banks_id.append(b.id)
+
+            for bank in instance.bank_info.all():
+                if bank.id not in kepp_banks_id:
+                    bank.status = False
+                    bank.save()
         
         for social_media in social_medias:
             if "id" in social_media.keys():
@@ -124,9 +231,8 @@ class staffSerializer(serializers.ModelSerializer):
                 else:
                     continue
             else:
-                s = StaffSocialMedia.objects.create(**social_media, staff=instance)
+                s = StaffSocialMedia.objects.create(**social_media, staff=instance,institution=instance.institution,branch=instance.branch)
                 keep_socials.append(s.id)
-                pass
         
         for media in instance.social_media.all():
             if media.id not in keep_socials:
@@ -156,6 +262,24 @@ class staffSerializer2(serializers.ModelSerializer):
         model = Staff
         # fields = ['first_nmae','last_name']
         exclude = ['code','user','institution','branch','status']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Filter out None values from the social_media list 
+        representation['staff_education'] = [item for item in representation['staff_education'] if item is not None]
+        representation['payroll'] = [item for item in representation['payroll'] if item is not None]
+        representation['bank_info'] = [item for item in representation['bank_info'] if item is not None]
+        representation['social_media'] = [item for item in representation['social_media'] if item is not None]
+
+        if not instance.status:
+            # If status is False, exclude the social_media field
+            representation.pop('staff_education', None)
+            representation.pop('payroll', None)
+            representation.pop('bank_info', None)
+            representation.pop('social_media', None)
+
+        return representation
 
         
 class StaffShiftSerializer(serializers.ModelSerializer):

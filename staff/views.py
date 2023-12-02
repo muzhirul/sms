@@ -569,9 +569,9 @@ class staffDetailView(generics.RetrieveUpdateAPIView):
         staff_serializer = self.get_serializer(staff, data=request.data, partial=True)
         staff_serializer.is_valid(raise_exception=True)
         instance = staff_serializer.save()
-        educations_data = request.data.get('staff_education')
+        # educations_data = request.data.get('staff_education')
         payrolls_data = request.data.get('payroll')
-        banks_info_data = request.data.get('bank_info')
+        # banks_info_data = request.data.get('bank_info')
         # social_medias_data = request.data.get('social_media')
         # if social_medias_data:
         #     for social_media_data in social_medias_data:
@@ -587,19 +587,19 @@ class staffDetailView(generics.RetrieveUpdateAPIView):
         #             social_media_serializer.is_valid(raise_exception=True)
         #             social_media_serializer.save(institution=institution,branch=branch)
 
-        if banks_info_data:
-            for bank_info_data in banks_info_data:
-                bank_info_id = bank_info_data.get('id')
-                if bank_info_id:
-                    bank_info = StaffBankAccountDetails.objects.get(id=bank_info_id,staff=staff)
-                    bank_info_serializer = StaffBankCreateSerializer(bank_info, data=bank_info_data, partial=True)
-                    bank_info_serializer.is_valid(raise_exception=True)
-                    bank_info_serializer.save(institution=institution,branch=branch)
-                else:
-                    bank_info_data['staff'] = staff.id
-                    bank_info_serializer = StaffBankCreateSerializer(data=bank_info_data)
-                    bank_info_serializer.is_valid(raise_exception=True)
-                    bank_info_serializer.save(institution=institution,branch=branch)
+        # if banks_info_data:
+        #     for bank_info_data in banks_info_data:
+        #         bank_info_id = bank_info_data.get('id')
+        #         if bank_info_id:
+        #             bank_info = StaffBankAccountDetails.objects.get(id=bank_info_id,staff=staff)
+        #             bank_info_serializer = StaffBankCreateSerializer(bank_info, data=bank_info_data, partial=True)
+        #             bank_info_serializer.is_valid(raise_exception=True)
+        #             bank_info_serializer.save(institution=institution,branch=branch)
+        #         else:
+        #             bank_info_data['staff'] = staff.id
+        #             bank_info_serializer = StaffBankCreateSerializer(data=bank_info_data)
+        #             bank_info_serializer.is_valid(raise_exception=True)
+        #             bank_info_serializer.save(institution=institution,branch=branch)
 
         if payrolls_data:
             for payroll_data in payrolls_data:
@@ -615,19 +615,19 @@ class staffDetailView(generics.RetrieveUpdateAPIView):
                     payroll_serializer.is_valid(raise_exception=True)
                     payroll_serializer.save(institution=institution,branch=branch)
 
-        if educations_data:
-            for education_data in educations_data:
-                education_id = education_data.get('id')
-                if education_id:
-                    education = Education.objects.get(id=education_id, staff=staff)
-                    enroll_serializer = EducationSerializer(education, data=education_data, partial=True)
-                    enroll_serializer.is_valid(raise_exception=True)
-                    enroll_serializer.save(institution=institution,branch=branch)
-                else:
-                    education_data['staff'] = staff.id
-                    enroll_serializer = EducationSerializer(data=education_data)
-                    enroll_serializer.is_valid(raise_exception=True)
-                    enroll_serializer.save(institution=institution,branch=branch)
+        # if educations_data:
+        #     for education_data in educations_data:
+        #         education_id = education_data.get('id')
+        #         if education_id:
+        #             education = Education.objects.get(id=education_id, staff=staff)
+        #             enroll_serializer = EducationSerializer(education, data=education_data, partial=True)
+        #             enroll_serializer.is_valid(raise_exception=True)
+        #             enroll_serializer.save(institution=institution,branch=branch)
+        #         else:
+        #             education_data['staff'] = staff.id
+        #             enroll_serializer = EducationSerializer(data=education_data)
+        #             enroll_serializer.is_valid(raise_exception=True)
+        #             enroll_serializer.save(institution=institution,branch=branch)
         return CustomResponse(code=status.HTTP_200_OK, message="Staff information updated successfully", data=staffSerializer2(instance).data)
 
 class StaffImageUpload(generics.UpdateAPIView):
