@@ -570,7 +570,7 @@ class staffDetailView(generics.RetrieveUpdateAPIView):
         staff_serializer.is_valid(raise_exception=True)
         instance = staff_serializer.save()
         # educations_data = request.data.get('staff_education')
-        payrolls_data = request.data.get('payroll')
+        # payrolls_data = request.data.get('payroll')
         # banks_info_data = request.data.get('bank_info')
         # social_medias_data = request.data.get('social_media')
         # if social_medias_data:
@@ -601,19 +601,19 @@ class staffDetailView(generics.RetrieveUpdateAPIView):
         #             bank_info_serializer.is_valid(raise_exception=True)
         #             bank_info_serializer.save(institution=institution,branch=branch)
 
-        if payrolls_data:
-            for payroll_data in payrolls_data:
-                payroll_id = payroll_data.get('id')
-                if payroll_id:
-                    payroll = StaffPayroll.objects.get(id=payroll_id,staff=staff)
-                    payroll_serializer = StaffPayrollCreateSerializer(payroll, data=payroll_data, partial=True)
-                    payroll_serializer.is_valid(raise_exception=True)
-                    payroll_serializer.save(institution=institution,branch=branch)
-                else:
-                    payroll_data['staff'] = staff.id
-                    payroll_serializer = StaffPayrollCreateSerializer(data=payroll_data)
-                    payroll_serializer.is_valid(raise_exception=True)
-                    payroll_serializer.save(institution=institution,branch=branch)
+        # if payrolls_data:
+        #     for payroll_data in payrolls_data:
+        #         payroll_id = payroll_data.get('id')
+        #         if payroll_id:
+        #             payroll = StaffPayroll.objects.get(id=payroll_id,staff=staff)
+        #             payroll_serializer = StaffPayrollCreateSerializer(payroll, data=payroll_data, partial=True)
+        #             payroll_serializer.is_valid(raise_exception=True)
+        #             payroll_serializer.save(institution=institution,branch=branch)
+        #         else:
+        #             payroll_data['staff'] = staff.id
+        #             payroll_serializer = StaffPayrollCreateSerializer(data=payroll_data)
+        #             payroll_serializer.is_valid(raise_exception=True)
+        #             payroll_serializer.save(institution=institution,branch=branch)
 
         # if educations_data:
         #     for education_data in educations_data:
