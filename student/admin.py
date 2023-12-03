@@ -22,7 +22,7 @@ class GuardianTabularInline(admin.TabularInline):
 
 class StudentEnrollTabularInline(admin.TabularInline):
     model = StudentEnroll
-    fields = ['version','session','class_name','group','section','roll','start_date','end_date','remarks']
+    fields = ['version','session','class_name','group','section','roll','start_date','end_date','remarks','status']
     extra = 0
 
 @admin_thumbnails.thumbnail('photo')

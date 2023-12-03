@@ -3,6 +3,7 @@ from .views import *
 
 urlpatterns = [
     # For account bank
+    path('api/bank/list', BankList.as_view(), name='bank-list'),
     path('api/bank', BankCreateList.as_view(), name='bank-list-create'),
     path('api/bank/detail/<int:pk>', BankDetail.as_view(), name='bank-detail'),
     path('api/bank/delete/<int:pk>', BankDelete.as_view(), name='Bank-delete'),

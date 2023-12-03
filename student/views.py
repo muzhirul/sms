@@ -201,9 +201,20 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
                 enroll_id = enroll_item.get('id')
                 if enroll_id:
                     enroll = StudentEnroll.objects.get(id=enroll_id, student=student)
-                    enroll_serializer = StudentEnrollSerialize(enroll, data=enroll_item, partial=True)
-                    enroll_serializer.is_valid(raise_exception=True)
-                    enroll_serializer.save(institution=institution,branch=branch)
+                    if enroll.section.id==enroll_item.get('section') and enroll.class_name.id==enroll_item.get('class_name') and enroll.version.id==enroll_item.get('version') and enroll.session.id==enroll_item.get('session'):
+                        enroll_serializer = StudentEnrollSerialize(enroll, data=enroll_item, partial=True)
+                        enroll_serializer.is_valid(raise_exception=True)
+                        enroll_serializer.save(institution=institution,branch=branch)
+                    else:
+                        std_roll = StudentEnroll.objects.filter(status=True,section=enroll_item.get('section'),class_name=enroll_item.get('class_name'),version=enroll_item.get('version'),session=enroll_item.get('session'),institution=institution,branch=branch).order_by('roll').last()
+                        if not std_roll or std_roll.roll is None:
+                            class_roll = str(1)
+                        else:
+                            int_roll = int(std_roll.roll)
+                            class_roll = str(int_roll+1)
+                        enroll_serializer = StudentEnrollSerialize(enroll, data=enroll_item, partial=True)
+                        enroll_serializer.is_valid(raise_exception=True)
+                        enroll_serializer.save(roll=class_roll,institution=institution,branch=branch)
                 else:
                     std_roll = StudentEnroll.objects.filter(status=True,section=enroll_item.get('section'),class_name=enroll_item.get('class_name'),version=enroll_item.get('version'),session=enroll_item.get('session'),institution=institution,branch=branch).order_by('roll').last()
                     if not std_roll or std_roll.roll is None:

@@ -1299,3 +1299,40 @@ class ThanaDelete(generics.UpdateAPIView):
         instance.save()
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Thana {instance.name} Delete successfully", data=None)
+
+'''
+For Contract Type
+'''
+
+class ContractTypeList(generics.ListAPIView):
+    serializer_class = ContractTypeViewSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = ContractType.objects.filter(status=True).order_by('-id')
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+

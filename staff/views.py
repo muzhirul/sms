@@ -399,7 +399,7 @@ class DesignationDelete(generics.UpdateAPIView):
         return CustomResponse(code=status.HTTP_200_OK, message=f"Designation {instance.name} Delete successfully", data=None)
 
 class staffCreateView(generics.CreateAPIView):
-    serializer_class = staffSerializer
+    serializer_class = staffCreateSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     pagination_class = CustomPagination
     
