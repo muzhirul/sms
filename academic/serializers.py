@@ -211,6 +211,24 @@ class ClassPeriodSerializer(serializers.ModelSerializer):
         # Exclude the specified fields from serialization
         exclude = ['status','code']
 
+class ClassGroupViewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ClassGroup
+        exclude = ['status']
+
+    def to_representation(self, instance):
+
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return {}
+
+class ClassGroupCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ClassGroup
+        exclude = ['status']
 
 class ClassSectionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -221,6 +239,7 @@ class ClassSectionSerializer(serializers.ModelSerializer):
     class_name = ClassSerializer2(read_only=True)
     session = SessionSerializer2(read_only=True)
     section = SectionSerializer2(read_only=True)
+    group = ClassGroupViewSerializer(read_only=True)
     class Meta:
         model = ClassSection
         # Exclude the specified fields from serialization
@@ -300,21 +319,3 @@ class ClassRoutineSerializer2(serializers.ModelSerializer):
             # If status is False, return an empty dictionary
             return {}
 
-class ClassGroupViewSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = ClassGroup
-        exclude = ['status']
-
-    def to_representation(self, instance):
-
-        if instance.status:
-            return super().to_representation(instance)
-        else:
-            return {}
-
-class ClassGroupCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = ClassGroup
-        exclude = ['status']

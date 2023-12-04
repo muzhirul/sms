@@ -125,7 +125,7 @@ class staffCreateSerializer(serializers.ModelSerializer):
 
 class staffSerializer(serializers.ModelSerializer):
     staff_education = EducationSerializer(many=True)
-    payroll = StaffPayrollCreateSerializer(many=True, required=False, read_only=True)
+    payroll = StaffPayrollCreateSerializer(many=True)
     bank_info = StaffBankCreateSerializer(many=True)
     social_media = StaffSocialMediaCreateSerializer(many=True)
 
@@ -135,16 +135,17 @@ class staffSerializer(serializers.ModelSerializer):
         exclude = ['code','user','institution','branch','status']
 
     def update(self, instance, validated_data):
+        staff_payrolls = validated_data.pop('payroll', [])
         staff_educations = validated_data.pop('staff_education',[])
-        staff_payrolls = validated_data.pop('payroll',[])
         social_medias = validated_data.pop('social_media',[])
         bank_infos = validated_data.pop('bank_info',[])
-        instance.first_name = validated_data.get("first_name", instance.first_name)
+        instance.step = validated_data.get("step", instance.step)
         instance.save()
         keep_socials = []
         kepp_banks_id = []
         keep_edu_id = []
         keep_payroll_id = []
+        # print(staff_payrolls)
         try:
             for staff_payroll in staff_payrolls:
                 if "id" in staff_payroll.keys():
@@ -169,11 +170,11 @@ class staffSerializer(serializers.ModelSerializer):
                 else:
                     p = StaffPayroll.objects.create(**staff_payroll,staff=instance,institution=instance.institution,branch=instance.branch)
                     keep_payroll_id.append(p.id)
-
-            for payroll in instance.staff_payroll.all():
-                if payroll.id not in keep_payroll_id:
-                    payroll.status = False
-                    payroll.save()
+                    
+                for payroll in StaffPayroll.objects.filter(staff=instance):
+                    if payroll.id not in keep_payroll_id:
+                        payroll.status = False
+                        payroll.save()
         except:
             pass
         try:
@@ -202,6 +203,7 @@ class staffSerializer(serializers.ModelSerializer):
                     keep_edu_id.append(e.id)
 
                 for education in instance.staff_education.all():
+                    print('Education data')
                     if education.id not in keep_edu_id:
                         education.status = False
                         education.save()
@@ -300,8 +302,7 @@ class staffSerializer2(serializers.ModelSerializer):
             representation.pop('social_media', None)
 
         return representation
-
-        
+     
 class StaffShiftSerializer(serializers.ModelSerializer):
     class Meta:
         model = StaffShift

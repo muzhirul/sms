@@ -45,7 +45,6 @@ class Designation(models.Model):
 
     def __str__(self):
         return str(self.name)
-    
 
 class Department(models.Model):
     code = models.CharField(max_length=20, blank=True, null=True)
@@ -89,7 +88,6 @@ class StaffShift(models.Model):
     def __str__(self):
         return str(self.name)
 
-
 class Staff(models.Model):
     code = models.CharField(max_length=20, blank=True, null=True,verbose_name='Staff Code')
     staff_id = models.CharField(max_length=20, blank=True,null=True,editable=False, verbose_name='Staff ID',default=staff_no)
@@ -126,12 +124,6 @@ class Staff(models.Model):
 
     def __str__(self):
         return self.first_name
-    
-    
-
-
-
-
     
 class Education(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_education')
@@ -208,7 +200,6 @@ class StaffBankAccountDetails(models.Model):
 
     def __str__(self):
         return str(self.account_title)
-    
 
 class StaffSocialMedia(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='social_media')

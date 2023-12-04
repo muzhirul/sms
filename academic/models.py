@@ -207,6 +207,7 @@ class ClassSection(models.Model):
     section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True, null=True)
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, blank=True, null=True)
     version = models.ForeignKey(Version, on_delete=models.SET_NULL, blank=True, null=True)
+    group = models.ForeignKey(ClassGroup, on_delete=models.SET_NULL,blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)

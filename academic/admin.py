@@ -96,8 +96,8 @@ class ClassPeriodAdmin(admin.ModelAdmin):
         model = ClassPeriod
         
 class ClassSectionAdmin(admin.ModelAdmin):
-    fields = ['class_name','section','session','version']
-    list_display = ['class_name','section','session','version','status']
+    fields = ['class_name','section','group','session','version']
+    list_display = ['class_name','group','section','session','version','status']
     search_fields = ['class_name__name','section__section','session__session']
     class Meta:
         model = ClassSection
