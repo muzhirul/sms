@@ -457,7 +457,6 @@ class LeaveTypeDetail(generics.RetrieveUpdateAPIView):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        print(instance.leave_type_code)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')

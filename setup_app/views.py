@@ -257,55 +257,6 @@ class RelationList(generics.ListAPIView):
         return Response(response_data)
 
 
-class DayList(generics.ListAPIView):
-    serializer_class = DaySerializer
-    # Requires a valid JWT token for access
-    permission_classes = [permissions.IsAuthenticated]
-    pagination_class = CustomPagination
-
-    def get_queryset(self):
-        queryset = Day.objects.filter(status=True).order_by('sl_no')
-        try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('sl_no')
-            elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('sl_no')
-            elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('sl_no')
-            else:
-                queryset
-        except:
-            pass
-        return queryset
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            response_data = self.get_paginated_response(serializer.data).data
-        else:
-            serializer = self.get_serializer(queryset, many=True)
-            response_data = {
-                "code": 200,
-                "message": "Success",
-                "data": serializer.data,
-                "pagination": {
-                    "next": None,
-                    "previous": None,
-                    "count": queryset.count(),
-                },
-            }
-
-        return Response(response_data)
-
-
 class FloorList(generics.ListAPIView):
     serializer_class = FloorTypeSerializer
     # Requires a valid JWT token for access
@@ -1335,4 +1286,202 @@ class ContractTypeList(generics.ListAPIView):
 
         return Response(response_data)
 
+'''For Days'''
 
+class DayList(generics.ListAPIView):
+    serializer_class = DaySerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = Days.objects.filter(status=True).order_by('sl_no')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(
+                    institution=institution_id, branch=branch_id, status=True).order_by('sl_no')
+            elif branch_id:
+                queryset = queryset.filter(
+                    branch=branch_id, status=True).order_by('sl_no')
+            elif institution_id:
+                queryset = queryset.filter(
+                    institution=institution_id, status=True).order_by('sl_no')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+class DayCreateList(generics.ListCreateAPIView):
+    # queryset = Version.objects.filter(status=True).order_by('id')
+    serializer_class = DayCreateSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = Days.objects.filter(status=True).order_by('sl_no')
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Day', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+    def create(self, request, *args, **kwargs):
+        '''Check user has permission to Create start'''
+        permission_check = check_permission(self.request.user.id, 'Day', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Create End'''
+
+        serializer = self.get_serializer(data=request.data)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                short_name = serializer.validated_data.get('short_name')
+                long_name = serializer.validated_data.get('long_name')
+                # If data is provided, use it; otherwise, use the values from the request user
+                day_count = Days.objects.filter(long_name__iexact=long_name, status=True).count()
+                if (day_count == 0):
+                    instance = serializer.save(institution=institution,branch=branch)
+                    # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Day created successfully", data=DayCreateSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Day {long_name} already exits", data=serializer.errors)
+            # If the serializer is not valid, return an error response
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+class DayDetail(generics.RetrieveUpdateAPIView):
+    queryset = Days.objects.all()
+    serializer_class = DayCreateSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Day', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=DayCreateSerializer(instance).data)
+
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Day', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                short_name = serializer.validated_data.get('short_name')
+                long_name = serializer.validated_data.get('long_name')
+                if (long_name==instance.long_name):
+                    instance = serializer.save()
+                    return CustomResponse(code=status.HTTP_200_OK, message="Day update successfully", data=DayCreateSerializer(instance).data)
+                else:
+                    
+                    institution = institution_data if institution_data is not None else self.request.user.institution
+                    branch = branch_data if branch_data is not None else self.request.user.branch
+                    # If data is provided, use it; otherwise, use the values from the request user
+                    day_count = Days.objects.filter(long_name__iexact=long_name, status=True,institution=institution,branch=branch).count()
+                    if (day_count == 0):
+                        # Perform any custom update logic here if needed
+                        instance = serializer.save()
+                        # Customize the response data
+                        return CustomResponse(code=status.HTTP_200_OK, message="Day update successfully", data=DayCreateSerializer(instance).data)
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Day {long_name} already exits", data=serializer.errors)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
+class DayDelete(generics.UpdateAPIView):
+    queryset = Days.objects.all()
+    serializer_class = DayCreateSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Day', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+
+        instance = self.get_object()
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Day {instance.long_name} already Deleted", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Day {instance.long_name} Delete successfully", data=None)

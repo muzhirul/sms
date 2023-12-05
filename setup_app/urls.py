@@ -7,7 +7,6 @@ urlpatterns = [
     path('api/gender/list', GenderList.as_view(), name='gender-list'),
     path('api/occupation/list', OccupationList.as_view(), name='occupation-list'),
     path('api/relation/list', RelationList.as_view(), name='relation-list'),
-    path('api/day/list', DayList.as_view(), name='day-list'),
     path('api/floor/list', FloorList.as_view(), name='floor-list'),
     path('api/subject-type/list', SubjectTypeList.as_view(), name='subject-type-list'),
     # For Education Board
@@ -37,5 +36,10 @@ urlpatterns = [
     path('api/thana/delete/<int:pk>', ThanaDelete.as_view(), name='thana-delete'),
     # For Contract Type
     path('api/contrac-type/list', ContractTypeList.as_view(), name='contrac-type-list'),
+    # For Days
+    path('api/day/list', DayList.as_view(), name='day-list'),
+    path('api/day', DayCreateList.as_view(),name='Day-create-list'),
+    path('api/day/detail/<int:pk>',DayDetail.as_view(), name='Day-detail'),
+    path('api/day/delete/<int:pk>',DayDelete.as_view(), name='Day-delete'),
 
 ]

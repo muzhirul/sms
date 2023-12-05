@@ -3,7 +3,7 @@ from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 import uuid
 from django.contrib.auth.models import User
-from setup_app.models import Day, FloorType, SubjectType
+from setup_app.models import Days, FloorType, SubjectType
 from staff.models import Staff
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -275,7 +275,7 @@ class ClassRoutine(models.Model):
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='Version')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Subject')
     class_period = models.ForeignKey(ClassPeriod, on_delete=models.CASCADE, verbose_name='Class Period')
-    day = models.ForeignKey(Day,on_delete=models.CASCADE, verbose_name='Day')
+    day = models.ForeignKey(Days,on_delete=models.CASCADE, verbose_name='Day')
     class_room = models.ForeignKey(ClassRoom, on_delete=models.CASCADE,blank=True, null=True, verbose_name='Class Room')
     institution = models.ForeignKey(Institution,on_delete=models.CASCADE,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.CASCADE,blank=True,null=True)
@@ -294,7 +294,7 @@ class ClassRoutine(models.Model):
 
 class ClassRoutineMst(models.Model):
     class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
-    day = models.ForeignKey(Day,on_delete=models.CASCADE, verbose_name='Day')
+    day = models.ForeignKey(Days,on_delete=models.CASCADE, verbose_name='Day')
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
     session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session')
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='Version')

@@ -203,26 +203,22 @@ class Permission(models.Model):
 
     def __str__(self):
         return str(self.id)
-
-class Day(models.Model):
-    short_name = models.CharField(max_length=5, primary_key=True)
-    long_name = models.CharField(max_length=20)
+    
+class Days(models.Model):
+    short_name = models.CharField(max_length=5, validators=[validate_alpha_chars_only])
+    long_name = models.CharField(max_length=20, validators=[validate_alpha_chars_only])
     sl_no = models.IntegerField()
     week_end = models.BooleanField(default=False) 
     status = models.BooleanField(default=True)
-    institution = models.ForeignKey(
-        Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
-    branch = models.ForeignKey(
-        Branch, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Branch Name')
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='day_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='day_update_by', editable=False, blank=True, null=True)
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='days_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='days_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 's_days'
+        db_table = 's_day'
 
     def __str__(self):
         return self.long_name
@@ -326,17 +322,12 @@ class Division(models.Model):
         return self.name
 
 class District(models.Model):
-    dist_code = models.CharField(max_length=4, verbose_name='District Code', validators=[
-        validate_alpha_chars_only])
-    name = models.CharField(max_length=50, verbose_name='District Name', validators=[
-                            validate_alpha_chars_only])
-    division = models.ForeignKey(
-        Division, on_delete=models.SET_NULL, blank=True, null=True)
+    dist_code = models.CharField(max_length=4, verbose_name='District Code', validators=[validate_alpha_chars_only])
+    name = models.CharField(max_length=50, verbose_name='District Name', validators=[validate_alpha_chars_only])
+    division = models.ForeignKey(Division, on_delete=models.SET_NULL, blank=True, null=True)
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='district_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='district_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='district_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='district_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

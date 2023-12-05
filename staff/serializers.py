@@ -139,13 +139,31 @@ class staffSerializer(serializers.ModelSerializer):
         staff_educations = validated_data.pop('staff_education',[])
         social_medias = validated_data.pop('social_media',[])
         bank_infos = validated_data.pop('bank_info',[])
-        instance.step = validated_data.get("step", instance.step)
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        # instance.step = validated_data.get("step", instance.step)
+        # instance.first_name = validated_data.get("first_name", instance.first_name)
+        # instance.last_name = validated_data.get("last_name", instance.last_name)
+        # instance.gender = validated_data.get("gender", instance.gender)
+        # instance.dob = validated_data.get("dob", instance.dob)
+        # instance.mobile_no = validated_data.get("mobile_no", instance.mobile_no)
+        # instance.emergency_number = validated_data.get("emergency_number", instance.emergency_number)
+        # instance.nid = validated_data.get("nid", instance.nid)
+        # instance.religion = validated_data.get("religion", instance.religion)
+        # instance.email = validated_data.get("email", instance.email)
+        # instance.blood_group = validated_data.get("blood_group", instance.blood_group)
+        # instance.marital_status = validated_data.get("marital_status", instance.marital_status)
+        # instance.present_address = validated_data.get("present_address", instance.present_address)
+        # instance.permanent_address = validated_data.get("permanent_address", instance.permanent_address)
+        # instance.doj = validated_data.get("doj", instance.doj)
+        # instance.designation = validated_data.get("designation", instance.designation)
+        # instance.department = validated_data.get("department", instance.department)
+        # instance.shift = validated_data.get("shift", instance.shift)
         instance.save()
         keep_socials = []
         kepp_banks_id = []
         keep_edu_id = []
         keep_payroll_id = []
-        # print(staff_payrolls)
         try:
             for staff_payroll in staff_payrolls:
                 if "id" in staff_payroll.keys():

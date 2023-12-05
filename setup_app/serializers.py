@@ -56,8 +56,16 @@ class RelationSerializer(serializers.ModelSerializer):
 class DaySerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Day
+        model = Days
         fields = ['short_name', 'long_name']
+
+class DayCreateSerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+
+    class Meta:
+        model = Days
+        exclude = ['status']
 
 
 class FloorTypeSerializer(serializers.ModelSerializer):

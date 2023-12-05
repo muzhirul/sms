@@ -89,7 +89,7 @@ class DayAdmin(admin.ModelAdmin):
     list_display = ['short_name', 'long_name','week_end','created_by', 'created_at']
 
     class Meta:
-        model = Day
+        model = Days
 
 
 class FloorTypeAdmin(admin.ModelAdmin):
@@ -164,7 +164,7 @@ admin.site.register(Relation, RelationAdmin)
 admin.site.register(Menu, MenuAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Permission, PermissionAdmin)
-admin.site.register(Day, DayAdmin)
+admin.site.register(Days, DayAdmin)
 admin.site.register(FloorType, FloorTypeAdmin)
 admin.site.register(SubjectType, SubjectTypeAdmin)
 admin.site.register(EducationBoard, EducationBoardAdmin)
