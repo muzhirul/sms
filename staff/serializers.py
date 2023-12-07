@@ -47,15 +47,13 @@ class EducationViewSerializer(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             return None
-    
-    
+     
 class EducationSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)        
     class Meta:
         model = Education
         # fields = '__all__'
         exclude = ['status','created_at','updated_at','created_by','updated_by']
-
 
 class StaffPayrollViewSerializer(serializers.ModelSerializer):
     contract_type = ContractTypeViewSerializer(read_only=True)
@@ -102,8 +100,7 @@ class StaffSocialMediaViewSerializer(serializers.ModelSerializer):
         if instance.status:
             return super().to_representation(instance)
         else:
-            return None
-        
+            return None      
 
 class StaffSocialMediaCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
@@ -116,20 +113,17 @@ class StaffTeacherSerializer(serializers.ModelSerializer):
         model = Staff
         fields = ['id','first_name','last_name','staff_id','user']
 
-
 class StaffTeacherViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Staff
         fields = ['id','name','staff_id']
 
-
 class staffCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         # fields = ['first_nmae','last_name']
         exclude = ['code','user','institution','branch','status']
-
 
 class staffSerializer(serializers.ModelSerializer):
     staff_education = EducationSerializer(many=True)
