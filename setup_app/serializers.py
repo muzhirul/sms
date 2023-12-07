@@ -7,15 +7,24 @@ class MenuSerializer(serializers.ModelSerializer):
     sub_menu = RecursiveField(many=True, Required=False)
 
     class Meta:
-        model: Menu
+        model= Menu
         fields = ['name', 'slug', 'icon', 'level', 'sl_no']
 
 
 class RoleSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model: Role
-        fields = ['name']
+        model= Role
+        fields = ['id','name']
+        # fields ='__all__'
+    
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return None
 
 
 class ReligionSerializer(serializers.ModelSerializer):

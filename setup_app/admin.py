@@ -152,6 +152,12 @@ class MaritalStatusAdmin(admin.ModelAdmin):
 
     class Meta:
         model = MaritalStatus
+
+class AttendanceTypeAdmin(admin.ModelAdmin):
+    list_display = ['name','status']
+
+    class Meta:
+        model = AttendanceType
         
 
 
@@ -174,3 +180,4 @@ admin.site.register(Country, CountryAdmin)
 admin.site.register(Thana, ThanaAdmin)
 admin.site.register(ContractType, ContractTypeAdmin)
 admin.site.register(MaritalStatus, MaritalStatusAdmin)
+admin.site.register(AttendanceType, AttendanceTypeAdmin)

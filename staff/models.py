@@ -106,6 +106,7 @@ class Staff(models.Model):
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
     doj = models.DateField(blank=True,null=True,verbose_name='Date Of Join')
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, blank=True, null=True)
     designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, blank=True, null=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
     shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
@@ -124,6 +125,9 @@ class Staff(models.Model):
 
     def __str__(self):
         return self.first_name
+    
+    def name(self):
+        return f'{self.first_name} {self.last_name}'
     
 class Education(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_education')

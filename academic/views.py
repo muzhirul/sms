@@ -93,8 +93,7 @@ class VersionList(generics.ListCreateAPIView):
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                version_count = Version.objects.filter(
-                    version=version, institution=institution, branch=branch, status=True).count()
+                version_count = Version.objects.filter(version=version, institution=institution, branch=branch, status=True).count()
                 if (version_count == 0):
                     instance = serializer.save(
                         institution=institution, branch=branch)

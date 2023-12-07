@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer,EducationBoardViewSerializer, ContractTypeViewSerializer,MaritalStatusViewSerializer
+from setup_app.serializers import *
 from hrms.serializers import AccountBankViewSerializer
 from staff.models import *
 
@@ -115,6 +115,14 @@ class StaffTeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = ['id','first_name','last_name','staff_id','user']
+
+
+class StaffTeacherViewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Staff
+        fields = ['id','name','staff_id']
+
 
 class staffCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -292,6 +300,7 @@ class staffSerializer2(serializers.ModelSerializer):
     designation = DesignationListSerializer(read_only=True)
     department = DepartmentListSerializer(read_only=True)
     shift = StaffShiftListSerializer2(read_only=True)
+    role = RoleSerializer(read_only=True)
     marital_status = MaritalStatusViewSerializer(read_only=True)
     staff_education = EducationViewSerializer(many=True, required=False, read_only=True)
     payroll =StaffPayrollViewSerializer(many=True, required=False, read_only=True)

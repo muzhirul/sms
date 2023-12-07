@@ -168,10 +168,8 @@ class Menu(models.Model):
 class Role(models.Model):
     name = models.CharField(max_length=50)
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='role_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='role_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='role_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='role_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -179,22 +177,18 @@ class Role(models.Model):
         db_table = 's_role'
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 class Permission(models.Model):
-    role = models.ForeignKey(
-        Role, on_delete=models.SET_NULL, blank=True, null=True)
-    menu = models.ForeignKey(
-        Menu, on_delete=models.SET_NULL, blank=True, null=True)
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, blank=True, null=True)
+    menu = models.ForeignKey(Menu, on_delete=models.SET_NULL, blank=True, null=True)
     can_create = models.BooleanField(default=False, verbose_name='Create')
     can_view = models.BooleanField(default=True, verbose_name='View')
     can_update = models.BooleanField(default=False, verbose_name='Update')
     can_delete = models.BooleanField(default=False, verbose_name='Delete')
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='permission_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='permission_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='permission_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='permission_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 
@@ -386,5 +380,18 @@ class MaritalStatus(models.Model):
     def __str__(self):
         return self.name
 
+class AttendanceType(models.Model):
+    name = models.CharField(max_length=50, blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='attend_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='attend_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 's_attend_type'
+
+    def __str__(self):
+        return str(self.id)
 
 

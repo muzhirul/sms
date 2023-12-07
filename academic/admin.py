@@ -110,7 +110,12 @@ class ClassSubjectAdmin(admin.ModelAdmin):
     search_fields = ['subject__name']
     class Meta:
         model = ClassSubject
-        
+
+class ClassTeacherAdmin(admin.ModelAdmin):
+    list_display = ['class_name','section','group','session','version']
+    class Meta:
+        model = ClassTeacher
+
 class ClassRoutineAdmin(admin.ModelAdmin):
     fields = ['teacher','class_name','section','subject','class_period','day','class_room','session','version','status']
     list_display = ['teacher','class_name','section','subject','class_period','day','class_room','session','version','status']
@@ -130,6 +135,8 @@ class ClassRoutineMstAdmin(admin.ModelAdmin):
         
     inlines = [ClassRoutineDtlAdmin]
 
+
+
 admin.site.register(Version,VersionAdmin)
 admin.site.register(Session,SessionAdmin)
 admin.site.register(Section,SectionAdmin)
@@ -140,5 +147,6 @@ admin.site.register(ClassRoom,ClassRoomAdmin)
 admin.site.register(ClassPeriod,ClassPeriodAdmin)
 admin.site.register(ClassSection,ClassSectionAdmin)
 admin.site.register(ClassSubject,ClassSubjectAdmin)
+admin.site.register(ClassTeacher,ClassTeacherAdmin)
 admin.site.register(ClassRoutine,ClassRoutineAdmin)
 admin.site.register(ClassRoutineMst, ClassRoutineMstAdmin)

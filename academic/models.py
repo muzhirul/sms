@@ -266,7 +266,30 @@ class ClassSubject(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+class ClassTeacher(models.Model):
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='Version')
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session')
+    class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
+    group = models.ForeignKey(ClassGroup, on_delete=models.SET_NULL,blank=True,null=True)
+    teacher = models.ForeignKey(Staff, on_delete=models.CASCADE, verbose_name='Teacher Name')
+    institution = models.ForeignKey(Institution,on_delete=models.CASCADE,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.CASCADE,blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_teacher_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_teacher_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ac_class_teacher'
     
+    def __str__(self):
+        return str(self.id)
+
+
+
 class ClassRoutine(models.Model):
     teacher = models.ForeignKey(Staff, on_delete=models.CASCADE, verbose_name='Teacher Name')
     class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
