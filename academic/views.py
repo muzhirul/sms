@@ -1200,7 +1200,6 @@ class ClassPeriodDelete(generics.UpdateAPIView):
 For Class Section
 '''
 
-
 class ClassSectionList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
     serializer_class = ClassSectionSerializer
@@ -1290,7 +1289,6 @@ class ClassSectionList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-
 class ClassSectionDetail(generics.RetrieveUpdateAPIView):
     queryset = ClassSection.objects.all()
     serializer_class = ClassSectionSerializer
@@ -1332,8 +1330,7 @@ class ClassSectionDetail(generics.RetrieveUpdateAPIView):
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                class_section_count = ClassSection.objects.filter(
-                    class_name=class_name, section=section, session=session, version=version, institution=institution, branch=branch, status=True).count()
+                class_section_count = ClassSection.objects.filter(class_name=class_name, section=section, session=session, version=version, institution=institution, branch=branch, status=True).count()
                 if (class_section_count == 0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
@@ -1346,7 +1343,6 @@ class ClassSectionDetail(generics.RetrieveUpdateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
-
 
 class ClassSectionDelete(generics.UpdateAPIView):
     queryset = ClassSection.objects.all()
@@ -1370,11 +1366,9 @@ class ClassSectionDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Section {instance.class_name} {instance.section} Delete successfully", data=None)
 
-
 '''
 For Class Subject
 '''
-
 
 class ClassSubjectList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
@@ -1467,7 +1461,6 @@ class ClassSubjectList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-
 class ClassSubjectDetail(generics.RetrieveUpdateAPIView):
     queryset = ClassSubject.objects.all()
     serializer_class = ClassSubjectSerializer
@@ -1526,7 +1519,6 @@ class ClassSubjectDetail(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
-
 class ClassSubjectDelete(generics.UpdateAPIView):
     queryset = ClassSubject.objects.all()
     serializer_class = ClassSubjectSerializer
@@ -1548,7 +1540,6 @@ class ClassSubjectDelete(generics.UpdateAPIView):
         instance.save()
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Section {instance.subject} Delete successfully", data=None)
-
 
 class ClassRoutineCreateList(generics.ListCreateAPIView):
     serializer_class = ClassRoutineSerializer
@@ -1643,7 +1634,6 @@ class ClassRoutineCreateList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-
 class ClassRoutineDetail(generics.RetrieveUpdateAPIView):
     queryset = ClassRoutine.objects.filter(status=True)
     serializer_class = ClassRoutineSerializer
@@ -1707,7 +1697,6 @@ class ClassRoutineDetail(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
-
 class ClassRoutineDelete(generics.UpdateAPIView):
     queryset = ClassRoutine.objects.all()
     serializer_class = ClassRoutineSerializer
@@ -1729,7 +1718,6 @@ class ClassRoutineDelete(generics.UpdateAPIView):
         instance.save()
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Routine Delete successfully", data=None)
-
 
 '''
 For Group
@@ -1820,7 +1808,6 @@ class GroupListCreate(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-
 class GroupUpdateDetail(generics.RetrieveUpdateAPIView):
     queryset = ClassGroup.objects.all()
     serializer_class = ClassGroupCreateSerializer
@@ -1874,7 +1861,6 @@ class GroupUpdateDetail(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
-
 class GroupDelete(generics.UpdateAPIView):
     queryset = ClassGroup.objects.all()
     serializer_class = ClassGroupCreateSerializer
@@ -1896,5 +1882,177 @@ class GroupDelete(generics.UpdateAPIView):
         instance.save()
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Group {instance.name} Delete successfully", data=None)
+
+'''
+For Assign Class Teacher
+'''
+
+class ClassTeacherCreateList(generics.ListCreateAPIView):
+    # queryset = Version.objects.filter(status=True).order_by('id')
+    serializer_class = ClassTeacherViewSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = ClassTeacher.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Assign Class Teacher', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+    def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Assign Class Teacher', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        serializer_class = ClassTeacherCreateSerializer
+        serializer = serializer_class(data=request.data)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                session = serializer.validated_data.get('session')
+                group = serializer.validated_data.get('group')
+                version = serializer.validated_data.get('version')
+                teacher = serializer.validated_data.get('teacher')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                class_count = ClassTeacher.objects.filter(class_name=class_name,group=group, section=section, session=session, version=version, institution=institution, branch=branch, status=True).count()
+                if (class_count==0):
+                    class_teacher_count = ClassTeacher.objects.filter(teacher=teacher,group=group,class_name=class_name, section=section, session=session, version=version, institution=institution, branch=branch, status=True).count()
+                    if (class_teacher_count == 0):
+                        instance = serializer.save(institution=institution, branch=branch)
+                        # Customize the response data
+                        return CustomResponse(code=status.HTTP_200_OK, message="Class Teacher Assign successfully", data=ClassTeacherViewSerializer(instance).data)
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Teacher already Assign", data=serializer.errors)
+                else:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class already Assign", data=serializer.errors)
+            # If the serializer is not valid, return an error response
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+class ClassTeacherDetail(generics.RetrieveUpdateAPIView):
+    queryset = ClassTeacher.objects.all()
+    serializer_class = ClassTeacherCreateSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Assign Class Teacher', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassTeacherViewSerializer(instance).data)
+
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Assign Class Teacher', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer_class = ClassTeacherCreateSerializer
+        serializer = serializer_class(instance,data=request.data,partial=partial)
+
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                session = serializer.validated_data.get('session')
+                version = serializer.validated_data.get('version')
+                group = serializer.validated_data.get('group')
+                teacher = serializer.validated_data.get('teacher')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                class_teacher_count = ClassTeacher.objects.filter(teacher=teacher,group=group,class_name=class_name, section=section, session=session, version=version, institution=institution, branch=branch, status=True).count()
+                if (class_teacher_count == 0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Teacher updated successfully", data=ClassTeacherViewSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Teacher already exits", data=serializer.errors)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
+class ClassTeacherDelete(generics.UpdateAPIView):
+    queryset = ClassSection.objects.all()
+    serializer_class = ClassTeacherCreateSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Assign Class Teacher', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        instance = self.get_object()
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Assign Class Teacher already Deleted", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Assign Class Teacher Delete successfully", data=None)
+
 
 

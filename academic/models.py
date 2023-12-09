@@ -284,11 +284,10 @@ class ClassTeacher(models.Model):
 
     class Meta:
         db_table = 'ac_class_teacher'
+        verbose_name = 'Assign Class Teacher'
     
     def __str__(self):
         return str(self.id)
-
-
 
 class ClassRoutine(models.Model):
     teacher = models.ForeignKey(Staff, on_delete=models.CASCADE, verbose_name='Teacher Name')

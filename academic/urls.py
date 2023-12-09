@@ -46,4 +46,8 @@ urlpatterns = [
     path('api/group', GroupListCreate.as_view(), name='group-list'),
     path('api/group/detail/<int:pk>', GroupUpdateDetail.as_view(), name='group-detail'),
     path('api/group/delete/<int:pk>', GroupDelete.as_view(), name='group-delete'),
+    # For Class teacher
+    path('api/class-teacher', ClassTeacherCreateList.as_view(), name='class-teacher-list'),
+    path('api/class-teacher/detail/<int:pk>', ClassTeacherDetail.as_view(), name='class-teacher-detail'),
+    path('api/class-teacher/delete/<int:pk>', ClassTeacherDelete.as_view(), name='class-teacher-delete'),
 ]

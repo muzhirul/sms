@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from academic.models import *
 from setup_app.serializers import FloorTypeSerializer, DaySerializer, SubjectTypeSerializer
-from staff.serializers import StaffTeacherSerializer
+from staff.serializers import StaffTeacherSerializer,StaffTeacherViewSerializer
 
 class VersionSerializer2(serializers.ModelSerializer):
     class Meta:
@@ -222,7 +222,7 @@ class ClassGroupViewSerializer(serializers.ModelSerializer):
         if instance.status:
             return super().to_representation(instance)
         else:
-            return {}
+            return None
 
 class ClassGroupCreateSerializer(serializers.ModelSerializer):
 
@@ -258,7 +258,6 @@ class ClassSectionSerializer3(serializers.ModelSerializer):
         else:
             # If status is False, return an empty dictionary
             return {}
-
         
 class ClassSubjectSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -276,7 +275,7 @@ class ClassSubjectSerializer(serializers.ModelSerializer):
         exclude = ['status']
 
 class ClassSubjectSerializer2(serializers.ModelSerializer):
-    
+        
     class Meta:
         model = ClassSubject
         # Exclude the specified fields from serialization
@@ -290,7 +289,31 @@ class ClassSubjectSerializer2(serializers.ModelSerializer):
             # If status is False, return an empty dictionary
             return {}
 
-        
+class ClassTeacherViewSerializer(serializers.ModelSerializer):
+    version = VersionSerializer2(read_only=True)
+    session = SessionSerializer2(read_only=True)
+    class_name = ClassSerializer2(read_only=True)
+    section = SectionSerializer2(read_only=True)
+    group = ClassGroupViewSerializer(read_only=True)
+    teacher = StaffTeacherViewSerializer(read_only=True)
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+
+    class Meta:
+        model = ClassTeacher
+        exclude = ['status']
+
+class ClassTeacherCreateSerializer(serializers.ModelSerializer):
+    # version = serializers.IntegerField(required=True)
+    # session = serializers.IntegerField(required=True)
+    # class_name = serializers.IntegerField(required=True)
+    # section = serializers.IntegerField(required=True)
+    # teacher = serializers.IntegerField(required=True)
+    
+    class Meta:
+        model = ClassTeacher
+        exclude = ['status']
+
 class ClassRoutineSerializer(serializers.ModelSerializer):
     teacher = StaffTeacherSerializer(read_only=True)
     class_name = ClassSerializer2(read_only=True)

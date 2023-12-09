@@ -112,7 +112,7 @@ class ClassSubjectAdmin(admin.ModelAdmin):
         model = ClassSubject
 
 class ClassTeacherAdmin(admin.ModelAdmin):
-    list_display = ['class_name','section','group','session','version']
+    list_display = ['class_name','section','group','session','version','teacher']
     class Meta:
         model = ClassTeacher
 
