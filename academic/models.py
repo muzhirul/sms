@@ -316,7 +316,6 @@ class ClassRoutine(models.Model):
 
 class ClassRoutineMst(models.Model):
     class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
-    day = models.ForeignKey(Days,on_delete=models.CASCADE, verbose_name='Day')
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
     session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session')
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='Version')
@@ -337,11 +336,14 @@ class ClassRoutineMst(models.Model):
     
 class ClassRoutiineDtl(models.Model):
     class_routine_mst = models.ForeignKey(ClassRoutineMst, on_delete=models.CASCADE, related_name='routine_dtl')
+    day = models.ForeignKey(Days,on_delete=models.CASCADE, verbose_name='Day')
     teacher = models.ForeignKey(Staff, on_delete=models.CASCADE, verbose_name='Teacher Name')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Subject')
     class_period = models.ForeignKey(ClassPeriod, on_delete=models.CASCADE, verbose_name='Class Period')
     class_room = models.ForeignKey(ClassRoom, on_delete=models.CASCADE,blank=True, null=True, verbose_name='Class Room')
     status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.CASCADE,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.CASCADE,blank=True,null=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='class_routine_dtl_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='class_routine_dtl_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

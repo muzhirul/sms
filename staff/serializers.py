@@ -118,6 +118,12 @@ class StaffTeacherViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = ['id','name','staff_id']
+        
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
 
 class staffCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -223,7 +229,6 @@ class staffSerializer(serializers.ModelSerializer):
                     keep_edu_id.append(e.id)
 
                 for education in instance.staff_education.all():
-                    print('Education data')
                     if education.id not in keep_edu_id:
                         education.status = False
                         education.save()

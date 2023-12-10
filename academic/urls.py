@@ -50,4 +50,6 @@ urlpatterns = [
     path('api/class-teacher', ClassTeacherCreateList.as_view(), name='class-teacher-list'),
     path('api/class-teacher/detail/<int:pk>', ClassTeacherDetail.as_view(), name='class-teacher-detail'),
     path('api/class-teacher/delete/<int:pk>', ClassTeacherDelete.as_view(), name='class-teacher-delete'),
+    # For Class Routine
+    path('api/v2/class-routine', ClassRoutinev2CreateList.as_view(), name='class-routine-v2-list'),
 ]

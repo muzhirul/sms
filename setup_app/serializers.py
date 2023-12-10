@@ -66,7 +66,13 @@ class DaySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Days
-        fields = ['short_name', 'long_name']
+        fields = ['id','short_name', 'long_name']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
 
 class DayCreateSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')

@@ -14,7 +14,7 @@ class VersionSerializer2(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             # If status is False, return an empty dictionary
-            return {}
+            return None
 
 class VersionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -38,7 +38,7 @@ class SessionSerializer2(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             # If status is False, return an empty dictionary
-            return {}
+            return None
 
 class SessionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -62,7 +62,7 @@ class SectionSerializer2(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             # If status is False, return an empty dictionary
-            return {}
+            return None
 
 class SectionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -87,7 +87,7 @@ class SubjectSerializer3(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             # If status is False, return an empty dictionary
-            return {}
+            return None
 
 class SubjectViewSerializer(serializers.ModelSerializer):
     class Meta:
@@ -124,7 +124,20 @@ class SubjectSerializer2(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             # If status is False, return an empty dictionary
-            return {}
+            return None
+
+class SubjectViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ['id','name']
+
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return None
 
 class ClassSerializer2(serializers.ModelSerializer):
     class Meta:
@@ -137,7 +150,7 @@ class ClassSerializer2(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             # If status is False, return an empty dictionary
-            return {}
+            return None
 
 class ClassSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -152,7 +165,7 @@ class ClassSerializer(serializers.ModelSerializer):
 class ClassRoomSerializer2(serializers.ModelSerializer):
     class Meta:
         model = ClassRoom
-        fields =['id','room_no']
+        fields =['id','building','room_no']
 
     def to_representation(self, instance):
         # Only include instances where status is True
@@ -160,7 +173,7 @@ class ClassRoomSerializer2(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             # If status is False, return an empty dictionary
-            return {}
+            return None
 
 class ClassRoomSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -342,3 +355,73 @@ class ClassRoutineSerializer2(serializers.ModelSerializer):
             # If status is False, return an empty dictionary
             return {}
 
+class ClassRoutineDtlCreateSerializers(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    class Meta:
+        model = ClassRoutiineDtl
+        exclude = ['institution','branch','status','created_at','updated_at','created_by','updated_by']
+        read_only_fields = ('class_routine_mst',)
+
+class ClassRoutineMstCreateSerializers(serializers.ModelSerializer):
+    routine_dtl = ClassRoutineDtlCreateSerializers(many=True)
+    class Meta:
+        model = ClassRoutineMst
+        exclude = ['institution','branch','status','created_at','updated_at','created_by','updated_by']
+
+    def create(self, validated_data):
+        routine_dtls = validated_data.pop('routine_dtl')
+        routine_mst = ClassRoutineMst.objects.create(**validated_data)
+        for routine_dtl in routine_dtls:
+            ClassRoutiineDtl.objects.create(**routine_dtl, class_routine_mst=routine_mst)
+        return routine_mst
+    
+    def update(self, instance, validated_data):
+        routine_dtls = validated_data.pop('routine_dtl')
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        keep_choices = []
+        for routine_dtl in routine_dtls:
+            if "id" in routine_dtl.keys():
+                if ClassRoutiineDtl.objects.filter(id=routine_dtl["id"]).exists():
+                    c = ClassRoutiineDtl.objects.get(id=routine_dtl["id"])
+                    c.day = routine_dtl.get('day', c.day)
+                    c.teacher = routine_dtl.get('teacher', c.teacher)
+                    c.subject = routine_dtl.get('subject', c.subject)
+                    c.class_period = routine_dtl.get('class_period', c.class_period)
+                    c.class_room = routine_dtl.get('class_room', c.class_room)
+                    c.save()
+                    keep_choices.append(c.id)
+                else:
+                    continue
+            else:
+                c = ClassRoutiineDtl.objects.create(**routine_dtl, class_routine_mst=instance,institution=instance.institution,branch=instance.branch)
+                keep_choices.append(c.id)
+
+            for routine in ClassRoutiineDtl.objects.filter(class_routine_mst=instance):
+                if routine.id not in keep_choices:
+                    routine.status = False
+                    routine.save()
+
+        return instance
+
+class ClassRoutineDtlViewSerializers(serializers.ModelSerializer):
+    day = DaySerializer(read_only=True)
+    teacher = StaffTeacherViewSerializer(read_only=True)
+    subject = SubjectViewSerializer(read_only=True)
+    class_period = ClassPeriodSerializer2(read_only=True)
+    class_room = ClassRoomSerializer2(read_only=True)
+    class Meta:
+        model = ClassRoutiineDtl
+        fields = ['id','day','teacher','subject','class_period','class_room','institution','branch']
+
+class ClassRoutineMstViewSerializers(serializers.ModelSerializer):
+    version = VersionSerializer2(read_only=True)
+    session = SessionSerializer2(read_only=True)
+    class_name = ClassSerializer2(read_only=True)
+    section = SectionSerializer2(read_only=True)
+    routine_dtl = ClassRoutineDtlViewSerializers(many=True, required=False, read_only=True)
+
+    class Meta:
+        model = ClassRoutineMst
+        exclude = ['institution','branch','status','created_at','updated_at','created_by','updated_by']
