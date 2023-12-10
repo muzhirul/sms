@@ -372,7 +372,7 @@ class ClassRoutineMstCreateSerializers(serializers.ModelSerializer):
         routine_dtls = validated_data.pop('routine_dtl')
         routine_mst = ClassRoutineMst.objects.create(**validated_data)
         for routine_dtl in routine_dtls:
-            ClassRoutiineDtl.objects.create(**routine_dtl, class_routine_mst=routine_mst)
+            ClassRoutiineDtl.objects.create(**routine_dtl, class_routine_mst=routine_mst,institution=routine_mst.institution,branch=routine_mst.branch)
         return routine_mst
     
     def update(self, instance, validated_data):

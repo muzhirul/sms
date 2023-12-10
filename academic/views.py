@@ -1728,10 +1728,9 @@ class ClassRoutinev2CreateList(generics.ListCreateAPIView):
 
     def list(self, request, *args, **kwargs):
         '''Check user has permission to View start'''
-        # permission_check = check_permission(
-        #     self.request.user.id, 'Class Routine', 'view')
-        # if not permission_check:
-        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        permission_check = check_permission(self.request.user.id, 'Class Routine', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -1755,9 +1754,9 @@ class ClassRoutinev2CreateList(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         '''Check user has permission to View start'''
-        # permission_check = check_permission(self.request.user.id, 'Class Routine', 'create')
-        # if not permission_check:
-        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        permission_check = check_permission(self.request.user.id, 'Class Routine', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
         serializer_class = ClassRoutineMstCreateSerializers
         serializer = serializer_class(data=request.data)
