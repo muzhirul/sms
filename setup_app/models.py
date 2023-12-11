@@ -392,6 +392,6 @@ class AttendanceType(models.Model):
         db_table = 's_attend_type'
 
     def __str__(self):
-        return str(self.id)
+        return str(self.name)
 
 

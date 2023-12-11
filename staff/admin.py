@@ -28,6 +28,11 @@ class StaffLeaveTabulrInline(admin.TabularInline):
     fields = ['leave_type','leave_days','taken_days','start_date','end_date','is_active','status']
     extra = 1
 
+class ProcessAttendanceDailyAdminTabularInline(admin.TabularInline):
+    model = ProcessAttendanceDaily
+    fields = ['attn_date','shift','in_time','out_time','attn_type']
+    extra = 0
+
     
 @admin_thumbnails.thumbnail('photo')
 class StaffAdmin(admin.ModelAdmin):
@@ -41,7 +46,7 @@ class StaffAdmin(admin.ModelAdmin):
     class Meta:
         model = Staff
     
-    inlines = [EducationTabularInline,PayrollTabularInline,BankAccountDetailsTabularInline,StaffSocialMediaTabularInline,StaffLeaveTabulrInline]
+    inlines = [EducationTabularInline,PayrollTabularInline,BankAccountDetailsTabularInline,StaffSocialMediaTabularInline,StaffLeaveTabulrInline,ProcessAttendanceDailyAdminTabularInline]
 
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ['name','dept_ord']

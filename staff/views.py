@@ -843,7 +843,7 @@ class StaffShiftList(generics.ListAPIView):
 
 class StaffAttendanceProcess(generics.ListAPIView):
      
-     def list(self,request,*args, **kwargs):
+    def list(self,request,*args, **kwargs):
         attn_date = datetime.now().date()
         staff_lists = Staff.objects.filter(status=True).order_by('id')
         proc_attn_daily = {}
