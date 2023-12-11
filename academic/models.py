@@ -317,6 +317,7 @@ class ClassRoutine(models.Model):
 class ClassRoutineMst(models.Model):
     class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
+    group = models.ForeignKey(ClassGroup, on_delete=models.SET_NULL,blank=True,null=True, verbose_name='Group')
     session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session')
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='Version')
     institution = models.ForeignKey(Institution,on_delete=models.CASCADE,blank=True,null=True)
