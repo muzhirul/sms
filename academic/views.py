@@ -1764,27 +1764,109 @@ class ClassRoutinev2CreateList(generics.ListCreateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
-                # teacher = serializer.validated_data.get('teacher')
-                # class_name = serializer.validated_data.get('class_name')
-                # section = serializer.validated_data.get('section')
-                # session = serializer.validated_data.get('session')
-                # version = serializer.validated_data.get('version')
-                # subject = serializer.validated_data.get('subject')
-                # class_period = serializer.validated_data.get('class_period')
-                # day = serializer.validated_data.get('day')
-                # class_room = serializer.validated_data.get('class_room')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                session = serializer.validated_data.get('session')
+                version = serializer.validated_data.get('version')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                instance = serializer.save(institution=institution, branch=branch)
-                    # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Class Routine created successfully", data=ClassRoutineMstViewSerializers(instance).data)
+                routine_mst_count = ClassRoutineMst.objects.filter(class_name=class_name,section=section,session=session,version=version,status=True).count()
+                if (routine_mst_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                        # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Routine created successfully", data=ClassRoutineMstViewSerializers(instance).data)
+                else:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Class Routine already exists for this class", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
+class ClassRoutinev2Detail(generics.RetrieveUpdateAPIView):
+    queryset = ClassRoutineMst.objects.filter(status=True)
+    serializer_class = ClassRoutineMstCreateSerializers
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Class Routine', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        try:
+            '''Check user has permission to retrive End'''
+            instance = self.get_object()
+            # Customize the response format for retrieving a single instance
+            return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassRoutineMstViewSerializers(instance).data)
+        except:
+            return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
+
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Class Routine', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer_class = ClassRoutineMstCreateSerializers
+        serializer = serializer_class(instance, data=request.data, partial=partial)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                session = serializer.validated_data.get('session')
+                version = serializer.validated_data.get('version')
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                if(class_name==instance.class_name and section==instance.section and session==instance.session and version==instance.version):
+                    instance = serializer.save()
+                    return CustomResponse(code=status.HTTP_200_OK, message="Class Routine updated successfully", data=ClassRoutineMstViewSerializers(instance).data)
+                else:
+                    routine_mst_count = ClassRoutineMst.objects.filter(class_name=class_name,section=section,session=session,version=version,status=True).count()
+                    if (routine_mst_count == 0):
+                        # Perform any custom update logic here if needed
+                        instance = serializer.save()
+                        # Customize the response format for successful update
+                        return CustomResponse(code=status.HTTP_200_OK, message="Class Routine updated successfully", data=ClassRoutineMstViewSerializers(instance).data)
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"This Routine already exits", data=serializer.errors)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
+class ClassRoutinev2Delete(generics.UpdateAPIView):
+    queryset = ClassRoutineMst.objects.all()
+    serializer_class = ClassRoutineMstCreateSerializers
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        permission_check = check_permission(self.request.user.id, 'Class Routine', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+        instance = self.get_object()
+        
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Class Routine already Deleted", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        for routine_dtl in ClassRoutiineDtl.objects.filter(status=True,class_routine_mst=instance):
+            routine_dtl.status = False
+            routine_dtl.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Class Routine Delete successfully", data=None)
 
 '''
 For Group
