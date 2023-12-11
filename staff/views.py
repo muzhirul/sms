@@ -840,5 +840,39 @@ class StaffShiftList(generics.ListAPIView):
             }
 
         return Response(response_data)
- 
+
+class StaffAttendanceProcess(generics.ListAPIView):
+     
+     def list(self,request,*args, **kwargs):
+        attn_date = datetime.now().date()
+        staff_lists = Staff.objects.filter(status=True).order_by('id')
+        proc_attn_daily = {}
+
+        for staff_list in staff_lists:
+                #  staff_list.last_attn_proc_date = None
+                #  staff_list.save()
+            proc_attn_daily['attn_date'] = attn_date
+            proc_attn_daily['staff'] = staff_list
+            proc_attn_daily['shift'] = staff_list.shift
+            proc_attn_daily['staff_code'] = staff_list.staff_id
+            payroll = StaffPayroll.objects.filter(is_active=True,status=True,staff=staff_list).last()
+            if payroll:
+                proc_attn_daily['con_type'] = payroll.contract_type
+            proc_attn_daily['attn_type'] = None
+            proc_attn_daily['process_date'] = datetime.now()
+            proc_attn_daily['in_time'] = None
+            proc_attn_daily['out_time'] = None
+            proc_attn_daily['role'] = staff_list.role
+            proc_attn_daily['designation'] = staff_list.designation
+            proc_attn_daily['department'] = staff_list.department
+            proc_attn_daily['institution'] = staff_list.institution
+            proc_attn_daily['branch'] = staff_list.branch
+            if (attn_date!=staff_list.last_attn_proc_date):
+                p = ProcessAttendanceDaily.objects.create(**proc_attn_daily)
+                staff_list.last_attn_proc_date = attn_date
+                staff_list.save()
+        
+
+        return Response('proc_attn_daily')
+         
 

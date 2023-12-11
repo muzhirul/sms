@@ -24,4 +24,6 @@ urlpatterns = [
     path('api/shift', StaffShiftListCreate.as_view(),name='staff-shift-list-create'),
     path('api/shift/detail/<int:pk>',StaffShiftDetail.as_view(), name='staff-shift-detail'),
     path('api/shift/delete/<int:pk>',StaffShiftDelete.as_view(), name='staff-shift-delete'),
+    # Staff Attendance Process
+    path('api/attendance/process', StaffAttendanceProcess.as_view(), name='staff-attendance-process'),
 ]

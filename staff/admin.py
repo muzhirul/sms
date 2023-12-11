@@ -63,9 +63,15 @@ class StaffShiftAdmin(admin.ModelAdmin):
     class Meta:
         model = StaffShift
 
+class ProcessAttendanceDailyAdmin(admin.ModelAdmin):
+    list_display = ['attn_date','staff_code','in_time','out_time','attn_type']
+    class Meta:
+        model = ProcessAttendanceDaily
+
 
 
 admin.site.register(Staff,StaffAdmin)
 admin.site.register(Designation,DesignationAdmin)
 admin.site.register(Department,DepartmentAdmin)
 admin.site.register(StaffShift,StaffShiftAdmin)
+admin.site.register(ProcessAttendanceDaily,ProcessAttendanceDailyAdmin)

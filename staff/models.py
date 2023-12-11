@@ -112,6 +112,7 @@ class Staff(models.Model):
     shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
     step = models.IntegerField(default=1)
     user = models.OneToOneField(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
+    last_attn_proc_date = models.DateField(blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
@@ -254,6 +255,36 @@ class StaffLeave(models.Model):
         # Ensure that taken_days is not greater than leave_days
         if self.taken_days > self.leave_days:
             raise ValidationError({'taken_days': 'Taken days cannot be greater than leave days'})
+
+class ProcessAttendanceDaily(models.Model):
+    attn_date = models.DateField(verbose_name='Attendance Date',blank=True,null=True)
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True)
+    shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
+    staff_code = models.CharField(max_length=20, blank=True,null=True)
+    con_type = models.ForeignKey(ContractType, on_delete=models.SET_NULL, blank=True,null=True,verbose_name='Contract Type')
+    attn_type = models.ForeignKey(AttendanceType, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Attendance Type')
+    process_date = models.DateTimeField(blank=True,null=True)
+    in_time = models.DateTimeField(blank=True,null=True)
+    out_time = models.DateTimeField(blank=True,null=True)
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, blank=True, null=True)
+    designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, blank=True, null=True)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
+    late_by_min = models.IntegerField(default=0)
+    early_gone_by_min = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='atten_daily_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='atten_daily_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'proc_attn_daily'
+
+    def __str__(self):
+        return str(self.id)
 
 
 

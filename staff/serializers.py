@@ -309,7 +309,7 @@ class staffSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Staff
         # fields = ['first_nmae','last_name']
-        exclude = ['code','user','institution','branch','status']
+        exclude = ['code','last_attn_proc_date','user','institution','branch','status']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
