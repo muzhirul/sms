@@ -847,7 +847,7 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
         attn_date = datetime.now().date()
         staff_lists = Staff.objects.filter(status=True).order_by('id')
         proc_attn_daily = {}
-
+        row_insert = 0
         for staff_list in staff_lists:
             data_count = ProcessAttendanceDaily.objects.filter(attn_date=attn_date,staff=staff_list,status=True).count()
             if data_count == 0:
@@ -867,13 +867,12 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
                 proc_attn_daily['department'] = staff_list.department
                 proc_attn_daily['institution'] = staff_list.institution
                 proc_attn_daily['branch'] = staff_list.branch
-                if (attn_date!=staff_list.last_attn_proc_date):
-                    p = ProcessAttendanceDaily.objects.create(**proc_attn_daily)
-                    staff_list.last_attn_proc_date = attn_date
-                    staff_list.save()
+                p = ProcessAttendanceDaily.objects.create(**proc_attn_daily)
+                staff_list.last_attn_proc_date = attn_date
+                staff_list.save()
         
 
-        return Response('proc_attn_daily')
+        return Response(f"{row_insert} insert succefully")
     
     def create(self, request, *args, **kwargs):
         data=request.data
@@ -884,7 +883,6 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
             for staff_list in staff_lists:
                 data_count = ProcessAttendanceDaily.objects.filter(attn_date=proc_date,staff=staff_list,status=True).count()
                 proc_attn_daily = {}
-                
                 if data_count == 0:
                     proc_attn_daily['attn_date'] = proc_date
                     proc_attn_daily['staff'] = staff_list
