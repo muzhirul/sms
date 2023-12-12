@@ -40,7 +40,7 @@ class StaffAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Basic Information",{'fields':[('first_name','last_name','gender','religion'),('email','dob','mobile_no','emergency_number','nid'),('photo','photo_thumbnail','blood_group','marital_status'),]}),
         ("Address",{'fields':[('present_address','permanent_address'),]}),
-        ("Assignment",{'fields':[('doj','role','department','designation','shift'),]})        
+        ("Assignment",{'fields':[('doj','role','department','designation','shift','status'),]})        
     ]
     
     class Meta:
