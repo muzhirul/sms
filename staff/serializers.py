@@ -36,6 +36,11 @@ class DesignationListSerializer(serializers.ModelSerializer):
         model = Designation
         fields = ['id','name']
 
+class StaffShiftListSerializer2(serializers.ModelSerializer):
+    class Meta:
+        model = StaffShift
+        fields = ['id','name']
+
 class EducationViewSerializer(serializers.ModelSerializer):
     edu_board = EducationBoardViewSerializer(read_only=True)
     class Meta:
@@ -107,7 +112,14 @@ class StaffSocialMediaCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = StaffSocialMedia
         exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
-        
+
+class ProcessAttendanceViewDailySerializer(serializers.ModelSerializer):
+    shift = StaffShiftListSerializer2()
+    class Meta:
+        model = ProcessAttendanceDaily
+        # exclude = ['role','process_date','staff','staff_code','con_type','institution','branch','status','created_at','updated_at','created_by','updated_by']
+        fields = ['attn_date','shift','attn_type','in_time','out_time']
+
 class StaffTeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
@@ -286,11 +298,6 @@ class staffSerializer(serializers.ModelSerializer):
         except:
             pass
         return instance
-
-class StaffShiftListSerializer2(serializers.ModelSerializer):
-    class Meta:
-        model = StaffShift
-        fields = ['id','name']
         
 class staffSerializer2(serializers.ModelSerializer):
     gender = GenderSerializer(read_only=True)
@@ -305,6 +312,7 @@ class staffSerializer2(serializers.ModelSerializer):
     payroll =StaffPayrollViewSerializer(many=True, required=False, read_only=True)
     bank_info = StaffBankViewSerializer(many=True, required=False, read_only=True)
     social_media = StaffSocialMediaViewSerializer(many=True, required=False, read_only=True)
+    atten_daily= ProcessAttendanceViewDailySerializer(many=True, required=False, read_only=True)
     # shift = StaffShiftListCreate(read_only=True)
     class Meta:
         model = Staff

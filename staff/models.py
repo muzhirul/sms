@@ -258,7 +258,7 @@ class StaffLeave(models.Model):
 
 class ProcessAttendanceDaily(models.Model):
     attn_date = models.DateField(verbose_name='Attendance Date',blank=True,null=True)
-    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True)
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True, related_name='atten_daily')
     shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
     staff_code = models.CharField(max_length=20, blank=True,null=True)
     con_type = models.ForeignKey(ContractType, on_delete=models.SET_NULL, blank=True,null=True,verbose_name='Contract Type')
