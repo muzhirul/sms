@@ -209,3 +209,8 @@ class MaritalStatusViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = MaritalStatus
         fields = ['id','name']
+
+class AttendanceTypeViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttendanceType
+        fields = ['id','name']

@@ -3,6 +3,9 @@ from institution.models import Institution, Branch
 from setup_app.models import EducationBoard
 from django_userforeignkey.models.fields import UserForeignKey
 from setup_app.models import *
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from datetime import datetime, timedelta
 from hrms.models import AccountBank, LeaveType
 import datetime
 from authentication.models import Authentication
@@ -266,6 +269,7 @@ class ProcessAttendanceDaily(models.Model):
     process_date = models.DateTimeField(blank=True,null=True)
     in_time = models.DateTimeField(blank=True,null=True)
     out_time = models.DateTimeField(blank=True,null=True)
+    duration = models.DurationField(blank=True,null=True, verbose_name='Duraion', editable=False)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, blank=True, null=True)
     designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, blank=True, null=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
@@ -285,6 +289,15 @@ class ProcessAttendanceDaily(models.Model):
 
     def __str__(self):
         return str(self.id)
+    
+@receiver(pre_save, sender=ProcessAttendanceDaily)        
+def calculate_duration(sender, instance, **kwargs):
+    if instance.in_time and instance.out_time:
+       
+        duration = instance.out_time - instance.in_time
+        instance.duration = duration
+    else:
+        instance.duration = None
 
 
 

@@ -42,3 +42,9 @@ class LeaveTypeViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveType
         exclude = ['status','institution','branch']
+
+class LeaveTypeView2Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeaveType
+        fields = ['id','leave_type_code','name']
+        # exclude = ['status','institution','branch']

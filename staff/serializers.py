@@ -2,6 +2,7 @@ from rest_framework import serializers
 from setup_app.serializers import *
 from hrms.serializers import AccountBankViewSerializer
 from staff.models import *
+from hrms.serializers import *
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -115,11 +116,18 @@ class StaffSocialMediaCreateSerializer(serializers.ModelSerializer):
 
 class ProcessAttendanceViewDailySerializer(serializers.ModelSerializer):
     shift = StaffShiftListSerializer2()
+    attn_type = AttendanceTypeViewSerializer()
     class Meta:
         model = ProcessAttendanceDaily
         # exclude = ['role','process_date','staff','staff_code','con_type','institution','branch','status','created_at','updated_at','created_by','updated_by']
-        fields = ['attn_date','shift','attn_type','in_time','out_time']
+        fields = ['attn_date','shift','attn_type','in_time','out_time','duration']
 
+class StaffLeaveViewSerialier(serializers.ModelSerializer):
+    leave_type = LeaveTypeView2Serializer()
+    class Meta:
+        model = StaffLeave
+        fields = ['leave_type','leave_days','taken_days','is_active']
+        
 class StaffTeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
@@ -312,7 +320,8 @@ class staffSerializer2(serializers.ModelSerializer):
     payroll =StaffPayrollViewSerializer(many=True, required=False, read_only=True)
     bank_info = StaffBankViewSerializer(many=True, required=False, read_only=True)
     social_media = StaffSocialMediaViewSerializer(many=True, required=False, read_only=True)
-    atten_daily= ProcessAttendanceViewDailySerializer(many=True, required=False, read_only=True)
+    atten_daily = ProcessAttendanceViewDailySerializer(many=True, required=False, read_only=True)
+    staff_leave = StaffLeaveViewSerialier(many=True, required=False, read_only=True)
     # shift = StaffShiftListCreate(read_only=True)
     class Meta:
         model = Staff
@@ -346,3 +355,4 @@ class StaffLeaveCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = StaffLeave
         exclude = ['status']
+
