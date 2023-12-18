@@ -299,6 +299,71 @@ def calculate_duration(sender, instance, **kwargs):
     else:
         instance.duration = None
 
+class AttendanceDailyRaw(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True, related_name='raw_atten')
+    staff_code = models.CharField(max_length=20, blank=True,null=True)
+    attn_date = models.DateField(verbose_name='Attendance Date',blank=True,null=True)
+    trnsc_time = models.DateTimeField(blank=True, null=True)
+    src_type = models.CharField(max_length=20,blank=True,null=True)
+    attn_type = models.CharField(max_length=20,blank=True,null=True)
+    remarks = models.CharField(max_length=500, blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='atten_raw_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='atten_raw_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'raw_attn_daily'
+
+    def __str__(self):
+        return str(self.id)
+
+def leave_code():
+    last_leave_code = StaffLeaveTransaction.objects.all().order_by('leave_code').last()
+    if not last_leave_code or last_leave_code.leave_code is None:
+        return 'LV' + '0001'
+    leave_num = str(last_leave_code.leave_code)[-2:]
+    leave_num_int = int(leave_num)
+    new_leave_num = leave_num_int + 1
+    new_gd_num = '99' + str(new_leave_num).zfill(4)
+    return new_gd_num   
+  
+class StaffLeaveTransaction(models.Model):
+    code = models.CharField(max_length=20, blank=True,null=True,editable=False, verbose_name='Leave Code',default=leave_code)
+    start_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
+    leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, blank=True, null=True)
+    tran_type = models.CharField(max_length=20, blank=True, null=True)
+    day_count = models.DurationField(blank=True, null=True)
+    application_date = models.DateTimeField(blank=True, null=True)
+    add_during_leave = models.TextField(blank=True, null=True)
+    reason_for_leave = models.TextField(blank=True,null=True)
+    apply_by = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True,related_name='apply_by')
+    responsible = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True,related_name='resonsible_by')
+    remarks = models.TextField(blank=True, null=True)
+    app_status = models.CharField(max_length=20,blank=True, null=True)
+    active_start_date = models.DateTimeField(blank=True, null=True)
+    active_end_date = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='staff_trns_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='staff_trns_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'staff_leave_trns'
+
+    def __str__(self):
+        return str(self.id)
+
+
 
 
 
