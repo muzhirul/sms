@@ -73,6 +73,11 @@ class ProcessAttendanceDailyAdmin(admin.ModelAdmin):
     class Meta:
         model = ProcessAttendanceDaily
 
+class StaffLeaveTransactionAdmin(admin.ModelAdmin):
+    list_display = ['code','leave_type','start_date','end_date','day_count']
+    class Meta:
+        model = StaffLeaveTransaction
+
 
 
 admin.site.register(Staff,StaffAdmin)
@@ -80,3 +85,4 @@ admin.site.register(Designation,DesignationAdmin)
 admin.site.register(Department,DepartmentAdmin)
 admin.site.register(StaffShift,StaffShiftAdmin)
 admin.site.register(ProcessAttendanceDaily,ProcessAttendanceDailyAdmin)
+admin.site.register(StaffLeaveTransaction,StaffLeaveTransactionAdmin)

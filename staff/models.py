@@ -323,13 +323,13 @@ class AttendanceDailyRaw(models.Model):
         return str(self.id)
 
 def leave_code():
-    last_leave_code = StaffLeaveTransaction.objects.all().order_by('leave_code').last()
+    last_leave_code = StaffLeaveTransaction.objects.all().order_by('code').last()
     if not last_leave_code or last_leave_code.leave_code is None:
-        return 'LV' + '0001'
-    leave_num = str(last_leave_code.leave_code)[-2:]
+        return 'LV-' + '01'
+    leave_num = str(last_leave_code.leave_code)[-3:]
     leave_num_int = int(leave_num)
     new_leave_num = leave_num_int + 1
-    new_gd_num = '99' + str(new_leave_num).zfill(4)
+    new_gd_num = 'LV-' + str(new_leave_num).zfill(2)
     return new_gd_num   
   
 class StaffLeaveTransaction(models.Model):
@@ -338,7 +338,7 @@ class StaffLeaveTransaction(models.Model):
     end_date = models.DateField(blank=True,null=True)
     leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, blank=True, null=True)
     tran_type = models.CharField(max_length=20, blank=True, null=True)
-    day_count = models.DurationField(blank=True, null=True)
+    day_count = models.IntegerField(blank=True, null=True, editable=False, verbose_name='Number of Day')
     application_date = models.DateTimeField(blank=True, null=True)
     add_during_leave = models.TextField(blank=True, null=True)
     reason_for_leave = models.TextField(blank=True,null=True)
@@ -357,12 +357,28 @@ class StaffLeaveTransaction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def clean(self):
+        if self.end_date and self.start_date:
+            if self.end_date < self.start_date:
+                raise ValidationError('End date must be greater than or equal to start date.')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     class Meta:
         db_table = 'staff_leave_trns'
 
     def __str__(self):
-        return str(self.id)
+        return str(self.code)
 
+@receiver(pre_save, sender=StaffLeaveTransaction)
+def calculate_duration(sender, instance, **kwargs):
+    if instance.start_date and instance.end_date:
+        duration = 1 + (instance.end_date - instance.start_date).days
+        instance.day_count = duration
+    else:
+        instance.day_count = None
 
 
 
