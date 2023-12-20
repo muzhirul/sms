@@ -60,7 +60,6 @@ class ReligionList(generics.ListAPIView):
 
         return Response(response_data)
 
-
 class BloodGroupList(generics.ListAPIView):
     serializer_class = BloodGroupSerializer
     # Requires a valid JWT token for access
@@ -108,7 +107,6 @@ class BloodGroupList(generics.ListAPIView):
             }
 
         return Response(response_data)
-
 
 class GenderList(generics.ListAPIView):
     serializer_class = GenderSerializer
@@ -158,7 +156,6 @@ class GenderList(generics.ListAPIView):
 
         return Response(response_data)
 
-
 class OccupationList(generics.ListAPIView):
     serializer_class = OccupationSerializer
     # Requires a valid JWT token for access
@@ -206,7 +203,6 @@ class OccupationList(generics.ListAPIView):
             }
 
         return Response(response_data)
-
 
 class RelationList(generics.ListAPIView):
     serializer_class = RelationSerializer
@@ -256,7 +252,6 @@ class RelationList(generics.ListAPIView):
 
         return Response(response_data)
 
-
 class FloorList(generics.ListAPIView):
     serializer_class = FloorTypeSerializer
     # Requires a valid JWT token for access
@@ -305,7 +300,6 @@ class FloorList(generics.ListAPIView):
 
         return Response(response_data)
 
-
 class SubjectTypeList(generics.ListAPIView):
     serializer_class = SubjectTypeSerializer
     # Requires a valid JWT token for access
@@ -351,11 +345,144 @@ class SubjectTypeList(generics.ListAPIView):
 
         return Response(response_data)
 
+class RoleList(generics.ListAPIView):
+    serializer_class = RoleSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = Role.objects.filter(status=True).order_by('id')
+        # try:
+        #     institution_id = self.request.user.institution
+        #     branch_id = self.request.user.branch
+        #     # users = Authentication.objects.get(id=user_id)
+        #     if institution_id and branch_id:
+        #         queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('sl_no')
+        #     elif branch_id:
+        #         queryset = queryset.filter(branch=branch_id,status=True).order_by('sl_no')
+        #     elif institution_id:
+        #         queryset = queryset.filter(institution=institution_id,status=True).order_by('sl_no')
+        #     else:
+        #         queryset
+        # except:
+        #     pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+class RoleList(generics.ListAPIView):
+    serializer_class = RoleSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = Role.objects.filter(status=True).order_by('id')
+        # try:
+        #     institution_id = self.request.user.institution
+        #     branch_id = self.request.user.branch
+        #     # users = Authentication.objects.get(id=user_id)
+        #     if institution_id and branch_id:
+        #         queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('sl_no')
+        #     elif branch_id:
+        #         queryset = queryset.filter(branch=branch_id,status=True).order_by('sl_no')
+        #     elif institution_id:
+        #         queryset = queryset.filter(institution=institution_id,status=True).order_by('sl_no')
+        #     else:
+        #         queryset
+        # except:
+        #     pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+class MaritalStatusList(generics.ListAPIView):
+    serializer_class = MaritalStatusViewSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = MaritalStatus.objects.filter(status=True).order_by('id')
+        # try:
+        #     institution_id = self.request.user.institution
+        #     branch_id = self.request.user.branch
+        #     # users = Authentication.objects.get(id=user_id)
+        #     if institution_id and branch_id:
+        #         queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('sl_no')
+        #     elif branch_id:
+        #         queryset = queryset.filter(branch=branch_id,status=True).order_by('sl_no')
+        #     elif institution_id:
+        #         queryset = queryset.filter(institution=institution_id,status=True).order_by('sl_no')
+        #     else:
+        #         queryset
+        # except:
+        #     pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
 
 '''
 For Education Board
 '''
-
 
 class EduBoardList(generics.ListAPIView):
     serializer_class = EducationBoardViewSerializer
@@ -387,7 +514,6 @@ class EduBoardList(generics.ListAPIView):
             }
 
         return Response(response_data)
-
 
 class BoardCreateList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
@@ -454,7 +580,6 @@ class BoardCreateList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-
 class BoardDetail(generics.RetrieveUpdateAPIView):
     queryset = EducationBoard.objects.all()
     serializer_class = EducationBoardSerializer
@@ -506,7 +631,6 @@ class BoardDetail(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
-
 class BoardDelete(generics.UpdateAPIView):
     queryset = EducationBoard.objects.all()
     serializer_class = EducationBoardSerializer
@@ -530,11 +654,9 @@ class BoardDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Board {instance.name} Delete successfully", data=None)
 
-
 '''
 For District
 '''
-
 
 class DistrictList(generics.ListAPIView):
     serializer_class = DistrictdViewSerializer
@@ -566,7 +688,6 @@ class DistrictList(generics.ListAPIView):
             }
 
         return Response(response_data)
-
 
 class DistrictCreateList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
@@ -635,7 +756,6 @@ class DistrictCreateList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-
 class DistrictDetail(generics.RetrieveUpdateAPIView):
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
@@ -689,7 +809,6 @@ class DistrictDetail(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
-
 class DistrictDelete(generics.UpdateAPIView):
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
@@ -713,11 +832,9 @@ class DistrictDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"District {instance.name} Delete successfully", data=None)
 
-
 '''
 For Division
 '''
-
 
 class DivisionList(generics.ListAPIView):
     serializer_class = DivisionViewSerializer
@@ -749,7 +866,6 @@ class DivisionList(generics.ListAPIView):
             }
 
         return Response(response_data)
-
 
 class DivisionCreateList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
@@ -816,7 +932,6 @@ class DivisionCreateList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-
 class DivisionDetail(generics.RetrieveUpdateAPIView):
     queryset = Division.objects.all()
     serializer_class = DivisionSerializer
@@ -867,7 +982,6 @@ class DivisionDetail(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
-
 class DivisionDelete(generics.UpdateAPIView):
     queryset = Division.objects.all()
     serializer_class = DivisionSerializer
@@ -890,11 +1004,9 @@ class DivisionDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Division {instance.name} Delete successfully", data=None)
 
-
 '''
 For Country
 '''
-
 
 class CountryList(generics.ListAPIView):
     serializer_class = CountryViewSerializer
@@ -926,7 +1038,6 @@ class CountryList(generics.ListAPIView):
             }
 
         return Response(response_data)
-
 
 class CountryCreateList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
@@ -993,7 +1104,6 @@ class CountryCreateList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-
 class CountryDetail(generics.RetrieveUpdateAPIView):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
@@ -1045,7 +1155,6 @@ class CountryDetail(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
-
 class CountryDelete(generics.UpdateAPIView):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
@@ -1069,11 +1178,9 @@ class CountryDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Country {instance.name} Delete successfully", data=None)
 
-
 '''
 For Thana
 '''
-
 
 class ThanaList(generics.ListAPIView):
     serializer_class = ThanaViewSerializer
@@ -1105,7 +1212,6 @@ class ThanaList(generics.ListAPIView):
             }
 
         return Response(response_data)
-
 
 class ThanaCreateList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
@@ -1173,7 +1279,6 @@ class ThanaCreateList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-
 class ThanaDetail(generics.RetrieveUpdateAPIView):
     queryset = Thana.objects.all()
     serializer_class = ThanaSerializer
@@ -1226,7 +1331,6 @@ class ThanaDetail(generics.RetrieveUpdateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
-
 
 class ThanaDelete(generics.UpdateAPIView):
     queryset = Thana.objects.all()

@@ -10,7 +10,6 @@ class MenuSerializer(serializers.ModelSerializer):
         model= Menu
         fields = ['name', 'slug', 'icon', 'level', 'sl_no']
 
-
 class RoleSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -26,13 +25,11 @@ class RoleSerializer(serializers.ModelSerializer):
             # If status is False, return an empty dictionary
             return None
 
-
 class ReligionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Religion
         fields = ['id', 'name']
-
 
 class BloodGroupSerializer(serializers.ModelSerializer):
 
@@ -40,13 +37,11 @@ class BloodGroupSerializer(serializers.ModelSerializer):
         model = BloodGroup
         fields = ['id', 'name']
 
-
 class GenderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Gender
         fields = ['id', 'name']
-
 
 class OccupationSerializer(serializers.ModelSerializer):
 
@@ -54,13 +49,11 @@ class OccupationSerializer(serializers.ModelSerializer):
         model = Occupation
         fields = ['id', 'name']
 
-
 class RelationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Relation
         fields = ['id', 'name']
-
 
 class DaySerializer(serializers.ModelSerializer):
 
@@ -82,13 +75,11 @@ class DayCreateSerializer(serializers.ModelSerializer):
         model = Days
         exclude = ['status']
 
-
 class FloorTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FloorType
         fields = ['id', 'name']
-
 
 class SubjectTypeSerializer(serializers.ModelSerializer):
 
@@ -96,13 +87,11 @@ class SubjectTypeSerializer(serializers.ModelSerializer):
         model = SubjectType
         fields = ['id', 'name']
 
-
 class EducationBoardViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EducationBoard
         fields = ['id', 'board_code', 'name']
-
 
 class EducationBoardSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -112,13 +101,11 @@ class EducationBoardSerializer(serializers.ModelSerializer):
         model = EducationBoard
         exclude = ['status']
 
-
 class CountryViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Country
         fields = ['id', 'coun_code', 'name']
-
 
 class CountrySerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -128,20 +115,17 @@ class CountrySerializer(serializers.ModelSerializer):
         model = Country
         exclude = ['status']
 
-
 class DivisionViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Division
         fields = ['id', 'divi_code', 'name']
 
-
 class DivisionCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Division
         exclude = ['status', 'created_by','updated_by', 'created_at', 'updated_at']
-
 
 class DivisionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -152,20 +136,17 @@ class DivisionSerializer(serializers.ModelSerializer):
         model = Division
         exclude = ['status']
 
-
 class DistrictdViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = District
         fields = ['id', 'dist_code', 'name']
 
-
 class DistrictCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = District
         exclude = ['status', 'created_by','updated_by', 'created_at', 'updated_at']
-
 
 class DistrictSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
@@ -176,20 +157,17 @@ class DistrictSerializer(serializers.ModelSerializer):
         model = District
         exclude = ['status']
 
-
 class ThanaViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Thana
         fields = ['id', 'thana_code', 'name']
 
-
 class ThanaCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Thana
         exclude = ['status', 'created_by', 'updated_by', 'created_at', 'updated_at']
-
 
 class ThanaSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')

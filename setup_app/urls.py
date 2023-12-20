@@ -41,5 +41,9 @@ urlpatterns = [
     path('api/day', DayCreateList.as_view(),name='Day-create-list'),
     path('api/day/detail/<int:pk>',DayDetail.as_view(), name='Day-detail'),
     path('api/day/delete/<int:pk>',DayDelete.as_view(), name='Day-delete'),
+    # For Role 
+    path('api/role/list', RoleList.as_view(), name='role-day'),
+    # For MaritalStatus 
+    path('api/marital-status/list', MaritalStatusList.as_view(), name='marital-status-day'),
 
 ]

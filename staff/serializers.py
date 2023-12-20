@@ -120,7 +120,7 @@ class ProcessAttendanceViewDailySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProcessAttendanceDaily
         # exclude = ['role','process_date','staff','staff_code','con_type','institution','branch','status','created_at','updated_at','created_by','updated_by']
-        fields = ['attn_date','shift','attn_type','in_time','out_time','duration']
+        fields = ['attn_date','shift','get_day_name','attn_type','in_time','out_time','duration']
 
 class StaffLeaveViewSerialier(serializers.ModelSerializer):
     leave_type = LeaveTypeView2Serializer()
@@ -145,6 +145,18 @@ class StaffTeacherViewSerializer(serializers.ModelSerializer):
         else:
             return None
 
+class AttendanceDailyCreateRawSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AttendanceDailyRaw
+        exclude = ['staff','status','institution','branch','created_by','updated_by','created_at','updated_at']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+    
 class staffCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff

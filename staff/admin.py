@@ -75,6 +75,7 @@ class ProcessAttendanceDailyAdmin(admin.ModelAdmin):
 
 class StaffLeaveTransactionAdmin(admin.ModelAdmin):
     list_display = ['code','leave_type','start_date','end_date','day_count']
+    
     class Meta:
         model = StaffLeaveTransaction
 

@@ -290,10 +290,12 @@ class ProcessAttendanceDaily(models.Model):
     def __str__(self):
         return str(self.id)
     
+    def get_day_name(self):
+        return self.attn_date.strftime('%A')
+    
 @receiver(pre_save, sender=ProcessAttendanceDaily)        
 def calculate_duration(sender, instance, **kwargs):
     if instance.in_time and instance.out_time:
-       
         duration = instance.out_time - instance.in_time
         instance.duration = duration
     else:
@@ -324,16 +326,16 @@ class AttendanceDailyRaw(models.Model):
 
 def leave_code():
     last_leave_code = StaffLeaveTransaction.objects.all().order_by('code').last()
-    if not last_leave_code or last_leave_code.leave_code is None:
+    if not last_leave_code or last_leave_code.code is None:
         return 'LV-' + '01'
-    leave_num = str(last_leave_code.leave_code)[-3:]
+    leave_num = str(last_leave_code.code)[-2:]
     leave_num_int = int(leave_num)
     new_leave_num = leave_num_int + 1
     new_gd_num = 'LV-' + str(new_leave_num).zfill(2)
     return new_gd_num   
   
 class StaffLeaveTransaction(models.Model):
-    code = models.CharField(max_length=20, blank=True,null=True,editable=False, verbose_name='Leave Code',default=leave_code)
+    code = models.CharField(max_length=20,editable=False, verbose_name='Leave Code',default=leave_code)
     start_date = models.DateField(blank=True,null=True)
     end_date = models.DateField(blank=True,null=True)
     leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, blank=True, null=True)

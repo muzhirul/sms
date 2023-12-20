@@ -907,4 +907,18 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
             
         return Response(f"{row_insert} insert succefully")
          
+class StaffAttendanceEntry(generics.CreateAPIView):
+    serializer_class = AttendanceDailyCreateRawSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
 
+    def create(self, request, *args, **kwargs):
+        try:
+            attn_daily_data = request.data.get("raw_atten", [])
+            serializer = self.get_serializer(data=attn_daily_data, many=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            return CustomResponse(code=status.HTTP_200_OK, message="Staff Manual Attendance created successfully", data=serializer.data)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
