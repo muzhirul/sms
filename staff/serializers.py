@@ -149,7 +149,7 @@ class AttendanceDailyCreateRawSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AttendanceDailyRaw
-        exclude = ['staff','status','institution','branch','created_by','updated_by','created_at','updated_at']
+        exclude = ['status','institution','branch','created_by','updated_by','created_at','updated_at']
 
     def to_representation(self, instance):
         if instance.status:

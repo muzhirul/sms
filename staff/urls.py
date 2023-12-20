@@ -27,6 +27,7 @@ urlpatterns = [
 
     # Staff Attendance Process
     path('api/attendance/process', StaffAttendanceProcess.as_view(), name='staff-attendance-process'),
+    path('api/attendance/update/process', StaffAttendanceUpdateProcess.as_view(), name='staff-attendance-update-process'),
     # Staff Raw Attendance Entry
     path('api/raw/attendance/entry', StaffAttendanceEntry.as_view(), name='staff-attendance-entry'),
 ]

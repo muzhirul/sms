@@ -848,6 +848,8 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
         staff_lists = Staff.objects.filter(status=True).order_by('id')
         proc_attn_daily = {}
         row_insert = 0
+        att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+        attn_id = att_type
         for staff_list in staff_lists:
             data_count = ProcessAttendanceDaily.objects.filter(attn_date=attn_date,staff=staff_list,status=True).count()
             if data_count == 0:
@@ -862,6 +864,7 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
                 proc_attn_daily['process_date'] = datetime.now()
                 proc_attn_daily['in_time'] = None
                 proc_attn_daily['out_time'] = None
+                proc_attn_daily['attn_type'] = attn_id
                 proc_attn_daily['role'] = staff_list.role
                 proc_attn_daily['designation'] = staff_list.designation
                 proc_attn_daily['department'] = staff_list.department
@@ -870,13 +873,15 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
                 p = ProcessAttendanceDaily.objects.create(**proc_attn_daily)
                 staff_list.last_attn_proc_date = attn_date
                 staff_list.save()
+                row_insert = row_insert+1
         
-
         return Response(f"{row_insert} insert succefully")
     
     def create(self, request, *args, **kwargs):
         data=request.data
         proc_date = data['proc_date']
+        att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+        attn_id = att_type
         row_insert = 0
         if proc_date:
             staff_lists = Staff.objects.filter(status=True).order_by('id')
@@ -895,6 +900,7 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
                     proc_attn_daily['process_date'] = datetime.now()
                     proc_attn_daily['in_time'] = None
                     proc_attn_daily['out_time'] = None
+                    proc_attn_daily['attn_type'] = attn_id
                     proc_attn_daily['role'] = staff_list.role
                     proc_attn_daily['designation'] = staff_list.designation
                     proc_attn_daily['department'] = staff_list.department
@@ -922,3 +928,37 @@ class StaffAttendanceEntry(generics.CreateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+class StaffAttendanceUpdateProcess(generics.ListAPIView):
+
+    def list(self,request,*args, **kwargs):
+        attn_date = datetime.now().date()
+        attn_raw_datas = AttendanceDailyRaw.objects.filter(attn_date=attn_date,staff__isnull=False,is_active=True, status=True).order_by('-trnsc_time')
+        for attn_raw_data in attn_raw_datas:
+            daily_attn = ProcessAttendanceDaily.objects.get(attn_date=attn_date,staff=attn_raw_data.staff,is_active=True,status=True)
+            if daily_attn:
+                if attn_raw_data.attn_type == 'IN':
+                    print('In Process')
+                    shift_start_time = daily_attn.shift.start_time
+                    # print(shift_start_time)
+                    in_time = attn_raw_data.trnsc_time.time()
+                    if in_time <= shift_start_time:
+                        att_type = AttendanceType.objects.get(name__iexact='present',status=True)
+                        attn_id = att_type
+                    elif in_time > shift_start_time:
+                        att_type = AttendanceType.objects.get(name__iexact='late',status=True)
+                        attn_id = att_type
+                    else:
+                        att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+                        attn_id = att_type
+                    # print('====')
+                    daily_attn.in_time = attn_raw_data.trnsc_time
+                    daily_attn.attn_type = attn_id
+                    daily_attn.save()
+                    # print(daily_attn)
+                elif attn_raw_data.attn_type == 'OUT':
+                    print('Out Process')
+                    out_time = attn_raw_data.trnsc_time.time()
+                    daily_attn.out_time = attn_raw_data.trnsc_time
+                    daily_attn.save()
+        return Response('okay')

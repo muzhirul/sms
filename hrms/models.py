@@ -35,7 +35,6 @@ class AccountBank(models.Model):
     def __str__(self):
         return self.name
 
-
 class LeaveType(models.Model):
     leave_type_code = models.CharField(max_length=10)
     name = models.CharField(max_length=50, verbose_name='Leave Type Name',validators=[validate_alpha_chars_only])
@@ -55,7 +54,6 @@ class LeaveType(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Holiday(models.Model):
     name = models.CharField(max_length=50, verbose_name='Holiday Name')
