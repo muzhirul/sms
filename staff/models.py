@@ -305,11 +305,9 @@ def calculate_duration(sender, instance, **kwargs):
 @receiver(pre_save, sender=ProcessAttendanceDaily)  
 def cal_late_min(sender,instance,**kwargs):
     from datetime import datetime
-    in_time = instance.in_time.time()
-    out_time = instance.out_time.time()
-    shift_start_time = instance.shift.start_time
-    shift_end_time = instance.shift.end_time
-    if in_time > shift_start_time:
+    if instance.in_time and in_time > shift_start_time:
+        in_time = instance.in_time.time()
+        shift_start_time = instance.shift.start_time
         in_time = datetime.combine(datetime.today(), in_time)
         shift_start_time = datetime.combine(datetime.today(), shift_start_time)
         late_by_min = in_time - shift_start_time
@@ -317,7 +315,9 @@ def cal_late_min(sender,instance,**kwargs):
     else:
         instance.late_by_min = None
 
-    if in_time != out_time and shift_end_time > out_time:
+    if instance.out_time and instance.in_time and in_time != out_time and shift_end_time > out_time:
+        out_time = instance.out_time.time()
+        shift_end_time = instance.shift.end_time
         out_time = datetime.combine(datetime.today(), out_time)
         shift_end_time = datetime.combine(datetime.today(), shift_end_time)
         early_gone_by_min = shift_end_time - out_time
