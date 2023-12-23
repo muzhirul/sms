@@ -5,7 +5,7 @@ from django_userforeignkey.models.fields import UserForeignKey
 from setup_app.models import *
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from datetime import datetime, timedelta
+from datetime import datetime,date, time
 from hrms.models import AccountBank, LeaveType
 import datetime
 from authentication.models import Authentication
@@ -269,12 +269,12 @@ class ProcessAttendanceDaily(models.Model):
     process_date = models.DateTimeField(blank=True,null=True)
     in_time = models.DateTimeField(blank=True,null=True)
     out_time = models.DateTimeField(blank=True,null=True)
-    duration = models.DurationField(blank=True,null=True, verbose_name='Duraion', editable=False)
+    duration = models.DurationField(blank=True,null=True, verbose_name='Duraion')
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, blank=True, null=True)
     designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, blank=True, null=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
-    late_by_min = models.IntegerField(default=0)
-    early_gone_by_min = models.IntegerField(default=0)
+    late_by_min = models.DurationField(blank=True,null=True)
+    early_gone_by_min = models.DurationField(blank=True,null=True)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
@@ -293,6 +293,7 @@ class ProcessAttendanceDaily(models.Model):
     def get_day_name(self):
         return self.attn_date.strftime('%A')
     
+    
 @receiver(pre_save, sender=ProcessAttendanceDaily)        
 def calculate_duration(sender, instance, **kwargs):
     if instance.in_time and instance.out_time:
@@ -300,6 +301,31 @@ def calculate_duration(sender, instance, **kwargs):
         instance.duration = duration
     else:
         instance.duration = None
+
+@receiver(pre_save, sender=ProcessAttendanceDaily)  
+def cal_late_min(sender,instance,**kwargs):
+    from datetime import datetime
+    in_time = instance.in_time.time()
+    out_time = instance.out_time.time()
+    shift_start_time = instance.shift.start_time
+    shift_end_time = instance.shift.end_time
+    if in_time > shift_start_time:
+        in_time = datetime.combine(datetime.today(), in_time)
+        shift_start_time = datetime.combine(datetime.today(), shift_start_time)
+        late_by_min = in_time - shift_start_time
+        instance.late_by_min = late_by_min
+    else:
+        instance.late_by_min = None
+
+    if in_time != out_time and shift_end_time > out_time:
+        out_time = datetime.combine(datetime.today(), out_time)
+        shift_end_time = datetime.combine(datetime.today(), shift_end_time)
+        early_gone_by_min = shift_end_time - out_time
+        instance.early_gone_by_min = early_gone_by_min
+    else:
+        instance.early_gone_by_min = None
+    
+
 
 class AttendanceDailyRaw(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True, related_name='raw_atten')

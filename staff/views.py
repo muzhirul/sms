@@ -454,7 +454,6 @@ class staffTeacherListView(generics.ListAPIView):
 
         return Response(response_data)
 
-
 class staffCreateView(generics.CreateAPIView):
     serializer_class = staffCreateSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
@@ -937,23 +936,17 @@ class StaffAttendanceUpdateProcess(generics.ListAPIView):
 
     def list(self,request,*args, **kwargs):
         attn_date = datetime.now().date()
-        # attn_raw_datas = AttendanceDailyRaw.objects.filter(attn_date=attn_date,staff__isnull=False,is_active=True, status=True).order_by('-trnsc_time')
         attn_raw_datas = AttendanceDailyRaw.objects.filter(attn_date=attn_date,staff__isnull=False,is_active=True, status=True).values('staff', 'attn_date').annotate(
                                     in_time=Coalesce(Min('trnsc_time'), F('attn_date')),
                                     out_time=Coalesce(Max('trnsc_time'), F('attn_date'))
                                 )
         for attn_raw_data in attn_raw_datas:
-            print(attn_raw_data)
-            # print(attn_raw_data['staff'])
             in_datetime = attn_raw_data['in_time']
             out_datetime = attn_raw_data['out_time']
             daily_attn = ProcessAttendanceDaily.objects.get(attn_date=attn_raw_data['attn_date'],staff=attn_raw_data['staff'],is_active=True,status=True)
-            # print(daily_attn.shift.start_time)
             if daily_attn:
                 shift_start_time = daily_attn.shift.start_time
-                shift_end_time = daily_attn.shift.end_time
                 in_time = in_datetime.time()
-                out_time = out_datetime.time()
                 if in_time <= shift_start_time:
                     att_type = AttendanceType.objects.get(name__iexact='present',status=True)
                     attn_id = att_type
@@ -967,30 +960,4 @@ class StaffAttendanceUpdateProcess(generics.ListAPIView):
                 daily_attn.out_time = out_datetime
                 daily_attn.attn_type = attn_id
                 daily_attn.save()
-                print(in_time,out_time,attn_id)
-            # if daily_attn:
-            #     if attn_raw_data.attn_type == 'IN':
-            #         print('In Process')
-            #         shift_start_time = daily_attn.shift.start_time
-            #         # print(shift_start_time)
-            #         in_time = attn_raw_data.trnsc_time.time()
-            #         if in_time <= shift_start_time:
-            #             att_type = AttendanceType.objects.get(name__iexact='present',status=True)
-            #             attn_id = att_type
-            #         elif in_time > shift_start_time:
-            #             att_type = AttendanceType.objects.get(name__iexact='late',status=True)
-            #             attn_id = att_type
-            #         else:
-            #             att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
-            #             attn_id = att_type
-            #         # print('====')
-            #         daily_attn.in_time = attn_raw_data.trnsc_time
-            #         daily_attn.attn_type = attn_id
-            #         daily_attn.save()
-            #         # print(daily_attn)
-            #     elif attn_raw_data.attn_type == 'OUT':
-            #         print('Out Process')
-            #         out_time = attn_raw_data.trnsc_time.time()
-            #         daily_attn.out_time = attn_raw_data.trnsc_time
-            #         daily_attn.save()
         return Response('okay')
