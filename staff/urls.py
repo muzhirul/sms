@@ -30,4 +30,6 @@ urlpatterns = [
     path('api/attendance/update/process', StaffAttendanceUpdateProcess.as_view(), name='staff-attendance-update-process'),
     # Staff Raw Attendance Entry
     path('api/raw/attendance/entry', StaffAttendanceEntry.as_view(), name='staff-attendance-entry'),
+    # Staff Leaave 
+    # path('/api/leave/list', )
 ]

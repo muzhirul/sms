@@ -3,12 +3,16 @@ from institution.models import Institution, Branch
 from setup_app.models import EducationBoard
 from django_userforeignkey.models.fields import UserForeignKey
 from setup_app.models import *
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from datetime import datetime,date, time
 from hrms.models import AccountBank, LeaveType
 import datetime
 from authentication.models import Authentication
+
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
+from django.db.models import F
 # Create your models here.
 
 def staff_no():
@@ -305,7 +309,7 @@ def calculate_duration(sender, instance, **kwargs):
 @receiver(pre_save, sender=ProcessAttendanceDaily)  
 def cal_late_min(sender,instance,**kwargs):
     from datetime import datetime
-    if instance.in_time and in_time > shift_start_time:
+    if instance.in_time and instance.in_time.time() > instance.shift.start_time:
         in_time = instance.in_time.time()
         shift_start_time = instance.shift.start_time
         in_time = datetime.combine(datetime.today(), in_time)
@@ -315,7 +319,7 @@ def cal_late_min(sender,instance,**kwargs):
     else:
         instance.late_by_min = None
 
-    if instance.out_time and instance.in_time and in_time != out_time and shift_end_time > out_time:
+    if instance.out_time and instance.in_time and instance.in_time != instance.out_time and instance.shift.end_time > instance.out_time.time():
         out_time = instance.out_time.time()
         shift_end_time = instance.shift.end_time
         out_time = datetime.combine(datetime.today(), out_time)
@@ -389,10 +393,26 @@ class StaffLeaveTransaction(models.Model):
         if self.end_date and self.start_date:
             if self.end_date < self.start_date:
                 raise ValidationError('End date must be greater than or equal to start date.')
+        # print(self.apply_by.id,self.leave_type)
+        # print(self.day_count)
+        try:
+            leave_status = StaffLeave.objects.get(staff=self.apply_by,leave_type=self.leave_type,is_active=True,status=True)
+            remain_days = (leave_status.leave_days-leave_status.taken_days)
+            print(self.day_count)
+            if leave_status.leave_days <= leave_status.taken_days:
+                # raise ValidationError(f'Sorry!! You have already taken all {self.leave_type}')
+                raise ValidationError(f'দুঃখিত!! আপনি ইতিমধ্যে সব {self.leave_type} গ্রহণ করেছেন')
+            if remain_days <= self.day_count:
+                raise ValidationError(f'You can not apply {self.day_count} days because your remaining {self.leave_type} has {remain_days} days !!!')
+                # raise ValidationError(f'আপনি {self.day_count} দিন {self.leave_type} ছুটি আবেদন করতে পারবেন না কারণ আপনার ছুটি বাকি আছে {remain_days} দিন !!!')
+        except StaffLeave.DoesNotExist:
+            raise ValidationError(f'Sorry!! You have not assign {self.leave_type}')
+            
+        # if self.leave_type and self.day_count > self.leave_type. and self.leave_type.is_active and self.leave_type.status:
 
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     self.clean()
+    #     super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'staff_leave_trns'
@@ -407,6 +427,21 @@ def calculate_duration(sender, instance, **kwargs):
         instance.day_count = duration
     else:
         instance.day_count = None
+
+# @receiver(post_save, sender=StaffLeaveTransaction)
+# def update_taken_day(sender,instance,**kwargs):
+#     total_taken_days = StaffLeaveTransaction.objects.get(
+#                                         apply_by=instance.apply_by,
+#                                         leave_type=instance.leave_type,
+#                                         status=True,
+#                                         is_active=True
+#                                     ).values('apply_by', 'leave_type').annotate(
+#                                         total_days=Sum('day_count')
+#                                     ).values('total_days')
+#     print(total_taken_days['total_days'])
+#     leave_status = StaffLeave.objects.get(staff=instance.apply_by,leave_type=instance.leave_type,is_active=True,status=True)
+#     print(leave_status.taken_days)
+
 
 
 

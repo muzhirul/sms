@@ -958,6 +958,6 @@ class StaffAttendanceUpdateProcess(generics.ListAPIView):
                     attn_id = att_type
                 daily_attn.in_time = in_datetime
                 daily_attn.out_time = out_datetime
-                daily_attn.attn_type = attn_id
+                daily_attn.attn_type = att_type
                 daily_attn.save()
         return Response('okay')
