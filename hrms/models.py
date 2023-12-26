@@ -1,4 +1,3 @@
-from ast import mod
 from django.db import models
 from django_userforeignkey.models.fields import UserForeignKey
 from institution.models import Institution, Branch
