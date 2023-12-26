@@ -58,18 +58,13 @@ class LeaveType(models.Model):
 class Holiday(models.Model):
     name = models.CharField(max_length=50, verbose_name='Holiday Name')
     type = models.CharField(max_length=30, verbose_name='Holiday Type')
-    year = models.CharField(max_length=4, verbose_name='Holiday Year')
-    is_general_day = models.BooleanField(default=False)
-    is_weekly_offday = models.BooleanField(default=False)
+    start_date = models.DateField()
+    end_date = models.DateField()
     status = models.BooleanField(default=True)
-    institution = models.ForeignKey(
-        Institution, on_delete=models.CASCADE, blank=True, null=True)
-    branch = models.ForeignKey(
-        Branch, on_delete=models.CASCADE, blank=True, null=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='holiday_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='holiday_update_by', editable=False, blank=True, null=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='holiday_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='holiday_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
