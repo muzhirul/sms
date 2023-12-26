@@ -18,6 +18,8 @@ urlpatterns = [
     path('api/teacher/list', staffTeacherListView.as_view(), name='teacher-List'),
     path('api/detail/<int:pk>', staffDetailView.as_view(), name='staff-detail'),
     path('api/image/<int:pk>', StaffImageUpload.as_view(), name='staff-image-upload'),
+    path('api/role-base-staff/<str:role_id>', staffRoleBaseSataffListView.as_view(), name='role-base-staff-List'),
+    path('api/search/staff/list', StaffSearchList.as_view(), name='search-staff-list'),
 
     # staff shift API
     path('api/shift/list', StaffShiftList.as_view(),name='shift-list'),

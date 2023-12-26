@@ -403,6 +403,110 @@ class DesignationDelete(generics.UpdateAPIView):
         return CustomResponse(code=status.HTTP_200_OK, message=f"Designation {instance.name} Delete successfully", data=None)
 
 '''For Staff'''
+class StaffSearchList(generics.ListAPIView):
+    serializer_class = StaffTeacherViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        # Get the role ID from the URL parameter
+        staff_ids = self.request.data.get('staff_id', [])
+        print(staff_ids)
+        queryset = Staff.objects.filter(id__in=staff_ids)
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Staff Shift', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+class staffRoleBaseSataffListView(generics.ListAPIView):
+    serializer_class = StaffTeacherViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        # Get the role ID from the URL parameter
+        role_id = self.kwargs['role_id']
+        queryset = Staff.objects.filter(role__id=role_id)
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Staff Shift', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
 
 class staffTeacherListView(generics.ListAPIView):
     serializer_class = StaffTeacherViewSerializer
@@ -851,7 +955,11 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
         staff_lists = Staff.objects.filter(status=True).order_by('id')
         proc_attn_daily = {}
         row_insert = 0
-        att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+        day_name = attn_date.strftime('%A').lower()
+        if(day_name=='friday'):
+            att_type = AttendanceType.objects.get(name__iexact='weekend',status=True)
+        else:
+            att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
         attn_id = att_type
         for staff_list in staff_lists:
             data_count = ProcessAttendanceDaily.objects.filter(attn_date=attn_date,staff=staff_list,status=True).count()
@@ -883,7 +991,13 @@ class StaffAttendanceProcess(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         data=request.data
         proc_date = data['proc_date']
-        att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+        proc_date = datetime.strptime(proc_date, '%Y-%m-%d')
+        day_name = proc_date.strftime('%A').lower()
+        if(day_name=='friday'):
+            att_type = AttendanceType.objects.get(name__iexact='weekend',status=True)
+        else:
+            att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+        # att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
         attn_id = att_type
         row_insert = 0
         if proc_date:
@@ -932,32 +1046,71 @@ class StaffAttendanceEntry(generics.CreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
-class StaffAttendanceUpdateProcess(generics.ListAPIView):
+class StaffAttendanceUpdateProcess(generics.ListCreateAPIView):
 
     def list(self,request,*args, **kwargs):
         attn_date = datetime.now().date()
-        attn_raw_datas = AttendanceDailyRaw.objects.filter(attn_date=attn_date,staff__isnull=False,is_active=True, status=True).values('staff', 'attn_date').annotate(
-                                    in_time=Coalesce(Min('trnsc_time'), F('attn_date')),
-                                    out_time=Coalesce(Max('trnsc_time'), F('attn_date'))
-                                )
-        for attn_raw_data in attn_raw_datas:
-            in_datetime = attn_raw_data['in_time']
-            out_datetime = attn_raw_data['out_time']
-            daily_attn = ProcessAttendanceDaily.objects.get(attn_date=attn_raw_data['attn_date'],staff=attn_raw_data['staff'],is_active=True,status=True)
-            if daily_attn:
-                shift_start_time = daily_attn.shift.start_time
-                in_time = in_datetime.time()
-                if in_time <= shift_start_time:
-                    att_type = AttendanceType.objects.get(name__iexact='present',status=True)
-                    attn_id = att_type
-                elif in_time > shift_start_time:
-                    att_type = AttendanceType.objects.get(name__iexact='late',status=True)
-                    attn_id = att_type
-                else:
-                    att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
-                    attn_id = att_type
-                daily_attn.in_time = in_datetime
-                daily_attn.out_time = out_datetime
-                daily_attn.attn_type = att_type
-                daily_attn.save()
-        return Response('okay')
+        try:
+            attn_raw_datas = AttendanceDailyRaw.objects.filter(attn_date=attn_date,staff__isnull=False,is_active=True, status=True).values('staff', 'attn_date').annotate(
+                                        in_time=Coalesce(Min('trnsc_time'), F('attn_date')),
+                                        out_time=Coalesce(Max('trnsc_time'), F('attn_date'))
+                                    )
+            for attn_raw_data in attn_raw_datas:
+                in_datetime = attn_raw_data['in_time']
+                out_datetime = attn_raw_data['out_time']
+                daily_attn = ProcessAttendanceDaily.objects.get(attn_date=attn_raw_data['attn_date'],staff=attn_raw_data['staff'],is_active=True,status=True)
+                if daily_attn:
+                    shift_start_time = daily_attn.shift.start_time
+                    in_time = in_datetime.time()
+                    if in_time <= shift_start_time:
+                        att_type = AttendanceType.objects.get(name__iexact='present',status=True)
+                        attn_id = att_type
+                    elif in_time > shift_start_time:
+                        att_type = AttendanceType.objects.get(name__iexact='late',status=True)
+                        attn_id = att_type
+                    else:
+                        att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+                        attn_id = att_type
+                    daily_attn.in_time = in_datetime
+                    daily_attn.out_time = out_datetime
+                    daily_attn.attn_type = att_type
+                    daily_attn.save()
+            return Response('okay')
+        except:
+            return Response('Something Worng!!!!!!!!!!!')
+
+    def create(self, request, *args, **kwargs):
+        data=request.data
+        attn_date = data['proc_date']
+        attn_date = datetime.strptime(attn_date, '%Y-%m-%d')
+        try:
+            attn_raw_datas = AttendanceDailyRaw.objects.filter(attn_date=attn_date,staff__isnull=False,is_active=True, status=True).values('staff', 'attn_date').annotate(
+                                        in_time=Coalesce(Min('trnsc_time'), F('attn_date')),
+                                        out_time=Coalesce(Max('trnsc_time'), F('attn_date'))
+                                    )
+            for attn_raw_data in attn_raw_datas:
+                in_datetime = attn_raw_data['in_time']
+                out_datetime = attn_raw_data['out_time']
+                daily_attn = ProcessAttendanceDaily.objects.get(attn_date=attn_raw_data['attn_date'],staff=attn_raw_data['staff'],is_active=True,status=True)
+                if daily_attn:
+                    shift_start_time = daily_attn.shift.start_time
+                    in_time = in_datetime.time()
+                    if in_time <= shift_start_time:
+                        att_type = AttendanceType.objects.get(name__iexact='present',status=True)
+                        attn_id = att_type
+                    elif in_time > shift_start_time:
+                        att_type = AttendanceType.objects.get(name__iexact='late',status=True)
+                        attn_id = att_type
+                    else:
+                        att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+                        attn_id = att_type
+                    daily_attn.in_time = in_datetime
+                    daily_attn.out_time = out_datetime
+                    daily_attn.attn_type = att_type
+                    daily_attn.save()
+            return Response('okay')
+        except:
+            return Response('Something Worng!!!!!!!!!!!')
+
+       
+        

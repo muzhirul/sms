@@ -21,26 +21,18 @@ def validate_alpha_chars_only(value):
 
 # Create your models here.
 class Setup(models.Model):
-    parent = models.ForeignKey(
-        'self', on_delete=models.CASCADE, blank=True, null=True, related_name='sub_setup')
-    code = models.CharField(max_length=20, null=True,
-                            blank=True, verbose_name='Setup Code')
-    type = models.CharField(max_length=20, blank=True,
-                            null=True, verbose_name='Setup Type')
-    title = models.CharField(max_length=50, blank=True,
-                             null=True, verbose_name='Setup Title')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='sub_setup')
+    code = models.CharField(max_length=20, null=True,blank=True, verbose_name='Setup Code')
+    type = models.CharField(max_length=20, blank=True,null=True, verbose_name='Setup Type')
+    title = models.CharField(max_length=50, blank=True,null=True, verbose_name='Setup Title')
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     sq_order = models.IntegerField(blank=True, null=True)
-    Institution = models.ForeignKey(
-        Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
-    branch = models.ForeignKey(
-        Branch, on_delete=models.SET_NULL, blank=True, null=True)
+    Institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='setup_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='setup_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='setup_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='setup_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -51,14 +43,11 @@ class Setup(models.Model):
         return f"self.type"
 
 class Religion(models.Model):
-    name = models.CharField(max_length=50, blank=True,
-                            null=True, verbose_name='Religion Name')
+    name = models.CharField(max_length=50, blank=True,null=True, verbose_name='Religion Name')
     sl_no = models.IntegerField(blank=True, null=True, verbose_name='Ordering')
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='religion_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='religion_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='religion_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='religion_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -69,14 +58,11 @@ class Religion(models.Model):
         return self.name
 
 class Gender(models.Model):
-    name = models.CharField(max_length=50, blank=True,
-                            null=True, verbose_name='Gender Name')
+    name = models.CharField(max_length=50, blank=True,null=True, verbose_name='Gender Name')
     sl_no = models.IntegerField(blank=True, null=True, verbose_name='Ordering')
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='gender_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='gender_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='gender_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='gender_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -87,14 +73,11 @@ class Gender(models.Model):
         return self.name
 
 class BloodGroup(models.Model):
-    name = models.CharField(max_length=50, blank=True,
-                            null=True, verbose_name='Blood Group Name')
+    name = models.CharField(max_length=50, blank=True,null=True, verbose_name='Blood Group Name')
     sl_no = models.IntegerField(blank=True, null=True, verbose_name='Ordering')
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='blood_group_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='blood_group_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='blood_group_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='blood_group_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -105,14 +88,11 @@ class BloodGroup(models.Model):
         return self.name
 
 class Occupation(models.Model):
-    name = models.CharField(max_length=50, blank=True,
-                            null=True, verbose_name='Occupation Name')
+    name = models.CharField(max_length=50, blank=True,null=True, verbose_name='Occupation Name')
     sl_no = models.IntegerField(blank=True, null=True, verbose_name='Ordering')
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='occupation_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='occupation_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='occupation_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='occupation_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -123,14 +103,11 @@ class Occupation(models.Model):
         return self.name
 
 class Relation(models.Model):
-    name = models.CharField(max_length=50, blank=True,
-                            null=True, verbose_name='Relation')
+    name = models.CharField(max_length=50, blank=True,null=True, verbose_name='Relation')
     sl_no = models.IntegerField(blank=True, null=True, verbose_name='Ordering')
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='relation_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='relation_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='relation_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='relation_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -143,19 +120,14 @@ class Relation(models.Model):
 class Menu(models.Model):
     parent = models.ForeignKey(
         'self', on_delete=models.CASCADE, blank=True, null=True, related_name='sub_menu')
-    name = models.CharField(max_length=50, blank=True,
-                            null=True, verbose_name='Menu Name')
+    name = models.CharField(max_length=50, blank=True,null=True, verbose_name='Menu Name')
     slug = models.SlugField(max_length=55, blank=True, null=True)
-    icon = models.ImageField(upload_to='menu_icon/',
-                             blank=True, null=True, verbose_name='Icon')
-    level = models.IntegerField(
-        blank=True, null=True, verbose_name='Menu Level')
+    icon = models.ImageField(upload_to='menu_icon/',blank=True, null=True, verbose_name='Icon')
+    level = models.IntegerField(blank=True, null=True, verbose_name='Menu Level')
     sl_no = models.IntegerField(blank=True, null=True, verbose_name='Ordering')
     status = models.BooleanField(default=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,
-                                related_name='menu_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,
-                                related_name='menu_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='menu_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='menu_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
