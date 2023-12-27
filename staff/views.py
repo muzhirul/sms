@@ -462,12 +462,14 @@ class staffRoleBaseSataffListView(generics.ListAPIView):
 
     def get_queryset(self):
         # Get the role ID from the URL parameter
-        role_id = self.kwargs['role_id']
-        queryset = Staff.objects.filter(role__id=role_id)
+        role_id = int(self.kwargs['role_id'])
+        if(role_id==0):
+            queryset = Staff.objects.filter(status=True)
+        else:
+            queryset = Staff.objects.filter(role__id=role_id,status=True)
         try:
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch
-            # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
                 queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
             elif branch_id:
