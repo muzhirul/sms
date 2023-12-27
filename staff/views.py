@@ -1145,6 +1145,53 @@ class staffRawAttendanceList(generics.ListAPIView):
 
         return Response(response_data)
 
+class staffSpecificRawAttendance(generics.CreateAPIView):
+    serializer_class = AttendanceDailyRawViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        staff_id = self.request.data.get('staff_id')
+        from_date = self.request.data.get('from_date')
+        to_date = self.request.data.get('to_date')
+        queryset = AttendanceDailyRaw.objects.filter(staff__id=staff_id,attn_date__range=[from_date, to_date],status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    def create(self,request,*args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
 class StaffAttendanceUpdateProcess(generics.ListCreateAPIView):
 
     def list(self,request,*args, **kwargs):
