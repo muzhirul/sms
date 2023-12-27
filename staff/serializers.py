@@ -149,14 +149,27 @@ class AttendanceDailyCreateRawSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AttendanceDailyRaw
-        exclude = ['status','institution','branch','created_by','updated_by','created_at','updated_at']
+        exclude = ['status','created_by','updated_by','created_at','updated_at']
 
     def to_representation(self, instance):
         if instance.status:
             return super().to_representation(instance)
         else:
             return None
+
+class AttendanceDailyRawViewSerializer(serializers.ModelSerializer):
+    staff = StaffTeacherViewSerializer(read_only=True)
+    class Meta:
+        model = AttendanceDailyRaw
+        exclude = ['status','institution','branch','created_by','updated_by','created_at','updated_at']
     
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
+
 class staffCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff

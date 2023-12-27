@@ -403,7 +403,7 @@ class DesignationDelete(generics.UpdateAPIView):
         return CustomResponse(code=status.HTTP_200_OK, message=f"Designation {instance.name} Delete successfully", data=None)
 
 '''For Staff'''
-class StaffSearchList(generics.ListAPIView):
+class StaffSearchList(generics.CreateAPIView):
     serializer_class = StaffTeacherViewSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     pagination_class = CustomPagination
@@ -411,7 +411,6 @@ class StaffSearchList(generics.ListAPIView):
     def get_queryset(self):
         # Get the role ID from the URL parameter
         staff_ids = self.request.data.get('staff_id', [])
-        print(staff_ids)
         queryset = Staff.objects.filter(id__in=staff_ids)
         try:
             institution_id = self.request.user.institution
@@ -429,7 +428,7 @@ class StaffSearchList(generics.ListAPIView):
             pass
         return queryset
     
-    def list(self,request,*args, **kwargs):
+    def create(self,request,*args, **kwargs):
         '''Check user has permission to View start'''
         # permission_check = check_permission(self.request.user.id, 'Staff Shift', 'view')
         # if not permission_check:
@@ -1037,7 +1036,13 @@ class StaffAttendanceEntry(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         try:
+            institution_id = self.request.user.institution.id
+            branch_id = self.request.user.branch.id
             attn_daily_data = request.data.get("raw_atten", [])
+            for item in attn_daily_data:
+                item["institution"] = institution_id
+                item["branch"] = branch_id
+            print(attn_daily_data)
             serializer = self.get_serializer(data=attn_daily_data, many=True)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
@@ -1045,6 +1050,50 @@ class StaffAttendanceEntry(generics.CreateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+class staffRawAttendanceList(generics.ListAPIView):
+    serializer_class = AttendanceDailyRawViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = AttendanceDailyRaw.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    def list(self,request,*args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
 
 class StaffAttendanceUpdateProcess(generics.ListCreateAPIView):
 
