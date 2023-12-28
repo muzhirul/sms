@@ -15,6 +15,10 @@ from django.db.models.functions import Coalesce
 from django.db.models import F
 # Create your models here.
 
+def validate_pdf_file_size(value):
+    if value.size > 2 * 1024 * 1024:  # 20MB in bytes
+        raise ValidationError('File size cannot exceed 2MB.')
+
 def staff_no():
     last_guardian_no = Staff.objects.all().order_by('staff_id').last()
     if not last_guardian_no or last_guardian_no.staff_id is None:
@@ -376,6 +380,7 @@ class StaffLeaveTransaction(models.Model):
     reason_for_leave = models.TextField(blank=True,null=True)
     apply_by = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True,related_name='apply_by')
     responsible = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True,related_name='resonsible_by')
+    document = models.FileField(upload_to='staff_leave_doc/', blank=True, null=True, verbose_name='Document',validators=[validate_pdf_file_size])
     remarks = models.TextField(blank=True, null=True)
     app_status = models.CharField(max_length=20,blank=True, null=True)
     active_start_date = models.DateTimeField(auto_now_add=True,blank=True, null=True)
