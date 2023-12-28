@@ -169,7 +169,6 @@ class AttendanceDailyRawViewSerializer(serializers.ModelSerializer):
         else:
             return None
 
-
 class staffCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
@@ -381,3 +380,13 @@ class StaffLeaveCreateSerializer(serializers.ModelSerializer):
         model = StaffLeave
         exclude = ['status']
 
+class StaffLeaveTransactionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffLeaveTransaction
+        exclude = ['updated_at','created_at','status','day_count','tran_type','application_date','app_status','active_start_date','active_end_date','is_active','institution','branch','created_by','updated_by']
+
+
+class StaffLeaveTransactionViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffLeaveTransaction
+        exclude = ['status']

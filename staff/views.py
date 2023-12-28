@@ -403,6 +403,7 @@ class DesignationDelete(generics.UpdateAPIView):
         return CustomResponse(code=status.HTTP_200_OK, message=f"Designation {instance.name} Delete successfully", data=None)
 
 '''For Staff'''
+
 class StaffSearchList(generics.CreateAPIView):
     serializer_class = StaffTeacherViewSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
@@ -1260,5 +1261,36 @@ class StaffAttendanceUpdateProcess(generics.ListCreateAPIView):
         except:
             return Response('Something Worng!!!!!!!!!!!')
 
+class staffLeaveTransactionCreate(generics.CreateAPIView):
+    serializer_class = StaffLeaveTransactionCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def create(self, request, *args, **kwargs):
+        '''Check user has permission to Create start'''
+        permission_check = check_permission(self.request.user.id, 'Apply Leave', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Create End'''
+        
+        serializer = self.get_serializer(data=request.data)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                # version = serializer.validated_data.get('version')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                
+                instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                return CustomResponse(code=status.HTTP_200_OK, message="Leave created successfully", data=StaffLeaveTransactionViewSerializer(instance).data)
+                # return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Version {version} already exits", data=serializer.errors)
+            # If the serializer is not valid, return an error response
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
        
         

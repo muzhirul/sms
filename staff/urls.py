@@ -35,6 +35,6 @@ urlpatterns = [
     path('api/raw/attendance/entry', StaffAttendanceEntry.as_view(), name='staff-attendance-entry'),
     path('api/raw/attendance/list', staffRawAttendanceList.as_view(), name='staff-raw-attendance-list'),
     path('api/raw/attendance', staffSpecificRawAttendance.as_view(), name='staff-specific-attendance'),
-    # Staff Leaave 
-    # path('/api/leave/list', )
+    # Staff Leaave Transaction
+    path('api/leave-trns/create', staffLeaveTransactionCreate.as_view(), name='staff-leave-transaction-create'), 
 ]
