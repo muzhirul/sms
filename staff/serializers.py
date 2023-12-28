@@ -132,6 +132,7 @@ class StaffTeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = ['id','first_name','last_name','staff_id','user']
+        
 
 class StaffTeacherViewSerializer(serializers.ModelSerializer):
 
@@ -144,6 +145,15 @@ class StaffTeacherViewSerializer(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             return None
+
+class StaffLeaveTransactionViewSerializer(serializers.ModelSerializer):
+    leave_type = LeaveTypeView2Serializer(read_only=True)
+    apply_by = StaffTeacherViewSerializer(read_only=True)
+    responsible = StaffTeacherViewSerializer(read_only=True)
+
+    class Meta:
+        model = StaffLeaveTransaction
+        exclude = ['status']
 
 class AttendanceDailyCreateRawSerializer(serializers.ModelSerializer):
 
@@ -346,6 +356,7 @@ class staffSerializer2(serializers.ModelSerializer):
     social_media = StaffSocialMediaViewSerializer(many=True, required=False, read_only=True)
     atten_daily = ProcessAttendanceViewDailySerializer(many=True, required=False, read_only=True)
     staff_leave = StaffLeaveViewSerialier(many=True, required=False, read_only=True)
+    staff_leave_trns = StaffLeaveTransactionViewSerializer(many=True, required=False, read_only=True)
     # shift = StaffShiftListCreate(read_only=True)
     class Meta:
         model = Staff
@@ -381,16 +392,9 @@ class StaffLeaveCreateSerializer(serializers.ModelSerializer):
         exclude = ['status']
 
 class StaffLeaveTransactionCreateSerializer(serializers.ModelSerializer):
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
     class Meta:
         model = StaffLeaveTransaction
         exclude = ['updated_at','created_at','status','day_count','tran_type','application_date','app_status','active_start_date','active_end_date','is_active','institution','branch','created_by','updated_by']
 
-
-class StaffLeaveTransactionViewSerializer(serializers.ModelSerializer):
-    leave_type = LeaveTypeView2Serializer(read_only=True)
-    apply_by = StaffTeacherViewSerializer(read_only=True)
-    responsible = StaffTeacherViewSerializer(read_only=True)
-
-    class Meta:
-        model = StaffLeaveTransaction
-        exclude = ['status']

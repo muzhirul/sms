@@ -378,7 +378,7 @@ class StaffLeaveTransaction(models.Model):
     application_date = models.DateTimeField(auto_now_add=True,blank=True, null=True)
     add_during_leave = models.TextField(blank=True, null=True)
     reason_for_leave = models.TextField(blank=True,null=True)
-    apply_by = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True,related_name='apply_by')
+    apply_by = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True,related_name='staff_leave_trns')
     responsible = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True,related_name='resonsible_by')
     document = models.FileField(upload_to='staff_leave_doc/', blank=True, null=True, verbose_name='Document',validators=[validate_pdf_file_size])
     remarks = models.TextField(blank=True, null=True)
