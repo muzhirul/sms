@@ -118,11 +118,11 @@ class Relation(models.Model):
         return self.name
 
 class Menu(models.Model):
-    parent = models.ForeignKey(
-        'self', on_delete=models.CASCADE, blank=True, null=True, related_name='sub_menu')
+    parent = models.ForeignKey( 'self', on_delete=models.CASCADE, blank=True, null=True, related_name='sub_menu')
     name = models.CharField(max_length=50, blank=True,null=True, verbose_name='Menu Name')
     slug = models.SlugField(max_length=55, blank=True, null=True)
     icon = models.ImageField(upload_to='menu_icon/',blank=True, null=True, verbose_name='Icon')
+    icon_text = models.TextField(blank=True, null=True, verbose_name='Icon Text')
     level = models.IntegerField(blank=True, null=True, verbose_name='Menu Level')
     sl_no = models.IntegerField(blank=True, null=True, verbose_name='Ordering')
     status = models.BooleanField(default=True)

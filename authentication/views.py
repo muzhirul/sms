@@ -73,6 +73,7 @@ class UserV4LoginView(APIView):
                 main_menu['icon'] = SITE_PROTOCOL+current_site + '/media/'+str(parent_menu.icon)
             else:
                 main_menu['icon'] = ''
+            main_menu['icon_text'] = parent_menu.icon_text
             main_menu['order'] = parent_menu.sl_no
             child_id = []
             permissions = Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True), role__in=role_id,menu__parent= parent_menu.id,status=True).values_list('menu__id', flat=True).distinct()
