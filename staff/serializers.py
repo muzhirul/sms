@@ -387,6 +387,10 @@ class StaffLeaveTransactionCreateSerializer(serializers.ModelSerializer):
 
 
 class StaffLeaveTransactionViewSerializer(serializers.ModelSerializer):
+    leave_type = LeaveTypeView2Serializer(read_only=True)
+    apply_by = StaffTeacherViewSerializer(read_only=True)
+    responsible = StaffTeacherViewSerializer(read_only=True)
+
     class Meta:
         model = StaffLeaveTransaction
         exclude = ['status']
