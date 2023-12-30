@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/holiday/detail/<int:pk>', HolidayDetail.as_view(), name='holiday-detail'),
     path('api/holiday/delete/<int:pk>', HolidayDelete.as_view(), name='holiday-delete'),
     # For Leave Type
+    path('api/leave-type/list', LeaveTypeList.as_view(), name='leave-type-list'),
     path('api/leave-type', LeaveTypeCreateList.as_view(), name='leave-type-list-create'),
     path('api/leave-type/detail/<int:pk>', LeaveTypeDetail.as_view(), name='leave-type-detail'),
     path('api/leave-type/delete/<int:pk>', LeaveTypeDelete.as_view(), name='leave-type-delete'),

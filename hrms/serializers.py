@@ -34,6 +34,11 @@ class LeaveTypeCreateSerializer(serializers.ModelSerializer):
         model = LeaveType
         exclude = ['status','institution','branch']
 
+class LeaveTypeListSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = LeaveType
+        fields = ['id','leave_type_code','name']
 
 class LeaveTypeViewSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
