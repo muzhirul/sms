@@ -9,4 +9,11 @@ class FeesTypeAdmin(admin.ModelAdmin):
     class Meta:
         model = FeesType
 
+class FeesDiscountAdmin(admin.ModelAdmin):
+    list_display = ['name','code','is_active']
+    prepopulated_fields = {'code': ('name',)}
+    class Meta:
+        model = FeesDiscount
+
 admin.site.register(FeesType, FeesTypeAdmin)
+admin.site.register(FeesDiscount, FeesDiscountAdmin)
