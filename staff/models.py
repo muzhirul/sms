@@ -382,7 +382,7 @@ class StaffLeaveTransaction(models.Model):
     responsible = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True,related_name='resonsible_by')
     document = models.FileField(upload_to='staff_leave_doc/', blank=True, null=True, verbose_name='Document',validators=[validate_pdf_file_size])
     remarks = models.TextField(blank=True, null=True)
-    app_status = models.CharField(max_length=20,blank=True, null=True)
+    app_status = models.ForeignKey(Setup, on_delete=models.SET_NULL,blank=True, null=True,limit_choices_to={'parent__type': 'APPROVAL_STATUS'},related_name='approval_status')
     active_start_date = models.DateTimeField(auto_now_add=True,blank=True, null=True)
     active_end_date = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)

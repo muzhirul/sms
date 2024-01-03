@@ -1283,12 +1283,11 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-
-                instance = serializer.save(institution=institution, branch=branch)
+                submit_status = Setup.objects.get(status=True,parent__type='APPROVAL_STATUS',type='SUBMITTED',institution=institution,branch=branch)
+                instance = serializer.save(app_status=submit_status,institution=institution, branch=branch)
                 app_groups = Setup.objects.filter(status=True,parent__type='STAFF_LEAVE_APP_HIR',institution=institution,branch=branch)
                 for app_group in app_groups:
                     if(app_group.type=='SUBMITTED'):
-                        submit_status = Setup.objects.get(status=True,parent__type='APPROVAL_STATUS',type='SUBMITTED',institution=institution,branch=branch)
                         StaffLeaveAppHistory.objects.create(app_status=submit_status,leave_trns=instance,approve_by=apply_by,approve_group=app_group,institution=institution, branch=branch)
                     else:
                         StaffLeaveAppHistory.objects.create(leave_trns=instance,approve_group=app_group,institution=institution, branch=branch)
