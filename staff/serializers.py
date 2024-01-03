@@ -133,7 +133,6 @@ class StaffTeacherSerializer(serializers.ModelSerializer):
         model = Staff
         fields = ['id','first_name','last_name','staff_id','user']
         
-
 class StaffTeacherViewSerializer(serializers.ModelSerializer):
 
     class Meta:

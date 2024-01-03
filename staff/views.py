@@ -1278,12 +1278,20 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                apply_by = serializer.validated_data.get('apply_by')
                 # version = serializer.validated_data.get('version')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                
+
                 instance = serializer.save(institution=institution, branch=branch)
+                app_groups = Setup.objects.filter(status=True,parent__type='STAFF_LEAVE_APP_HIR',institution=institution,branch=branch)
+                for app_group in app_groups:
+                    if(app_group.type=='SUBMITTED'):
+                        submit_status = Setup.objects.get(status=True,parent__type='APPROVAL_STATUS',type='SUBMITTED',institution=institution,branch=branch)
+                        StaffLeaveAppHistory.objects.create(app_status=submit_status,leave_trns=instance,approve_by=apply_by,approve_group=app_group,institution=institution, branch=branch)
+                    else:
+                        StaffLeaveAppHistory.objects.create(leave_trns=instance,approve_group=app_group,institution=institution, branch=branch)
                     # Customize the response data
                 return CustomResponse(code=status.HTTP_200_OK, message="Leave created successfully", data=StaffLeaveTransactionViewSerializer(instance).data)
                 # return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Version {version} already exits", data=serializer.errors)

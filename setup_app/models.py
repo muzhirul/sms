@@ -19,16 +19,25 @@ def validate_alpha_chars_only(value):
             code='alpha_chars_only'
         )
 
+def setup_code():
+    last_leave_code = Setup.objects.all().order_by('code').last()
+    if not last_leave_code or last_leave_code.code is None:
+        return 'S-' + '01'
+    leave_num = str(last_leave_code.code)[-2:]
+    leave_num_int = int(leave_num)
+    new_leave_num = leave_num_int + 1
+    new_gd_num = 'S-' + str(new_leave_num).zfill(2)
+    return new_gd_num  
 # Create your models here.
 class Setup(models.Model):
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='sub_setup')
-    code = models.CharField(max_length=20, null=True,blank=True, verbose_name='Setup Code')
-    type = models.CharField(max_length=20, blank=True,null=True, verbose_name='Setup Type')
-    title = models.CharField(max_length=50, blank=True,null=True, verbose_name='Setup Title')
+    code = models.CharField(max_length=20, null=True,blank=True, verbose_name='Setup Code',default=setup_code)
+    type = models.CharField(max_length=30, blank=True,null=True, verbose_name='Setup Type')
+    title = models.CharField(max_length=255, blank=True,null=True, verbose_name='Setup Title')
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     sq_order = models.IntegerField(blank=True, null=True)
-    Institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='setup_creator', editable=False, blank=True, null=True)
@@ -40,7 +49,7 @@ class Setup(models.Model):
         db_table = 's_setup'
 
     def __str__(self):
-        return f"self.type"
+        return str(self.type)
 
 class Religion(models.Model):
     name = models.CharField(max_length=50, blank=True,null=True, verbose_name='Religion Name')

@@ -73,11 +73,19 @@ class ProcessAttendanceDailyAdmin(admin.ModelAdmin):
     class Meta:
         model = ProcessAttendanceDaily
 
+class StaffLeaveAppHistoryTabularInline(admin.TabularInline):
+    model = StaffLeaveAppHistory
+    fields = ['approve_group','approve_by','app_status','remarks','is_active','institution','branch','status']
+    extra = 0
+
+
 class StaffLeaveTransactionAdmin(admin.ModelAdmin):
     list_display = ['code','leave_type','start_date','end_date','day_count']
     
     class Meta:
         model = StaffLeaveTransaction
+    
+    inlines = [StaffLeaveAppHistoryTabularInline]
 
 
 
@@ -87,3 +95,4 @@ admin.site.register(Department,DepartmentAdmin)
 admin.site.register(StaffShift,StaffShiftAdmin)
 admin.site.register(ProcessAttendanceDaily,ProcessAttendanceDailyAdmin)
 admin.site.register(StaffLeaveTransaction,StaffLeaveTransactionAdmin)
+admin.site.register(StaffLeaveAppHistory)

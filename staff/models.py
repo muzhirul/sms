@@ -447,6 +447,27 @@ def calculate_duration(sender, instance, **kwargs):
 #     leave_status = StaffLeave.objects.get(staff=instance.apply_by,leave_type=instance.leave_type,is_active=True,status=True)
 #     print(leave_status.taken_days)
 
+class StaffLeaveAppHistory(models.Model):
+    leave_trns = models.ForeignKey(StaffLeaveTransaction, on_delete=models.SET_NULL,blank=True,null=True)
+    approve_group = models.ForeignKey(Setup, on_delete=models.SET_NULL,blank=True,null=True,limit_choices_to={'parent__type': 'STAFF_LEAVE_APP_HIR'},related_name='app_group')
+    approve_by = models.ForeignKey(Staff, on_delete=models.SET_NULL,blank=True,null=True)
+    app_status = models.ForeignKey(Setup, on_delete=models.SET_NULL,blank=True, null=True,limit_choices_to={'parent__type': 'APPROVAL_STATUS'},related_name='app_status')
+    remarks = models.TextField(blank=True,null=True)
+    approve_date = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='staff_trns_his_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='staff_trns_his_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'staff_leave_approve_history'
+
+    def __str__(self):
+        return str(self.id)
 
 
 

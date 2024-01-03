@@ -6,12 +6,10 @@ from .models import *
 class SetupAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Basic Information", {'fields': [
-         ('parent', 'type', 'title'), ('start_date', 'end_date', 'status'),]}),
+         ('parent', 'type', 'title'), ('start_date', 'end_date', 'status'),('sq_order','institution', 'branch'), ]}),
     ]
-    list_display = ['parent', 'type', 'title',
-                    'start_date', 'end_date', 'status']
-    search_fields = ['parent', 'type', 'title',
-                     'start_date', 'end_date', 'status']
+    list_display = ['parent','code', 'type', 'title', 'start_date', 'end_date', 'status']
+    search_fields = ['parent', 'type', 'title', 'start_date', 'end_date', 'status']
     list_filter = ['parent']
 
     # save_as = True
