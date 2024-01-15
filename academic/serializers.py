@@ -89,6 +89,20 @@ class SubjectSerializer3(serializers.ModelSerializer):
             # If status is False, return an empty dictionary
             return None
 
+class SubjectListViewSerializer(serializers.ModelSerializer):
+    type = SubjectTypeSerializer(read_only=True)
+    class Meta:
+        model = Subject
+        fields = ['id','name','type']
+    
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return None
+
 class SubjectViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
@@ -175,6 +189,20 @@ class ClassRoomSerializer2(serializers.ModelSerializer):
             # If status is False, return an empty dictionary
             return None
 
+class ClassRoomViewSerializer(serializers.ModelSerializer):
+    floor_type= FloorTypeSerializer(read_only=True)
+    class Meta:
+        model = ClassRoom
+        fields =['id','building','room_no','floor_type']
+
+    def to_representation(self, instance):
+        # Only include instances where status is True
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            # If status is False, return an empty dictionary
+            return None
+
 class ClassRoomSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
@@ -212,7 +240,7 @@ class ClassPeriodSerializer2(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             # If status is False, return an empty dictionary
-            return {}
+            return None
 
 class ClassPeriodSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
