@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/class-period/detail/<int:pk>', ClassPeriodDetail.as_view(), name='class-period-detail'),
     path('api/class-period/delete/<int:pk>', ClassPeriodDelete.as_view(), name='class-period-delete'),
     # For Class section
+    path('api/class-section/list', ClassSectionViewList.as_view(), name='class-section-view-list'),
     path('api/class-section', ClassSectionList.as_view(), name='class-section-list'),
     path('api/class-section/detail/<int:pk>', ClassSectionDetail.as_view(), name='class-section-detail'),
     path('api/class-section/delete/<int:pk>', ClassSectionDelete.as_view(), name='class-section-delete'),

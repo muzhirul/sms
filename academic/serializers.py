@@ -265,11 +265,35 @@ class ClassGroupViewSerializer(serializers.ModelSerializer):
         else:
             return None
 
+class ClassGroupListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ClassGroup
+        fields = ['id','code','name']
+
+    def to_representation(self, instance):
+
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
 class ClassGroupCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClassGroup
         exclude = ['status']
+
+class ClassSectionViewSerializer(serializers.ModelSerializer):
+    version = VersionSerializer2(read_only=True)
+    section = SectionSerializer2(read_only=True)
+    class_name = ClassSerializer2(read_only=True)
+    session = SessionSerializer2(read_only=True)
+    group = ClassGroupListSerializer(read_only=True)
+    class Meta:
+        model = ClassSection
+        # Exclude the specified fields from serialization
+        exclude = ['status','created_at','updated_at','institution','branch','created_by','updated_by']
 
 class ClassSectionSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
