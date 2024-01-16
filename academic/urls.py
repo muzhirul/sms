@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/class-section/detail/<int:pk>', ClassSectionDetail.as_view(), name='class-section-detail'),
     path('api/class-section/delete/<int:pk>', ClassSectionDelete.as_view(), name='class-section-delete'),
     # For Class Subject
+    path('api/class-subject/list', ClassSubjectViewList.as_view(), name='class-subject-view-list'),
     path('api/class-subject', ClassSubjectList.as_view(), name='class-subject-list'),
     path('api/class-subject/detail/<int:pk>', ClassSubjectDetail.as_view(), name='class-subject-detail'),
     path('api/class-subject/delete/<int:pk>', ClassSubjectDelete.as_view(), name='class-subject-delete'),
@@ -51,6 +52,7 @@ urlpatterns = [
     path('api/class-routine/detail/<int:pk>', ClassRoutineDetail.as_view(), name='class-routine-detail'),
     path('api/class-routine/delete/<int:pk>', ClassRoutineDelete.as_view(), name='class-routine-delete'),
     # For Group
+    path('api/group/list', GroupViewCreate.as_view(), name='group-view-list'),
     path('api/group', GroupListCreate.as_view(), name='group-list'),
     path('api/group/detail/<int:pk>', GroupUpdateDetail.as_view(), name='group-detail'),
     path('api/group/delete/<int:pk>', GroupDelete.as_view(), name='group-delete'),

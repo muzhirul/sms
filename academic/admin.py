@@ -13,6 +13,7 @@ class VersionAdmin(admin.ModelAdmin):
 
     class Meta:
         model = Version
+        
 class SessionAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Session Information",{'fields':[('session','status'),]})
@@ -104,9 +105,9 @@ class ClassSectionAdmin(admin.ModelAdmin):
         
 class ClassSubjectAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Class Subject Information",{"fields":[('class_name'),('code','subject','image','book_file'),('section','session','version')]})
+        ("Class Subject Information",{"fields":[('class_name'),('code','subject','image','book_file'),('version','session','section','group')]})
     ]
-    list_display = ['class_name','code','subject','section','session','version']
+    list_display = ['version','session','section','group','class_name','code','subject','status']
     search_fields = ['subject__name']
     class Meta:
         model = ClassSubject

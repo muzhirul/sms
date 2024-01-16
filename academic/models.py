@@ -248,6 +248,7 @@ class ClassSubject(models.Model):
     section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True, null=True)
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, blank=True, null=True)
     version = models.ForeignKey(Version, on_delete=models.SET_NULL, blank=True, null=True)
+    group = models.ForeignKey(ClassGroup, on_delete=models.SET_NULL, blank=True,null=True)
     code = models.CharField(max_length=20, blank=True, null=True, verbose_name='Subject Code')
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, blank=True, null=True)
     image = models.ImageField(upload_to='book_images/', blank=True, null=True, verbose_name='Book Image')

@@ -265,11 +265,24 @@ class ClassGroupViewSerializer(serializers.ModelSerializer):
         else:
             return None
 
+class ClassGroupViewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ClassGroup
+        exclude = ['status']
+
+    def to_representation(self, instance):
+
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
 class ClassGroupListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClassGroup
-        fields = ['id','code','name']
+        fields = ['id','name']
 
     def to_representation(self, instance):
 
@@ -323,7 +336,19 @@ class ClassSectionSerializer3(serializers.ModelSerializer):
         else:
             # If status is False, return an empty dictionary
             return {}
-        
+
+class ClassSubjectViewSerializer(serializers.ModelSerializer):
+    version = VersionSerializer2(read_only=True)
+    session = SessionSerializer2(read_only=True)
+    class_name = ClassSerializer2(read_only=True)
+    section = SectionSerializer2(read_only=True)
+    group = ClassGroupListSerializer(read_only=True)
+    subject = SubjectViewSerializer(read_only=True)
+    class Meta:
+        model = ClassSubject
+        # Exclude the specified fields from serialization
+        exclude = ['status','created_at','updated_at','institution','branch','created_by','updated_by']
+
 class ClassSubjectSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
@@ -333,6 +358,7 @@ class ClassSubjectSerializer(serializers.ModelSerializer):
     section = SectionSerializer2(read_only=True)
     session = SessionSerializer2(read_only=True)
     version = VersionSerializer2(read_only=True)
+    group = ClassGroupListSerializer(read_only=True)
     subject = SubjectViewSerializer(read_only=True)
     class Meta:
         model = ClassSubject
