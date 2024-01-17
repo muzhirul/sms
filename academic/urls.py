@@ -61,7 +61,9 @@ urlpatterns = [
     path('api/class-teacher/detail/<int:pk>', ClassTeacherDetail.as_view(), name='class-teacher-detail'),
     path('api/class-teacher/delete/<int:pk>', ClassTeacherDelete.as_view(), name='class-teacher-delete'),
     # For Class Routine v2
+    path('api/v2/class-routine/list', ClassRoutineList.as_view(), name='class-routine-list'),
     path('api/v2/class-routine', ClassRoutinev2CreateList.as_view(), name='class-routine-v2-list'),
     path('api/class-routine/v2/detail/<int:pk>', ClassRoutinev2Detail.as_view(), name='class-routine-v2-detail'),
     path('api/class-routine/v2/delete/<int:pk>', ClassRoutinev2Delete.as_view(), name='class-routine-v2-delete'),
+    path('api/class-routine/search', ClassRoutineSearch.as_view(), name='class-routine-search'),
 ]

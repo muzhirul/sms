@@ -522,3 +522,42 @@ class ClassRoutineMstViewSerializers(serializers.ModelSerializer):
             representation.pop('routine_dtl', None)
 
         return representation
+
+class ClassRoutineDtlListSerializers(serializers.ModelSerializer):
+    day = DaySerializer(read_only=True)
+    teacher = StaffTeacherViewSerializer(read_only=True)
+    subject = SubjectViewSerializer(read_only=True)
+    class_period = ClassPeriodSerializer2(read_only=True)
+    class_room = ClassRoomSerializer2(read_only=True)
+    class Meta:
+        model = ClassRoutiineDtl
+        fields = ['id','day','teacher','subject','class_period','class_room']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
+class ClassRoutineMstListSerializers(serializers.ModelSerializer):
+    version = VersionSerializer2(read_only=True)
+    session = SessionSerializer2(read_only=True)
+    class_name = ClassSerializer2(read_only=True)
+    section = SectionSerializer2(read_only=True)
+    routine_dtl = ClassRoutineDtlListSerializers(many=True, required=False, read_only=True)
+
+    class Meta:
+        model = ClassRoutineMst
+        exclude = ['institution','branch','status','created_at','updated_at','created_by','updated_by']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Filter out None values from the social_media list 
+        representation['routine_dtl'] = [item for item in representation['routine_dtl'] if item is not None]
+
+        if not instance.status:
+            # If status is False, exclude the social_media field
+            representation.pop('routine_dtl', None)
+
+        return representation

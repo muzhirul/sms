@@ -2092,6 +2092,50 @@ class ClassRoutineDelete(generics.UpdateAPIView):
 '''
 For Class Routine v2
 '''
+class ClassRoutineList(generics.ListAPIView):
+    serializer_class = ClassRoutineMstListSerializers
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = ClassRoutineMst.objects.filter(status=True).order_by('id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
 class ClassRoutinev2CreateList(generics.ListCreateAPIView):
     serializer_class = ClassRoutineMstViewSerializers
     # Requires a valid JWT token for access
@@ -2257,6 +2301,15 @@ class ClassRoutinev2Delete(generics.UpdateAPIView):
             routine_dtl.save()
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Routine Delete successfully", data=None)
+
+class ClassRoutineSearch(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def create(self, request, *args, **kwargs):
+        data=request.data
+        return Response(data)
+
 
 '''
 For Group
