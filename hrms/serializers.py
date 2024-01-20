@@ -28,6 +28,12 @@ class HolidaySerializer(serializers.ModelSerializer):
         model = Holiday
         exclude = ['status']
 
+class HolidayViewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Holiday
+        exclude = ['status','institution','branch','created_by','updated_by','created_at','updated_at']
+
 class LeaveTypeCreateSerializer(serializers.ModelSerializer):
 
     class Meta:

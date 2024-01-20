@@ -8,6 +8,7 @@ urlpatterns = [
     path('api/bank/detail/<int:pk>', BankDetail.as_view(), name='bank-detail'),
     path('api/bank/delete/<int:pk>', BankDelete.as_view(), name='Bank-delete'),
     # For Holiday
+    path('api/holiday/list', HolidayListView.as_view(), name='holiday-View-list'),
     path('api/holiday', HolidayCreateList.as_view(), name='holiday-list-create'),
     path('api/holiday/detail/<int:pk>', HolidayDetail.as_view(), name='holiday-detail'),
     path('api/holiday/delete/<int:pk>', HolidayDelete.as_view(), name='holiday-delete'),
