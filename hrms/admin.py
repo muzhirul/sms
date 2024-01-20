@@ -18,7 +18,7 @@ class LeaveTypeAdmin(admin.ModelAdmin):
 
 
 class HolidayAdmin(admin.ModelAdmin):
-    list_display = ['name', 'type','start_date','end_date','status']
+    list_display = ['name', 'type','start_date','end_date','is_active','status']
 
     class Meta:
         model = Holiday

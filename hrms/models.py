@@ -59,6 +59,8 @@ class Holiday(models.Model):
     type = models.CharField(max_length=30, verbose_name='Holiday Type')
     start_date = models.DateField()
     end_date = models.DateField()
+    remarks = models.TextField(blank=True,null=True)
+    is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)

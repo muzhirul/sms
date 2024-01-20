@@ -206,17 +206,17 @@ class HolidayCreateList(generics.ListCreateAPIView):
     pagination_class = CustomPagination
     
     def get_queryset(self):
-        queryset = Holiday.objects.filter(status=True).order_by('-id')
+        queryset = Holiday.objects.filter(status=True).order_by('start_date','-id')
         try:
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('start_date','-id')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('start_date','-id')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('start_date','-id')
             else:
                 queryset            
         except:
@@ -262,16 +262,18 @@ class HolidayCreateList(generics.ListCreateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
-                bank_name = serializer.validated_data.get('name')
+                name = serializer.validated_data.get('name')
+                start_date = serializer.validated_data.get('start_date')
+                end_date = serializer.validated_data.get('end_date')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                holiday_count = Holiday.objects.filter(name=bank_name,institution=institution,branch=branch,status=True).count()
+                holiday_count = Holiday.objects.filter(name__iexact=name,start_date=start_date,institution=institution,branch=branch,status=True).count()
                 if(holiday_count==0):
                     instance = serializer.save(institution=institution, branch=branch)
                     # Customize the response data
                     return CustomResponse(code=status.HTTP_200_OK, message="Holiday create successfully", data=HolidaySerializer(instance).data)
-                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Holiday {bank_name} already exits", data=serializer.errors)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Holiday {name} already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -309,17 +311,17 @@ class HolidayDetail(generics.RetrieveUpdateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
-                bank_name = serializer.validated_data.get('bank')
+                name = serializer.validated_data.get('bank')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                holiday_count = Holiday.objects.filter(name=bank_name,institution=institution,branch=branch,status=True).count()
+                holiday_count = Holiday.objects.filter(name__iexact=name,institution=institution,branch=branch,status=True).count()
                 if(holiday_count==0):
                     # Perform any custom update logic here if needed
                     instance = serializer.save()
                     # Customize the response data
                     return CustomResponse(code=status.HTTP_200_OK, message="Holiday Update successfully", data=HolidaySerializer(instance).data)
-                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Holiday {bank_name} already exits", data=serializer.errors)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Holiday {name} already exits", data=serializer.errors)
                 # Customize the response format for successful update
             else:
                 # Handle validation errors

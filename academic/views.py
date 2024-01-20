@@ -2669,7 +2669,7 @@ class ClassTeacherDetail(generics.RetrieveUpdateAPIView):
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
 class ClassTeacherDelete(generics.UpdateAPIView):
-    queryset = ClassSection.objects.all()
+    queryset = ClassTeacher.objects.all()
     serializer_class = ClassTeacherCreateSerializer
     # Requires a valid JWT token for access
     permission_classes = [permissions.IsAuthenticated]
