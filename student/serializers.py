@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from setup_app.serializers import *
 from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer, OccupationSerializer, RelationSerializer
 from academic.serializers import VersionSerializer2, SessionSerializer2, ClassSerializer2,SectionSerializer2
 
@@ -39,10 +40,19 @@ class GuardianViewSerializer(serializers.ModelSerializer):
         model = Guardian
         # Exclude the 'status' field and other fields you want to exclude
         exclude = ['user','student','status','created_by', 'updated_by', 'created_at', 'updated_at']
+
+class ProcessStAttendanceDailyViewDailySerializer(serializers.ModelSerializer):
+    # shift = StaffShiftListSerializer2()
+    # attn_type = AttendanceTypeViewSerializer()
+    class Meta:
+        model = ProcessStAttendanceDaily
+        # exclude = ['role','process_date','staff','staff_code','con_type','institution','branch','status','created_at','updated_at','created_by','updated_by']
+        fields = ['attn_date','shift','get_day_name','attn_type','in_time','out_time','duration']
         
 class StudentViewSerializer(serializers.ModelSerializer):
     guardians = GuardianViewSerializer(many=True, required=False, read_only=True)
     enroll = StudentEnrollViewSerializer(many=True, required=False, read_only=True)
+    std_atten_daily = ProcessStAttendanceDailyViewDailySerializer(read_only=True)
     gender = GenderSerializer(read_only=True)
     religion = ReligionSerializer(read_only=True)
     blood_group = BloodGroupSerializer(read_only=True)

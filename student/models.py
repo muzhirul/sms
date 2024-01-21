@@ -5,6 +5,8 @@ from staff.models import StaffShift
 from django_userforeignkey.models.fields import UserForeignKey
 from authentication.models import Authentication
 import datetime
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from setup_app.models import *
 # For generate student number
 def generate_student_no():
@@ -131,7 +133,7 @@ class StudentEnroll(models.Model):
 
 class ProcessStAttendanceDaily(models.Model):
     attn_date = models.DateField(verbose_name='Attendance Date',blank=True,null=True)
-    student = models.ForeignKey(Student, on_delete=models.SET_NULL,blank=True,null=True)
+    student = models.ForeignKey(Student, on_delete=models.SET_NULL,blank=True,null=True, related_name='std_atten_daily')
     shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
     student_code = models.CharField(max_length=20, blank=True,null=True)
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='version', blank=True, null=True)
@@ -161,4 +163,39 @@ class ProcessStAttendanceDaily(models.Model):
 
     def __str__(self):
         return str(self.attn_date)
+    
+    def get_day_name(self):
+        return self.attn_date.strftime('%A')
+    
+@receiver(pre_save, sender=ProcessStAttendanceDaily)        
+def calculate_duration(sender, instance, **kwargs):
+    if instance.in_time and instance.out_time:
+       
+        duration = instance.out_time - instance.in_time
+        instance.duration = duration
+    else:
+        instance.duration = None
+
+@receiver(pre_save, sender=ProcessStAttendanceDaily)  
+def cal_late_min(sender,instance,**kwargs):
+    from datetime import datetime
+    if instance.in_time and instance.in_time.time() > instance.shift.start_time:
+        in_time = instance.in_time.time()
+        shift_start_time = instance.shift.start_time
+        in_time = datetime.combine(datetime.today(), in_time)
+        shift_start_time = datetime.combine(datetime.today(), shift_start_time)
+        late_by_min = in_time - shift_start_time
+        instance.late_by_min = late_by_min
+    else:
+        instance.late_by_min = None
+
+    if instance.out_time and instance.in_time and instance.in_time != instance.out_time and instance.shift.end_time > instance.out_time.time():
+        out_time = instance.out_time.time()
+        shift_end_time = instance.shift.end_time
+        out_time = datetime.combine(datetime.today(), out_time)
+        shift_end_time = datetime.combine(datetime.today(), shift_end_time)
+        early_gone_by_min = shift_end_time - out_time
+        instance.early_gone_by_min = early_gone_by_min
+    else:
+        instance.early_gone_by_min = None
 
