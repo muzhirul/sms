@@ -312,7 +312,7 @@ class HolidayCreateList(generics.ListCreateAPIView):
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                holiday_count = Holiday.objects.filter(name__iexact=name,start_date=start_date,institution=institution,branch=branch,status=True).count()
+                holiday_count = Holiday.objects.filter(name__iexact=name,start_date=start_date,end_date=end_date,institution=institution,branch=branch,status=True).count()
                 if(holiday_count==0):
                     instance = serializer.save(institution=institution, branch=branch)
                     # Customize the response data

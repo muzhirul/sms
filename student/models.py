@@ -31,8 +31,7 @@ class Category(models.Model):
         db_table = 'st_category'
 
     def __str__(self):
-        return self.name
-    
+        return str(self.name)
 
 class Student(models.Model):
     code = models.CharField(max_length=10,blank=True,null=True)
@@ -115,6 +114,7 @@ class StudentEnroll(models.Model):
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     remarks = models.CharField(max_length=255,blank=True, null=True)
+    is_active = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
@@ -129,4 +129,36 @@ class StudentEnroll(models.Model):
     def __str__(self):
         return str(self.roll)
 
+class ProcessStAttendanceDaily(models.Model):
+    attn_date = models.DateField(verbose_name='Attendance Date',blank=True,null=True)
+    student = models.ForeignKey(Student, on_delete=models.SET_NULL,blank=True,null=True)
+    shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
+    student_code = models.CharField(max_length=20, blank=True,null=True)
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='version', blank=True, null=True)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session', blank=True, null=True)
+    class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name', blank=True, null=True)
+    group = models.ForeignKey(ClassGroup,on_delete=models.SET_NULL, blank=True,null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section', blank=True, null=True)
+    roll = models.CharField(max_length=15,verbose_name='Class Roll',blank=True,null=True)
+    attn_type = models.ForeignKey(AttendanceType, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Attendance Type')
+    process_date = models.DateTimeField(blank=True,null=True)
+    in_time = models.DateTimeField(blank=True,null=True)
+    out_time = models.DateTimeField(blank=True,null=True)
+    duration = models.DurationField(blank=True,null=True, verbose_name='Duraion')
+    late_by_min = models.DurationField(blank=True,null=True)
+    early_gone_by_min = models.DurationField(blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='st_atten_daily_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='st_atten_daily_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'st_attn_daily'
+
+    def __str__(self):
+        return str(self.attn_date)
 

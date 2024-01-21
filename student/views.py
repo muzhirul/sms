@@ -8,6 +8,7 @@ from rest_framework import status
 from authentication.models import Authentication
 from rest_framework.response import Response
 from sms.permission import check_permission
+from datetime import datetime
 
 # Create your views here.
 class StudentList(generics.ListCreateAPIView):
@@ -316,4 +317,88 @@ class GuardianImageUpload(generics.UpdateAPIView):
             instance.save()
             return CustomResponse(code=status.HTTP_200_OK, message=f"Guardian Image Update successfully", data=None)
         return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"No Guardian Image for Update", data=None)    
+
+class StudentAttendanceProcess(generics.ListCreateAPIView):
+     
+    def list(self,request,*args, **kwargs):
+        attn_date = datetime.now().date()
+        student_lists = Student.objects.filter(status=True).order_by('id')
+        proc_attn_daily = {}
+        row_insert = 0
+        day_name = attn_date.strftime('%A').lower()
+        if(day_name=='friday'):
+            att_type = AttendanceType.objects.get(name__iexact='weekend',status=True)
+        else:
+            att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+        attn_id = att_type
+        for std_list in student_lists:
+            data_count = ProcessStAttendanceDaily.objects.filter(attn_date=attn_date,student=std_list,status=True).count()
+            if data_count == 0:
+                proc_attn_daily['attn_date'] = attn_date
+                proc_attn_daily['student'] = std_list
+                proc_attn_daily['shift'] = std_list.shift
+                proc_attn_daily['student_code'] = std_list.student_no
+                enroll = StudentEnroll.objects.filter(is_active=True,status=True,student=std_list).last()
+                if enroll:
+                    proc_attn_daily['roll'] = enroll.roll
+                    proc_attn_daily['version'] = enroll.version
+                    proc_attn_daily['session'] = enroll.session
+                    proc_attn_daily['class_name'] = enroll.class_name
+                    proc_attn_daily['group'] = enroll.group
+                proc_attn_daily['attn_type'] = None
+                proc_attn_daily['process_date'] = datetime.now()
+                proc_attn_daily['in_time'] = None
+                proc_attn_daily['out_time'] = None
+                proc_attn_daily['attn_type'] = attn_id
+                proc_attn_daily['institution'] = std_list.institution
+                proc_attn_daily['branch'] = std_list.branch
+                p = ProcessStAttendanceDaily.objects.create(**proc_attn_daily)
+                # std_list.last_attn_proc_date = attn_date
+                # std_list.save()
+                row_insert = row_insert+1
+        
+        return Response(f"{row_insert} insert succefully")
+    
+    def create(self, request, *args, **kwargs):
+        data=request.data
+        proc_date = data['proc_date']
+        proc_date = datetime.strptime(proc_date, '%Y-%m-%d')
+        day_name = proc_date.strftime('%A').lower()
+        if(day_name=='friday'):
+            att_type = AttendanceType.objects.get(name__iexact='weekend',status=True)
+        else:
+            att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+        attn_id = att_type
+        row_insert = 0
+        proc_attn_daily = {}
+        if proc_date:
+            student_lists = Student.objects.filter(status=True).order_by('id')
+            for std_list in student_lists:
+                data_count = ProcessStAttendanceDaily.objects.filter(attn_date=proc_date,student=std_list,status=True).count()
+                if data_count == 0:
+                    proc_attn_daily['attn_date'] = proc_date
+                    proc_attn_daily['student'] = std_list
+                    proc_attn_daily['shift'] = std_list.shift
+                    proc_attn_daily['student_code'] = std_list.student_no
+                    enroll = StudentEnroll.objects.filter(is_active=True,status=True,student=std_list).last()
+                    if enroll:
+                        proc_attn_daily['roll'] = enroll.roll
+                        proc_attn_daily['version'] = enroll.version
+                        proc_attn_daily['session'] = enroll.session
+                        proc_attn_daily['class_name'] = enroll.class_name
+                        proc_attn_daily['group'] = enroll.group
+                    proc_attn_daily['attn_type'] = None
+                    proc_attn_daily['process_date'] = datetime.now()
+                    proc_attn_daily['in_time'] = None
+                    proc_attn_daily['out_time'] = None
+                    proc_attn_daily['attn_type'] = attn_id
+                    proc_attn_daily['institution'] = std_list.institution
+                    proc_attn_daily['branch'] = std_list.branch
+                    p = ProcessStAttendanceDaily.objects.create(**proc_attn_daily)
+                # std_list.last_attn_proc_date = attn_date
+                # std_list.save()
+                row_insert = row_insert+1
+        
+            
+        return Response(f"{row_insert} insert succefully")
 
