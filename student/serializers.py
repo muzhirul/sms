@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from setup_app.serializers import *
+from staff.serializers import StaffShiftListSerializer2
 from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer, OccupationSerializer, RelationSerializer
 from academic.serializers import VersionSerializer2, SessionSerializer2, ClassSerializer2,SectionSerializer2
 
@@ -24,6 +25,11 @@ class GuardianSerializer(serializers.ModelSerializer):
         # Exclude the 'status' field and other fields you want to exclude
         exclude = ['status','created_by', 'updated_by', 'created_at', 'updated_at']
 
+class StudentSortViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = ['id','student_no','first_name','last_name']
+
 class StudentSerializer(serializers.ModelSerializer):
     guardians = GuardianSerializer(many=True, required=False, read_only=True)
     enroll = StudentEnrollSerialize(many=True, required=False, read_only=True)
@@ -42,8 +48,8 @@ class GuardianViewSerializer(serializers.ModelSerializer):
         exclude = ['user','student','status','created_by', 'updated_by', 'created_at', 'updated_at']
 
 class ProcessStAttendanceDailyViewDailySerializer(serializers.ModelSerializer):
-    # shift = StaffShiftListSerializer2()
-    # attn_type = AttendanceTypeViewSerializer()
+    shift = StaffShiftListSerializer2()
+    attn_type = AttendanceTypeViewSerializer()
     class Meta:
         model = ProcessStAttendanceDaily
         # exclude = ['role','process_date','staff','staff_code','con_type','institution','branch','status','created_at','updated_at','created_by','updated_by']
@@ -52,7 +58,7 @@ class ProcessStAttendanceDailyViewDailySerializer(serializers.ModelSerializer):
 class StudentViewSerializer(serializers.ModelSerializer):
     guardians = GuardianViewSerializer(many=True, required=False, read_only=True)
     enroll = StudentEnrollViewSerializer(many=True, required=False, read_only=True)
-    std_atten_daily = ProcessStAttendanceDailyViewDailySerializer(read_only=True)
+    std_atten_daily = ProcessStAttendanceDailyViewDailySerializer(many=True, required=False, read_only=True)
     gender = GenderSerializer(read_only=True)
     religion = ReligionSerializer(read_only=True)
     blood_group = BloodGroupSerializer(read_only=True)
