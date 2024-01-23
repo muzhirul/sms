@@ -2302,7 +2302,7 @@ class ClassRoutinev2Delete(generics.UpdateAPIView):
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Routine Delete successfully", data=None)
 
 class ClassRoutineSearch(generics.CreateAPIView):
-    serializer_class = ClassRoutineMstListSerializers
+    serializer_class = ClassRoutineDtlListSerializers
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = CustomPagination
 
@@ -2330,7 +2330,7 @@ class ClassRoutineSearch(generics.CreateAPIView):
                 queryset
         except:
             pass
-        return queryset
+        return queryset.first().routine_dtl.all() if queryset.exists() else ClassRoutiineDtl.objects.none()
 
     def create(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
