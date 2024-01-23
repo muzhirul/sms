@@ -343,9 +343,9 @@ class StudentAttendanceProcess(generics.ListCreateAPIView):
                     proc_attn_daily['roll'] = enroll.roll
                     proc_attn_daily['version'] = enroll.version
                     proc_attn_daily['session'] = enroll.session
-                    proc_attn_daily['class_name'] = enroll.class_name
+                    proc_attn_daily['section'] = enroll.section
+                    proc_attn_daily['session'] = enroll.session
                     proc_attn_daily['group'] = enroll.group
-                proc_attn_daily['attn_type'] = None
                 proc_attn_daily['process_date'] = datetime.now()
                 proc_attn_daily['in_time'] = None
                 proc_attn_daily['out_time'] = None
@@ -386,8 +386,8 @@ class StudentAttendanceProcess(generics.ListCreateAPIView):
                         proc_attn_daily['version'] = enroll.version
                         proc_attn_daily['session'] = enroll.session
                         proc_attn_daily['class_name'] = enroll.class_name
+                        proc_attn_daily['section'] = enroll.section
                         proc_attn_daily['group'] = enroll.group
-                    proc_attn_daily['attn_type'] = None
                     proc_attn_daily['process_date'] = datetime.now()
                     proc_attn_daily['in_time'] = None
                     proc_attn_daily['out_time'] = None
@@ -395,10 +395,11 @@ class StudentAttendanceProcess(generics.ListCreateAPIView):
                     proc_attn_daily['institution'] = std_list.institution
                     proc_attn_daily['branch'] = std_list.branch
                     p = ProcessStAttendanceDaily.objects.create(**proc_attn_daily)
-                # std_list.last_attn_proc_date = attn_date
-                # std_list.save()
-                row_insert = row_insert+1
+                    # std_list.last_attn_proc_date = attn_date
+                    # std_list.save()
+                    row_insert = row_insert+1
         
             
         return Response(f"{row_insert} insert succefully")
+
 

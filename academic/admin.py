@@ -130,7 +130,7 @@ class ClassRoutineDtlAdmin(admin.TabularInline):
     extra = 0
     
 class ClassRoutineMstAdmin(admin.ModelAdmin):
-    list_display = ['class_name','section','group','session','version','institution','branch']
+    list_display = ['class_name','section','group','session','version','status','institution','branch']
     class Meta:
         model = ClassRoutineMst
         

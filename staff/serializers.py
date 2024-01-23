@@ -370,6 +370,12 @@ class staffSerializer2(serializers.ModelSerializer):
         representation['payroll'] = [item for item in representation['payroll'] if item is not None]
         representation['bank_info'] = [item for item in representation['bank_info'] if item is not None]
         representation['social_media'] = [item for item in representation['social_media'] if item is not None]
+        # Order std_atten_daily by attn_date
+        representation['atten_daily'] = sorted(
+            representation['atten_daily'],
+            key=lambda x: x['attn_date'],
+            reverse=True
+        )
 
         if not instance.status:
             # If status is False, exclude the social_media field

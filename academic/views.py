@@ -2230,8 +2230,8 @@ class ClassRoutinev2Detail(generics.RetrieveUpdateAPIView):
             self.request.user.id, 'Class Routine', 'view')
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
         try:
-            '''Check user has permission to retrive End'''
             instance = self.get_object()
             # Customize the response format for retrieving a single instance
             return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ClassRoutineMstViewSerializers(instance).data)
@@ -2240,8 +2240,7 @@ class ClassRoutinev2Detail(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         '''Check user has permission to update start'''
-        permission_check = check_permission(
-            self.request.user.id, 'Class Routine', 'update')
+        permission_check = check_permission(self.request.user.id, 'Class Routine', 'update')
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to retrive End'''
@@ -2303,12 +2302,56 @@ class ClassRoutinev2Delete(generics.UpdateAPIView):
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Routine Delete successfully", data=None)
 
 class ClassRoutineSearch(generics.CreateAPIView):
+    serializer_class = ClassRoutineMstListSerializers
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = CustomPagination
 
+    def get_queryset(self):
+        version=self.request.data['version']
+        session=self.request.data['session']
+        class_name=self.request.data['class_name']
+        section=self.request.data['section']
+        group=self.request.data['group']
+        if group:
+            queryset = ClassRoutineMst.objects.filter(version=version,session=session,class_name=class_name,section=section,group=group,status=True).order_by('-id')
+        else:
+            queryset = ClassRoutineMst.objects.filter(version=version,session=session,class_name=class_name,section=section,status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+
     def create(self, request, *args, **kwargs):
-        data=request.data
-        return Response(data)
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
 
 
 '''

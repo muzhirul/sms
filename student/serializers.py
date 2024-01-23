@@ -66,4 +66,16 @@ class StudentViewSerializer(serializers.ModelSerializer):
         model = Student
         # Exclude the 'status' field and other fields you want to exclude
         exclude = ['status','user','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Order std_atten_daily by attn_date
+        representation['std_atten_daily'] = sorted(
+            representation['std_atten_daily'],
+            key=lambda x: x['attn_date'],
+            reverse=True
+        )
+
+        return representation
         
