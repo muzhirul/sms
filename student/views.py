@@ -415,7 +415,6 @@ class StudentAttendanceSearch(generics.CreateAPIView):
         section=self.request.data['section']
         group=self.request.data['group']
         attn_date=self.request.data['attn_date']
-        print(attn_date)
         if group:
             queryset = ProcessStAttendanceDaily.objects.filter(attn_date=attn_date,version=version,session=session,class_name=class_name,section=section,group=group,status=True).order_by('roll')
         else:
@@ -457,3 +456,25 @@ class StudentAttendanceSearch(generics.CreateAPIView):
 
         return Response(response_data)
 
+class StudentAttendanceUpdate(generics.UpdateAPIView):
+    queryset = ProcessStAttendanceDaily.objects.filter(status=True)
+    serializer_class = ProcessStAttendanceDailyUpdateDailySerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        start_time = datetime.now()
+        # if serializer.is_valid():
+        #     instance = serializer.save(in_time=start_time)
+        #     return CustomResponse(code=status.HTTP_200_OK, message="Attendance updated successfully", data=ProcessStAttendanceDailyUpdateDailySerializer(instance).data)
+        try:
+            if serializer.is_valid():
+                instance = serializer.save(in_time=start_time)
+                return CustomResponse(code=status.HTTP_200_OK, message="Attendance updated successfully", data=ProcessStAttendanceDailyUpdateDailySerializer(instance).data)
+            else:
+                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))

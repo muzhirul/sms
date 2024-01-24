@@ -7,6 +7,7 @@ from rest_framework import status
 from sms.permission import check_permission
 from sms.pagination import CustomPagination
 from rest_framework.response import Response
+from django.db.models import Q
 
 # Create your views here.
 '''
@@ -205,7 +206,12 @@ class HolidayListView(generics.ListAPIView):
     pagination_class = CustomPagination
     
     def get_queryset(self):
-        queryset = Holiday.objects.filter(status=True).order_by('start_date','-id')
+        month = self.request.query_params.get('month')
+        year = self.request.query_params.get('year')
+        if month or year:
+            queryset = Holiday.objects.filter(Q(end_date__month=month) | Q(start_date__month=month),Q(start_date__year=year),status=True).order_by('start_date','-id')
+        else:
+            queryset = Holiday.objects.filter(status=True).order_by('start_date','-id')
         try:
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch

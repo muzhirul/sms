@@ -11,4 +11,5 @@ urlpatterns = [
     path('api/attendance/process', StudentAttendanceProcess.as_view(), name='student-attendance-process'),
     # path('api/attendance/update/process', StudentAttendanceUpdateProcess.as_view(), name='student-attendance-update-process'),
     path('api/attendance/search', StudentAttendanceSearch.as_view(), name='student-attendance-search'),
+    path('api/attendance/update/<int:pk>', StudentAttendanceUpdate.as_view(), name='student-attendance-update'),
 ]
