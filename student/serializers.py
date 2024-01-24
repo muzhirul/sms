@@ -54,6 +54,14 @@ class ProcessStAttendanceDailyViewDailySerializer(serializers.ModelSerializer):
         model = ProcessStAttendanceDaily
         # exclude = ['role','process_date','staff','staff_code','con_type','institution','branch','status','created_at','updated_at','created_by','updated_by']
         fields = ['attn_date','shift','get_day_name','attn_type','in_time','out_time','duration']
+
+class ProcessStAttendanceDailySearchDailySerializer(serializers.ModelSerializer):
+    student = StudentSortViewSerializer()
+    attn_type = AttendanceTypeViewSerializer()
+    class Meta:
+        model = ProcessStAttendanceDaily
+        fields = ['id','roll','attn_date','student','attn_type']
+
         
 class StudentViewSerializer(serializers.ModelSerializer):
     guardians = GuardianViewSerializer(many=True, required=False, read_only=True)

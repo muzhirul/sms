@@ -48,6 +48,15 @@ class StudentAdmin(admin.ModelAdmin):
     class Meta:
         model = Student
 
+class ProcessStAttendanceDailyAdmin(admin.ModelAdmin):
+    
+    list_display = ['attn_date','shift','in_time','out_time','duration','attn_type','late_by_min','early_gone_by_min']
+
+    class Meta:
+        model = ProcessStAttendanceDaily
+
+
+
 admin.site.register(Student,StudentAdmin)
 admin.site.register(Category,CategoryAdmin)
-admin.site.register(ProcessStAttendanceDaily)
+admin.site.register(ProcessStAttendanceDaily,ProcessStAttendanceDailyAdmin)

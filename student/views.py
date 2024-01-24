@@ -344,6 +344,7 @@ class StudentAttendanceProcess(generics.ListCreateAPIView):
                     proc_attn_daily['version'] = enroll.version
                     proc_attn_daily['session'] = enroll.session
                     proc_attn_daily['section'] = enroll.section
+                    proc_attn_daily['class_name'] = enroll.class_name
                     proc_attn_daily['session'] = enroll.session
                     proc_attn_daily['group'] = enroll.group
                 proc_attn_daily['process_date'] = datetime.now()
@@ -402,4 +403,57 @@ class StudentAttendanceProcess(generics.ListCreateAPIView):
             
         return Response(f"{row_insert} insert succefully")
 
+class StudentAttendanceSearch(generics.CreateAPIView):
+    serializer_class = ProcessStAttendanceDailySearchDailySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        version=self.request.data['version']
+        session=self.request.data['session']
+        class_name=self.request.data['class_name']
+        section=self.request.data['section']
+        group=self.request.data['group']
+        attn_date=self.request.data['attn_date']
+        print(attn_date)
+        if group:
+            queryset = ProcessStAttendanceDaily.objects.filter(attn_date=attn_date,version=version,session=session,class_name=class_name,section=section,group=group,status=True).order_by('roll')
+        else:
+            queryset = ProcessStAttendanceDaily.objects.filter(attn_date=attn_date,version=version,session=session,class_name=class_name,section=section,status=True).order_by('roll')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('roll')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('roll')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('roll')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def create(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
 
