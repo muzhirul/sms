@@ -44,7 +44,6 @@ class BankList(generics.ListAPIView):
 
         return Response(response_data)
 
-
 class BankCreateList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
     serializer_class = AccountBankSerializer

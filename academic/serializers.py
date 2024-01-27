@@ -561,3 +561,21 @@ class ClassRoutineMstListSerializers(serializers.ModelSerializer):
             representation.pop('routine_dtl', None)
 
         return representation
+
+class ClassRoutineMstSerializer(serializers.ModelSerializer):
+    class_name = ClassSerializer2(read_only=True)
+    section = SectionSerializer2(read_only=True)
+    class Meta:
+        model = ClassRoutineMst
+        fields = ['class_name', 'section', 'group', 'session', 'version']
+
+
+class ClassRoutineDtlSerializer(serializers.ModelSerializer):
+    day = DaySerializer() 
+    subject = SubjectViewSerializer(read_only=True)
+    class_period = ClassPeriodSerializer2(read_only=True)
+    class_room = ClassRoomSerializer2(read_only=True)
+    class_routine_mst = ClassRoutineMstSerializer()
+    class Meta:
+        model = ClassRoutiineDtl
+        fields = '__all__'

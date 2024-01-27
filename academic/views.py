@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from authentication.models import Authentication
 from setup_app.models import *
 from sms.permission import check_permission
+from django.http import JsonResponse
 # from django.contrib.auth import get_user_model
 
 # User = get_user_model()
@@ -2088,7 +2089,6 @@ class ClassRoutineDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Class Routine Delete successfully", data=None)
 
-
 '''
 For Class Routine v2
 '''
@@ -2731,6 +2731,48 @@ class ClassTeacherDelete(generics.UpdateAPIView):
         instance.save()
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Assign Class Teacher Delete successfully", data=None)
+
+'''
+For Teacher TimeTable List
+'''
+class TeacherTimeTableList(generics.ListAPIView):
+    serializer_class = ClassRoutineDtlSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        staff_id = self.kwargs.get('staff_id')  # assuming staff_id is passed as a URL parameter
+        return ClassRoutiineDtl.objects.filter(teacher=staff_id,status=True)
+
+
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            serializer = self.serializer_class(queryset, many=True)
+            # Organize data by days
+            timetable_by_days = {}
+            for entry in serializer.data:
+                day = entry['day']['long_name']
+                if day not in timetable_by_days:
+                    timetable_by_days[day] = []
+                timetable_by_days[day].append({
+                    "class_name": entry['class_routine_mst']['class_name'],
+                    "section": entry['class_routine_mst']['section'],
+                    "group": entry['class_routine_mst']['group'],
+                    "class_period": entry['class_period'],
+                    "subject": entry['subject'],
+                    "class_room": entry['class_room'],
+                })
+                response_data = {
+                    "message": "Success",
+                    "data": timetable_by_days,
+                }
+
+            return JsonResponse(response_data, status=status.HTTP_200_OK, safe=False)
+        except:
+            return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
+
 
 
 
