@@ -90,6 +90,14 @@ class StudentViewSerializer(serializers.ModelSerializer):
             key=lambda x: x['attn_date'],
             reverse=True
         )
+        #  # Order std_atten_daily by attn_date
+        # sorted_attendance = sorted(
+        #     representation['std_atten_daily'],
+        #     key=lambda x: x['attn_date'],
+        #     reverse=True
+        # )
+        # # Retrieve the first 30 elements
+        # representation['std_atten_daily'] = sorted_attendance[:30]
 
         return representation
         
