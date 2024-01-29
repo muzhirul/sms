@@ -59,6 +59,8 @@ class Holiday(models.Model):
     type = models.CharField(max_length=30, verbose_name='Holiday Type')
     start_date = models.DateField()
     end_date = models.DateField()
+    start_time = models.TimeField(blank=True,null=True)
+    end_time = models.TimeField(blank=True,null=True)
     remarks = models.TextField(blank=True,null=True)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)

@@ -152,7 +152,7 @@ class MaritalStatusAdmin(admin.ModelAdmin):
         model = MaritalStatus
 
 class AttendanceTypeAdmin(admin.ModelAdmin):
-    list_display = ['name','status']
+    list_display = ['name','status','display','ordering']
 
     class Meta:
         model = AttendanceType
