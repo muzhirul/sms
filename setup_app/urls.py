@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/floor/list', FloorList.as_view(), name='floor-list'),
     path('api/subject-type/list', SubjectTypeList.as_view(), name='subject-type-list'),
     path('api/attendance-typee/list', AttendancetypeList.as_view(), name='attendance-type-list'),
+    path('api/holiday-type/list', HolidayTypeList.as_view(), name='attendance-type-list'),
     # For Education Board
     path('api/board/list', EduBoardList.as_view(), name='education-board-list'),
     path('api/board', BoardCreateList.as_view(), name='Board-create-list'),

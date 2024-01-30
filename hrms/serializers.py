@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from hrms.models import *
+from setup_app.serializers import *
 
 
 class AccountBankSerializer(serializers.ModelSerializer):
@@ -29,7 +30,8 @@ class HolidaySerializer(serializers.ModelSerializer):
         exclude = ['status']
 
 class HolidayViewSerializer(serializers.ModelSerializer):
-
+    type = HolidayTypeViewSerializer(read_only=True)
+    
     class Meta:
         model = Holiday
         exclude = ['status','institution','branch','created_by','updated_by','created_at','updated_at']

@@ -1,6 +1,7 @@
 from django.db import models
 from django_userforeignkey.models.fields import UserForeignKey
 from institution.models import Institution, Branch
+from setup_app.models  import HolidayType
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -56,7 +57,7 @@ class LeaveType(models.Model):
 
 class Holiday(models.Model):
     name = models.CharField(max_length=50, verbose_name='Holiday Name')
-    type = models.CharField(max_length=30, verbose_name='Holiday Type')
+    type = models.ForeignKey(HolidayType,on_delete=models.SET_NULL, verbose_name='Holiday Type',blank=True,null=True)
     start_date = models.DateField()
     end_date = models.DateField()
     start_time = models.TimeField(blank=True,null=True)

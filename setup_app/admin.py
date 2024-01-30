@@ -19,31 +19,25 @@ class SetupAdmin(admin.ModelAdmin):
     class Meta:
         model = Setup
 
-
 class ReligionAdmin(admin.ModelAdmin):
     list_display = ['name', 'sl_no', 'created_by', 'updated_at']
     search_fields = ['name']
-
 
 class GenderAdmin(admin.ModelAdmin):
     list_display = ['name', 'sl_no', 'created_by', 'updated_at']
     search_fields = ['name']
 
-
 class BloodGroupAdmin(admin.ModelAdmin):
     list_display = ['name', 'sl_no', 'created_by', 'updated_at']
     search_fields = ['name']
-
 
 class OccupationAdmin(admin.ModelAdmin):
     list_display = ['name', 'sl_no', 'created_by', 'updated_at']
     search_fields = ['name']
 
-
 class RelationAdmin(admin.ModelAdmin):
     list_display = ['name', 'sl_no', 'created_by', 'updated_at']
     search_fields = ['name']
-
 
 class MenuAdmin(admin.ModelAdmin):
     list_display = ['parent', 'name', 'slug']
@@ -53,7 +47,6 @@ class MenuAdmin(admin.ModelAdmin):
     class Meta:
         model = Menu
 
-
 class PermissionAdmin(admin.ModelAdmin):
     list_display = ['role', 'menu', 'can_create',
                     'can_view', 'can_update', 'can_delete', 'status']
@@ -62,7 +55,6 @@ class PermissionAdmin(admin.ModelAdmin):
     class Meta:
         model = Permission
 
-
 class PermissionTabularAdmin(admin.TabularInline):
 
     # list_editable = ['can_create','can_view','can_update','can_delete']
@@ -70,7 +62,6 @@ class PermissionTabularAdmin(admin.TabularInline):
     fields = ['menu', 'can_create', 'can_view',
               'can_update', 'can_delete', 'status']
     extra = 0
-
 
 class RoleAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -82,13 +73,11 @@ class RoleAdmin(admin.ModelAdmin):
         model = Role
     inlines = [PermissionTabularAdmin]
 
-
 class DayAdmin(admin.ModelAdmin):
     list_display = ['short_name', 'long_name','week_end','created_by', 'created_at']
 
     class Meta:
         model = Days
-
 
 class FloorTypeAdmin(admin.ModelAdmin):
     list_display = ['name', 'sl_no', 'status', 'created_at']
@@ -96,13 +85,11 @@ class FloorTypeAdmin(admin.ModelAdmin):
     class Meta:
         model = FloorType
 
-
 class SubjectTypeAdmin(admin.ModelAdmin):
     fields = ['name', 'status']
 
     class Meta:
         model = SubjectType
-
 
 class EducationBoardAdmin(admin.ModelAdmin):
     list_display = ['board_code', 'name', 'status']
@@ -110,13 +97,11 @@ class EducationBoardAdmin(admin.ModelAdmin):
     class Meta:
         model = EducationBoard
 
-
 class DivisionAdmin(admin.ModelAdmin):
     list_display = ['divi_code', 'name', 'country', 'status']
 
     class Meta:
         model = Division
-
 
 class DistrictAdmin(admin.ModelAdmin):
     list_display = ['dist_code', 'name', 'division', 'status']
@@ -124,20 +109,17 @@ class DistrictAdmin(admin.ModelAdmin):
     class Meta:
         model = District
 
-
 class CountryAdmin(admin.ModelAdmin):
     list_display = ['coun_code', 'name', 'status']
 
     class Meta:
         model = Country
 
-
 class ThanaAdmin(admin.ModelAdmin):
     list_display = ['thana_code', 'name', 'district', 'status']
 
     class Meta:
         model = Thana
-
 
 class ContractTypeAdmin(admin.ModelAdmin):
     list_display = [ 'name', 'status']
@@ -156,7 +138,12 @@ class AttendanceTypeAdmin(admin.ModelAdmin):
 
     class Meta:
         model = AttendanceType
-        
+
+class HolidayTypeAdmin(admin.ModelAdmin):
+    list_display = ['name','code']
+
+    class Meta:
+        model = HolidayType        
 
 
 admin.site.register(Setup, SetupAdmin)
@@ -179,3 +166,4 @@ admin.site.register(Thana, ThanaAdmin)
 admin.site.register(ContractType, ContractTypeAdmin)
 admin.site.register(MaritalStatus, MaritalStatusAdmin)
 admin.site.register(AttendanceType, AttendanceTypeAdmin)
+admin.site.register(HolidayType, HolidayTypeAdmin)

@@ -192,3 +192,8 @@ class AttendanceTypeViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = AttendanceType
         fields = ['id','name']
+
+class HolidayTypeViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HolidayType
+        fields = ['id','name','code']

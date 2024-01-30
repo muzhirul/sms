@@ -356,5 +356,20 @@ class AttendanceType(models.Model):
 
     def __str__(self):
         return str(self.name)
+    
+class HolidayType(models.Model):
+    name = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, verbose_name='Color Code')
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='holi_type_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='holi_type_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 's_holiday_type'
+
+    def __str__(self):
+        return str(self.name)
 
 

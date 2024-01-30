@@ -250,7 +250,7 @@ class HolidayListView(generics.ListAPIView):
 
 class HolidayCreateList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
-    serializer_class = HolidaySerializer
+    serializer_class = HolidayViewSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     pagination_class = CustomPagination
     
@@ -305,8 +305,9 @@ class HolidayCreateList(generics.ListCreateAPIView):
         if not permission_check:
             return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to Create End'''
-        
-        serializer = self.get_serializer(data=request.data)
+        serializer_class = HolidaySerializer
+        serializer = serializer_class(data=request.data)
+        # serializer = self.get_serializer(data=request.data)
         try:
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
@@ -321,7 +322,7 @@ class HolidayCreateList(generics.ListCreateAPIView):
                 if(holiday_count==0):
                     instance = serializer.save(institution=institution, branch=branch)
                     # Customize the response data
-                    return CustomResponse(code=status.HTTP_200_OK, message="Holiday create successfully", data=HolidaySerializer(instance).data)
+                    return CustomResponse(code=status.HTTP_200_OK, message="Holiday create successfully", data=HolidayViewSerializer(instance).data)
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Holiday {name} already exits", data=serializer.errors)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
