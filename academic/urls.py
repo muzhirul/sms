@@ -67,6 +67,7 @@ urlpatterns = [
     path('api/class-routine/v2/delete/<int:pk>', ClassRoutinev2Delete.as_view(), name='class-routine-v2-delete'),
     path('api/class-routine/detalis/delete/<int:pk>', ClassRoutineDetailsDelete.as_view(), name='class-routine-details-delete'),
     path('api/class-routine/search', ClassRoutineSearch.as_view(), name='class-routine-search'),
+    path('api/class-routine/v2/search', ClassRoutineV2Search.as_view(), name='class-routine-v2-search'),
     # Teacher Time Table
     path('api/teacher-timetable/<str:staff_id>', TeacherTimeTableList.as_view(), name='teacher-timetable-list'),
 ]
