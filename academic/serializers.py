@@ -569,13 +569,18 @@ class ClassRoutineMstSerializer(serializers.ModelSerializer):
         model = ClassRoutineMst
         fields = ['class_name', 'section', 'group', 'session', 'version']
 
-
 class ClassRoutineDtlSerializer(serializers.ModelSerializer):
     day = DaySerializer() 
     subject = SubjectViewSerializer(read_only=True)
     class_period = ClassPeriodSerializer2(read_only=True)
     class_room = ClassRoomSerializer2(read_only=True)
     class_routine_mst = ClassRoutineMstSerializer()
+    
     class Meta:
         model = ClassRoutiineDtl
         fields = '__all__'
+
+class ClassRoutineDtlDeleteSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = ClassRoutiineDtl
+        exclude = ['institution','branch','status','created_at','updated_at','created_by','updated_by']

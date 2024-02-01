@@ -2353,6 +2353,26 @@ class ClassRoutineSearch(generics.CreateAPIView):
 
         return Response(response_data)
 
+class ClassRoutineDetailsDelete(generics.UpdateAPIView):
+    queryset = ClassRoutiineDtl.objects.filter(status=True)
+    serializer_class = ClassRoutineDtlDeleteSerializers
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        permission_check = check_permission(self.request.user.id, 'Class Routine', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+        instance = self.get_object()
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Routine already Deleted", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Routine Delete successfully", data=None)
 
 '''
 For Group
