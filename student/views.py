@@ -87,9 +87,10 @@ class StudentList(generics.ListCreateAPIView):
                     std_user_data = Student.objects.values('student_no').get(id=student.id)
                     std_username = std_user_data['student_no']
                     default_password = '12345678'
+                    model_name = 'Student'
                     user_count = Authentication.objects.filter(username=std_username).count()
                     if(user_count==0):
-                        user = Authentication(username=std_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution, branch=branch)
+                        user = Authentication(model_name=model_name,username=std_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution, branch=branch)
                         # Set a default password (you can change this as needed)
                         user.set_password(default_password)
                         user.save()
@@ -101,7 +102,7 @@ class StudentList(generics.ListCreateAPIView):
                         # int_last_username = int(last_username)
                         int_last_username = int(last_username.username)
                         new_username = (int_last_username+1)
-                        user = Authentication(username=new_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
+                        user = Authentication(model_name=model_name,username=new_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
                         # Set a default password (you can change this as needed)
                         user.set_password(default_password)
                         user.save()
@@ -126,11 +127,12 @@ class StudentList(generics.ListCreateAPIView):
                     if ga_is_guardian:
                         try:
                             default_password = '12345678'
+                            model_name = 'Guardian'
                             ga_user_data = Guardian.objects.values('guardian_no').get(id=guardian.id)
                             ga_username = ga_user_data['guardian_no']
                             ga_count = Authentication.objects.filter(username=ga_username).count()
                             if(ga_count==0):
-                                ga_user = Authentication(username=ga_username,first_name=ga_first_name,last_name=ga_last_name,user_type=ga_user_type,is_active=ga_is_active,institution=institution, branch=branch)
+                                ga_user = Authentication(model_name=model_name,username=ga_username,first_name=ga_first_name,last_name=ga_last_name,user_type=ga_user_type,is_active=ga_is_active,institution=institution, branch=branch)
                                 # Set a default password (you can change this as needed)
                                 ga_user.set_password(default_password)
                                 ga_user.save()
@@ -141,7 +143,7 @@ class StudentList(generics.ListCreateAPIView):
                                 last_ga_username = Authentication.objects.filter(username__startswith='11').order_by('username').last()
                                 int_last_ga_username = int(last_ga_username.username)
                                 new_ga_username = (int_last_ga_username+1)
-                                user = Authentication(username=new_ga_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
+                                user = Authentication(model_name=model_name,username=new_ga_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
                                 # Set a default password (you can change this as needed)
                                 user.set_password(default_password)
                                 user.save()
