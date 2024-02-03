@@ -39,6 +39,7 @@ class Authentication(AbstractBaseUser,PermissionsMixin):
     last_name = models.CharField(max_length=255, blank=True, null=True)
     user_type = models.CharField(max_length=30, blank=True, null=True, choices=USER_TYPE)
     role = models.ManyToManyField(Role,related_name='user_role')
+    model_name = models.CharField(max_length=100,blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     is_active = models.BooleanField(default=True)

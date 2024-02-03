@@ -10,7 +10,6 @@ from setup_app.models import *
 from sms.permission import check_permission
 from authentication.models import Authentication
 from datetime import datetime
-
 from django.db.models import Min, Max
 from django.db.models.functions import Coalesce
 from django.db.models import F
@@ -652,6 +651,7 @@ class staffCreateView(generics.CreateAPIView):
                 branch = branch_data if branch_data is not None else self.request.user.branch
                 staff = staff_serializer.save(institution=institution,branch=branch)
                 default_password = '12345678'
+                model_name = 'Staff'
                 Leaves_info = LeaveType.objects.filter(status=True,institution=institution,branch=branch,is_active=True)
                 for Leave_data in Leaves_info:
                     if staff.doj:
@@ -672,7 +672,7 @@ class staffCreateView(generics.CreateAPIView):
                     std_username = std_user_data['staff_id']
                     user_count = Authentication.objects.filter(username=std_username).count()
                     if (user_count==0):
-                        user = Authentication(username=std_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
+                        user = Authentication(model_name=model_name,username=std_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
                         # Set a default password (you can change this as needed)
                         user.set_password(default_password)
                         user.save()
@@ -684,7 +684,7 @@ class staffCreateView(generics.CreateAPIView):
                         # int_last_username = int(last_username)
                         int_last_username = int(last_username.username)
                         new_username = (int_last_username+1)
-                        user = Authentication(username=new_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
+                        user = Authentication(model_name=model_name,username=new_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
                         # Set a default password (you can change this as needed)
                         user.set_password(default_password)
                         user.save()
