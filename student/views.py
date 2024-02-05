@@ -9,6 +9,7 @@ from authentication.models import Authentication
 from rest_framework.response import Response
 from sms.permission import check_permission
 from datetime import datetime
+from academic.models import ClassTeacher
 
 # Create your views here.
 class StudentList(generics.ListCreateAPIView):
@@ -480,3 +481,37 @@ class StudentAttendanceUpdate(generics.UpdateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
+class StudentLeaveCreate(generics.CreateAPIView):
+    serializer_class = StudentLeaveTransactionCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            institution_data = serializer.validated_data.get('institution')
+            apply_by = serializer.validated_data.get('apply_by')
+            branch_data = serializer.validated_data.get('branch')
+            institution = institution_data if institution_data is not None else self.request.user.institution
+            branch = branch_data if branch_data is not None else self.request.user.branch
+            submit_status = Setup.objects.get(status=True,parent__type='APPROVAL_STATUS',type='SUBMITTED',institution=institution,branch=branch)
+            if not apply_by:
+                model_name = self.request.user.model_name
+                username = self.request.user
+                if model_name == 'Student':
+                    apply_by = Student.objects.get(student_no=username,status=True)
+            enroll = StudentEnroll.objects.filter(is_active=True,status=True,student=apply_by).last()
+            if enroll:
+                roll = enroll.roll
+                version = enroll.version
+                session = enroll.session
+                section= enroll.section
+                class_name = enroll.class_name
+                group= enroll.group
+            if group:
+                class_teacher = ClassTeacher.objects.get(status=True,institution=institution,branch=branch,version=version,session=session,section=section,class_name=class_name,group=group)
+            else:
+                class_teacher = ClassTeacher.objects.get(status=True,institution=institution,branch=branch,version=version,session=session,section=section,class_name=class_name)
+            instance = serializer.save(app_status=submit_status,apply_by=apply_by,student_code=apply_by.student_no,shift=apply_by.shift,responsible=class_teacher.teacher,institution=institution, branch=branch,roll=roll,version=version,session=session,section=section,class_name=class_name,group=group)
+            return CustomResponse(code=status.HTTP_200_OK, message="Leave created successfully", data=StudentLeaveTransactionViewSerializer(instance).data)

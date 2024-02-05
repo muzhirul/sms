@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import *
 from setup_app.serializers import *
-from staff.serializers import StaffShiftListSerializer2
+from staff.serializers import StaffShiftListSerializer2,StaffTeacherSerializer
 from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer, OccupationSerializer, RelationSerializer
-from academic.serializers import VersionSerializer2, SessionSerializer2, ClassSerializer2,SectionSerializer2
+from academic.serializers import VersionSerializer2, SessionSerializer2, ClassSerializer2,SectionSerializer2,ClassGroupViewSerializer
 
 class StudentEnrollViewSerializer(serializers.ModelSerializer):
     version = VersionSerializer2(read_only=True)
@@ -100,4 +100,26 @@ class StudentViewSerializer(serializers.ModelSerializer):
         # representation['std_atten_daily'] = sorted_attendance[:30]
 
         return representation
-        
+
+class StudentLeaveTransactionCreateSerializer(serializers.ModelSerializer):
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
+
+    class Meta:
+        model = StudentLeaveTransaction
+        exclude = ['status','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
+
+
+class StudentLeaveTransactionViewSerializer(serializers.ModelSerializer):
+    responsible = StaffTeacherSerializer(read_only=True)
+    session = SessionSerializer2(read_only=True)
+    version = VersionSerializer2(read_only=True)
+    section = SectionSerializer2(read_only=True)
+    group = ClassGroupViewSerializer(read_only=True)
+    class_name = ClassSerializer2(read_only=True)
+    shift = StaffShiftListSerializer2(read_only=True)
+    app_status= SetupViewSerializer(read_only=True)
+
+    class Meta:
+        model = StudentLeaveTransaction
+        exclude = ['status','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']

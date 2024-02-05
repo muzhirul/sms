@@ -1,7 +1,7 @@
 from django.db import models
 from academic.models import ClassName, Section, Session, Version, ClassGroup
 from institution.models import Institution, Branch
-from staff.models import StaffShift
+from staff.models import StaffShift,Staff
 from django_userforeignkey.models.fields import UserForeignKey
 from authentication.models import Authentication
 import datetime
@@ -232,6 +232,7 @@ class StudentLeaveTransaction(models.Model):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section', blank=True, null=True)
     roll = models.CharField(max_length=15,verbose_name='Class Roll',blank=True,null=True)
     document = models.FileField(upload_to='std_leave_doc/', blank=True, null=True, verbose_name='Document',validators=[validate_pdf_file_size])
+    responsible = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True,related_name='std_leave_responsible')
     remarks = models.TextField(blank=True, null=True)
     app_status = models.ForeignKey(Setup, on_delete=models.SET_NULL,blank=True, null=True,limit_choices_to={'parent__type': 'APPROVAL_STATUS'},related_name='std_approval_status')
     active_start_date = models.DateTimeField(auto_now_add=True,blank=True, null=True)
@@ -255,3 +256,11 @@ class StudentLeaveTransaction(models.Model):
 
     def __str__(self):
         return str(self.code)
+
+@receiver(pre_save, sender=StudentLeaveTransaction)
+def calculate_duration(sender, instance, **kwargs):
+    if instance.start_date and instance.end_date:
+        duration = 1 + (instance.end_date - instance.start_date).days
+        instance.day_count = duration
+    else:
+        instance.day_count = None

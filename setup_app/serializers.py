@@ -197,3 +197,8 @@ class HolidayTypeViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = HolidayType
         fields = ['id','name','code']
+
+class SetupViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Setup
+        fields = ['id','code','title']

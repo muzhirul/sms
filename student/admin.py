@@ -55,8 +55,15 @@ class ProcessStAttendanceDailyAdmin(admin.ModelAdmin):
     class Meta:
         model = ProcessStAttendanceDaily
 
+class StudentLeaveTransactionAdmin(admin.ModelAdmin):
+    list_display = ['code','start_date','end_date','day_count','student_code','class_name','section','roll','app_status']
+
+    class Meta:
+        model = StudentLeaveTransaction
+
 
 
 admin.site.register(Student,StudentAdmin)
 admin.site.register(Category,CategoryAdmin)
 admin.site.register(ProcessStAttendanceDaily,ProcessStAttendanceDailyAdmin)
+admin.site.register(StudentLeaveTransaction,StudentLeaveTransactionAdmin)
