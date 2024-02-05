@@ -2817,7 +2817,6 @@ class TeacherTimeTableList(generics.ListAPIView):
         staff_id = self.kwargs.get('staff_id')  # assuming staff_id is passed as a URL parameter
         return ClassRoutiineDtl.objects.filter(teacher=staff_id,status=True)
 
-
     def list(self, request, *args, **kwargs):
         try:
             queryset = self.get_queryset()
@@ -2840,7 +2839,6 @@ class TeacherTimeTableList(generics.ListAPIView):
                     "message": "Success",
                     "data": timetable_by_days,
                 }
-
             return JsonResponse(response_data, status=status.HTTP_200_OK, safe=False)
         except:
             return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)

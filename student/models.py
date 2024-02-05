@@ -20,6 +20,10 @@ def generate_student_no():
     return new_std_num
 # Create your models here.
 
+def validate_pdf_file_size(value):
+    if value.size > 2 * 1024 * 1024:  # 20MB in bytes
+        raise ValidationError('File size cannot exceed 2MB.')
+
 class Category(models.Model):
     name = models.CharField(max_length=50,verbose_name='Category Name')
     sl_no = models.IntegerField(default=0)
@@ -199,3 +203,55 @@ def cal_late_min(sender,instance,**kwargs):
     else:
         instance.early_gone_by_min = None
 
+def leave_code():
+    last_leave_code = StudentLeaveTransaction.objects.all().order_by('code').last()
+    if not last_leave_code or last_leave_code.code is None:
+        return 'SLV-' + '01'
+    leave_num = str(last_leave_code.code)[-2:]
+    leave_num_int = int(leave_num)
+    new_leave_num = leave_num_int + 1
+    new_gd_num = 'SLV-' + str(new_leave_num).zfill(2)
+    return new_gd_num  
+
+class StudentLeaveTransaction(models.Model):
+    code = models.CharField(max_length=20,editable=False, verbose_name='Leave Code',default=leave_code)
+    start_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
+    tran_type = models.CharField(max_length=20, blank=True, null=True)
+    day_count = models.IntegerField(blank=True, null=True, editable=False, verbose_name='Number of Day')
+    application_date = models.DateTimeField(auto_now_add=True,blank=True, null=True)
+    add_during_leave = models.TextField(blank=True, null=True)
+    reason_for_leave = models.TextField(blank=True,null=True)
+    apply_by = models.ForeignKey(Student, on_delete=models.SET_NULL, blank=True, null=True,related_name='std_leave_trns')
+    shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
+    student_code = models.CharField(max_length=20, blank=True,null=True)
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='version', blank=True, null=True)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session', blank=True, null=True)
+    class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name', blank=True, null=True)
+    group = models.ForeignKey(ClassGroup,on_delete=models.SET_NULL, blank=True,null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section', blank=True, null=True)
+    roll = models.CharField(max_length=15,verbose_name='Class Roll',blank=True,null=True)
+    document = models.FileField(upload_to='std_leave_doc/', blank=True, null=True, verbose_name='Document',validators=[validate_pdf_file_size])
+    remarks = models.TextField(blank=True, null=True)
+    app_status = models.ForeignKey(Setup, on_delete=models.SET_NULL,blank=True, null=True,limit_choices_to={'parent__type': 'APPROVAL_STATUS'},related_name='std_approval_status')
+    active_start_date = models.DateTimeField(auto_now_add=True,blank=True, null=True)
+    active_end_date = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='std_trns_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='std_trns_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if self.end_date and self.start_date:
+            if self.end_date < self.start_date:
+                raise ValidationError('End date must be greater than or equal to start date.')
+
+    class Meta:
+        db_table='std_leave_trns'
+
+    def __str__(self):
+        return str(self.code)
