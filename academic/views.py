@@ -2840,7 +2840,7 @@ class TeacherTimeTableList(generics.ListAPIView):
                     "message": "Success",
                     "data": timetable_by_days,
                 }
-            return JsonResponse(response_data, status=status.HTTP_200_OK, safe=False)
+            return CustomResponse(code=status.HTTP_200_OK,data=timetable_by_days, status=status.HTTP_200_OK)
         except:
             return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
 
@@ -2902,7 +2902,7 @@ class StudentTimeTable(generics.ListAPIView):
                     "message": "Success",
                     "data": timetable_by_days,
                 }
-            return JsonResponse(response_data, status=status.HTTP_200_OK, safe=False)
+            return CustomResponse(code=status.HTTP_200_OK,data=timetable_by_days, status=status.HTTP_200_OK)
         except:
             return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
 
