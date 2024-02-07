@@ -119,7 +119,23 @@ class StudentLeaveTransactionViewSerializer(serializers.ModelSerializer):
     class_name = ClassSerializer2(read_only=True)
     shift = StaffShiftListSerializer2(read_only=True)
     app_status= SetupViewSerializer(read_only=True)
+    apply_by = StudentSortViewSerializer(read_only=True)
 
     class Meta:
         model = StudentLeaveTransaction
         exclude = ['status','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
+
+class StudentLeaveTransactionListSerializer(serializers.ModelSerializer):
+    responsible = StaffTeacherSerializer(read_only=True)
+    session = SessionSerializer2(read_only=True)
+    version = VersionSerializer2(read_only=True)
+    section = SectionSerializer2(read_only=True)
+    group = ClassGroupViewSerializer(read_only=True)
+    class_name = ClassSerializer2(read_only=True)
+    shift = StaffShiftListSerializer2(read_only=True)
+    app_status= SetupViewSerializer(read_only=True)
+    apply_by = StudentSortViewSerializer(read_only=True)
+
+    class Meta:
+        model = StudentLeaveTransaction
+        exclude = ['is_active','active_end_date','active_start_date','remarks','tran_type','status','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']

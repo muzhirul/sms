@@ -14,4 +14,6 @@ urlpatterns = [
     path('api/attendance/update/<int:pk>', StudentAttendanceUpdate.as_view(), name='student-attendance-update'),
     # Student Leave 
     path('api/leave/create', StudentLeaveCreate.as_view(), name='student-leave-create'),
+    path('api/leave/list', StudentLeaveList.as_view(), name='student-leave-List'),
+    path('api/leave/detail/<int:pk>', StudentLeaveDetails.as_view(), name='student-leave-details'),
 ]

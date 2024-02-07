@@ -515,3 +515,107 @@ class StudentLeaveCreate(generics.CreateAPIView):
                 class_teacher = ClassTeacher.objects.get(status=True,institution=institution,branch=branch,version=version,session=session,section=section,class_name=class_name)
             instance = serializer.save(app_status=submit_status,apply_by=apply_by,student_code=apply_by.student_no,shift=apply_by.shift,responsible=class_teacher.teacher,institution=institution, branch=branch,roll=roll,version=version,session=session,section=section,class_name=class_name,group=group)
             return CustomResponse(code=status.HTTP_200_OK, message="Leave created successfully", data=StudentLeaveTransactionViewSerializer(instance).data)
+        
+class StudentLeaveList(generics.ListAPIView):
+    serializer_class = StudentLeaveTransactionListSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = StudentLeaveTransaction.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            username = self.request.user
+            print(username)
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(student_code=username,institution=institution_id, branch=branch_id, status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(student_code=username,branch=branch_id, status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(student_code=username,institution=institution_id, status=True).order_by('-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+    
+class StudentLeaveDetails(generics.RetrieveUpdateAPIView):
+    queryset = StudentLeaveTransaction.objects.all()
+    serializer_class = StudentLeaveTransactionViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        # permission_check = check_permission(self.request.user.id, 'Version', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=StudentLeaveTransactionListSerializer(instance).data)
+    
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        # permission_check = check_permission(self.request.user.id, 'Version', 'update')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                start_date = serializer.validated_data.get('start_date')
+                end_date = serializer.validated_data.get('end_date')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                st = instance.app_status.title
+                if (st.lower() == 'submitted'):
+                    if (start_date==instance.start_date and end_date==instance.end_date):
+                        instance = serializer.save()
+                        return CustomResponse(code=status.HTTP_200_OK, message="Holiday Update successfully", data=StudentLeaveTransactionListSerializer(instance).data)
+                    else:
+                        leave_count = StudentLeaveTransaction.objects.filter(start_date=start_date,end_date=end_date,institution=institution,branch=branch,status=True).count()
+                        if(leave_count==0):
+                            # Perform any custom update logic here if needed
+                            instance = serializer.save()
+                            # Customize the response data
+                            return CustomResponse(code=status.HTTP_200_OK, message="Leave Update successfully", data=StudentLeaveTransactionListSerializer(instance).data)
+                        return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Leave already exits", data=serializer.errors)
+                        # Customize the response format for successful update
+                else:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Leave already {instance.app_status.title} ", data=StudentLeaveTransactionListSerializer(instance).data)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
