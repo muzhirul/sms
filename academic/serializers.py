@@ -575,6 +575,7 @@ class ClassRoutineDtlSerializer(serializers.ModelSerializer):
     class_period = ClassPeriodSerializer2(read_only=True)
     class_room = ClassRoomSerializer2(read_only=True)
     class_routine_mst = ClassRoutineMstSerializer()
+    teacher = StaffTeacherViewSerializer(read_only=True)
     
     class Meta:
         model = ClassRoutiineDtl

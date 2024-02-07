@@ -70,4 +70,6 @@ urlpatterns = [
     path('api/class-routine/v2/search', ClassRoutineV2Search.as_view(), name='class-routine-v2-search'),
     # Teacher Time Table
     path('api/teacher-timetable/<str:staff_id>', TeacherTimeTableList.as_view(), name='teacher-timetable-list'),
+    # Student Time Table
+    path('api/student-timetable', StudentTimeTable.as_view(), name='student-time-table'),
 ]

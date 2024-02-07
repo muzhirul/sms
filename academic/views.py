@@ -12,6 +12,7 @@ from authentication.models import Authentication
 from setup_app.models import *
 from sms.permission import check_permission
 from django.http import JsonResponse
+from student.models import Student,StudentEnroll
 # from django.contrib.auth import get_user_model
 
 # User = get_user_model()
@@ -2844,5 +2845,65 @@ class TeacherTimeTableList(generics.ListAPIView):
             return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
 
 
+'''
+For Student Time 
+'''
+class StudentTimeTable(generics.ListAPIView):
+    serializer_class = ClassRoutineDtlSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        username = self.request.user
+        model_name = self.request.user.model_name
+        institution = self.request.user.institution
+        branch = self.request.user.branch
+        try:
+            std_info = Student.objects.get(student_no=username,status=True)
+            enroll = StudentEnroll.objects.filter(is_active=True,status=True,student=std_info).last()
+            if enroll:
+                roll = enroll.roll
+                version = enroll.version
+                session = enroll.session
+                section= enroll.section
+                class_name = enroll.class_name
+                group= enroll.group
+
+                if group:
+                    class_mst = ClassRoutineMst.objects.get(status=True,institution=institution,branch=branch,version=version,session=session,section=section,class_name=class_name,group=group)
+                else:
+                    class_mst = ClassRoutineMst.objects.get(status=True,institution=institution,branch=branch,version=version,session=session,section=section,class_name=class_name)       
+
+            return ClassRoutiineDtl.objects.filter(class_routine_mst=class_mst,status=True)
+        except:
+            pass
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            serializer = self.serializer_class(queryset, many=True)
+            # Organize data by days
+            timetable_by_days = {}
+            for entry in serializer.data:
+                day = entry['day']['long_name']
+                if day not in timetable_by_days:
+                    timetable_by_days[day] = []
+                timetable_by_days[day].append({
+                    # "class_name": entry['class_routine_mst']['class_name'],
+                    # "section": entry['class_routine_mst']['section'],
+                    # "group": entry['class_routine_mst']['group'],
+                    "class_period": entry['class_period'],
+                    "subject": entry['subject'],
+                    "class_room": entry['class_room'],
+                    "teacher": entry['teacher'],
+                })
+                response_data = {
+                    "message": "Success",
+                    "data": timetable_by_days,
+                }
+            return JsonResponse(response_data, status=status.HTTP_200_OK, safe=False)
+        except:
+            return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
 
 
