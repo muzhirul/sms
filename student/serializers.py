@@ -69,38 +69,6 @@ class ProcessStAttendanceDailySearchDailySerializer(serializers.ModelSerializer)
         model = ProcessStAttendanceDaily
         fields = ['id','roll','attn_date','student','attn_type']
        
-class StudentViewSerializer(serializers.ModelSerializer):
-    guardians = GuardianViewSerializer(many=True, required=False, read_only=True)
-    enroll = StudentEnrollViewSerializer(many=True, required=False, read_only=True)
-    std_atten_daily = ProcessStAttendanceDailyViewDailySerializer(many=True, required=False, read_only=True)
-    gender = GenderSerializer(read_only=True)
-    religion = ReligionSerializer(read_only=True)
-    blood_group = BloodGroupSerializer(read_only=True)
-    class Meta:
-        model = Student
-        # Exclude the 'status' field and other fields you want to exclude
-        exclude = ['status','user','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-
-        # Order std_atten_daily by attn_date
-        representation['std_atten_daily'] = sorted(
-            representation['std_atten_daily'],
-            key=lambda x: x['attn_date'],
-            reverse=True
-        )
-        #  # Order std_atten_daily by attn_date
-        # sorted_attendance = sorted(
-        #     representation['std_atten_daily'],
-        #     key=lambda x: x['attn_date'],
-        #     reverse=True
-        # )
-        # # Retrieve the first 30 elements
-        # representation['std_atten_daily'] = sorted_attendance[:30]
-
-        return representation
-
 class StudentLeaveTransactionCreateSerializer(serializers.ModelSerializer):
     start_date = serializers.DateField()
     end_date = serializers.DateField()
@@ -108,7 +76,6 @@ class StudentLeaveTransactionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentLeaveTransaction
         exclude = ['status','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
-
 
 class StudentLeaveTransactionViewSerializer(serializers.ModelSerializer):
     responsible = StaffTeacherSerializer(read_only=True)
@@ -139,3 +106,37 @@ class StudentLeaveTransactionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentLeaveTransaction
         exclude = ['is_active','active_end_date','active_start_date','remarks','tran_type','status','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
+
+class StudentViewSerializer(serializers.ModelSerializer):
+    guardians = GuardianViewSerializer(many=True, required=False, read_only=True)
+    enroll = StudentEnrollViewSerializer(many=True, required=False, read_only=True)
+    std_atten_daily = ProcessStAttendanceDailyViewDailySerializer(many=True, required=False, read_only=True)
+    std_leave_trns = StudentLeaveTransactionListSerializer(many=True, required=False, read_only=True)
+    gender = GenderSerializer(read_only=True)
+    religion = ReligionSerializer(read_only=True)
+    blood_group = BloodGroupSerializer(read_only=True)
+    class Meta:
+        model = Student
+        # Exclude the 'status' field and other fields you want to exclude
+        exclude = ['status','user','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Order std_atten_daily by attn_date
+        representation['std_atten_daily'] = sorted(
+            representation['std_atten_daily'],
+            key=lambda x: x['attn_date'],
+            reverse=True
+        )
+        #  # Order std_atten_daily by attn_date
+        # sorted_attendance = sorted(
+        #     representation['std_atten_daily'],
+        #     key=lambda x: x['attn_date'],
+        #     reverse=True
+        # )
+        # # Retrieve the first 30 elements
+        # representation['std_atten_daily'] = sorted_attendance[:30]
+
+        return representation
+
