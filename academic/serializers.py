@@ -477,10 +477,10 @@ class ClassRoutineMstCreateSerializers(serializers.ModelSerializer):
                 c = ClassRoutiineDtl.objects.create(**routine_dtl, class_routine_mst=instance,institution=instance.institution,branch=instance.branch)
                 keep_choices.append(c.id)
 
-            for routine in ClassRoutiineDtl.objects.filter(class_routine_mst=instance):
-                if routine.id not in keep_choices:
-                    routine.status = False
-                    routine.save()
+            # for routine in ClassRoutiineDtl.objects.filter(class_routine_mst=instance):
+            #     if routine.id not in keep_choices:
+            #         routine.status = False
+            #         routine.save()
 
         return instance
 
