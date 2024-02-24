@@ -51,6 +51,8 @@ class Student(models.Model):
     religion = models.ForeignKey(Religion,on_delete=models.SET_NULL,blank=True,null=True,related_name='student_religion')
     email = models.EmailField(max_length=255,blank=True,null=True, verbose_name='Email Address')
     admission_date = models.DateField(blank=True, null=True,verbose_name='Admission Date')
+    birth_reg_scert_no = models.CharField(max_length=20,blank=True,null=True, verbose_name='Birth Registration Certificate No')
+    birth_cert_file = models.FileField(upload_to='birth_regi/', blank=True, null=True, verbose_name='জন্ম নিবন্ধন সনদ',validators=[validate_pdf_file_size])
     blood_group = models.ForeignKey(BloodGroup,on_delete=models.SET_NULL,blank=True,null=True,related_name='student_b_group')
     present_address = models.TextField(verbose_name='Present Address', blank=True,null=True)
     permanent_address = models.TextField(verbose_name='Permanent Address', blank=True,null=True)
