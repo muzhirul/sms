@@ -25,7 +25,7 @@ class StaffSocialMediaTabularInline(admin.TabularInline):
 
 class StaffLeaveTabulrInline(admin.TabularInline):
     model = StaffLeave
-    fields = ['leave_type','leave_days','taken_days','start_date','end_date','is_active','status']
+    fields = ['leave_type','leave_days','taken_days','start_date','end_date','institution','branch','is_active','status']
     extra = 1
 
 class ProcessAttendanceDailyAdminTabularInline(admin.TabularInline):

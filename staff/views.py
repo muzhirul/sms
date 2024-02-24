@@ -1498,4 +1498,54 @@ class StaffLeaveTrnslLst(generics.ListAPIView):
 
         return Response(response_data)
 
+class StaffLeaveList(generics.ListAPIView):
+    serializer_class = StaffLeaveViewSerialier
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
 
+    def get_queryset(self):
+        username = self.request.user
+        model_name = self.request.user.model_name
+        institution = self.request.user.institution
+        branch = self.request.user.branch
+        staff_id = self.request.query_params.get('staff_id')
+        if staff_id:
+            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,institution=institution,branch=branch)
+        else:
+            staff_id = Staff.objects.get(staff_id=username,status=True)
+            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,institution=institution,branch=branch)
+        return queryset
+
+
+    def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Staff Shift', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                response_data = self.get_paginated_response(serializer.data).data
+            else:
+                serializer = self.get_serializer(queryset, many=True)
+                response_data = {
+                    "code": 200,
+                    "message": "Success",
+                    "data": serializer.data,
+                    "pagination": {
+                        "next": None,
+                        "previous": None,
+                        "count": queryset.count(),
+                    },
+                }
+        except:
+            response_data = {
+                    "code": 400,
+                    "message": "Bad Request",
+                    "data": None,
+                }
+
+        return Response(response_data)
