@@ -65,11 +65,11 @@ class FeesMaster(ClassSection):
 
 class FeesDetails(models.Model):
     FINE_TYPE = ((0,'None'),(1,'Percentage'),(2,'Fix Amount'))
-    fees_master = models.ForeignKey(FeesMaster, on_delete=models.CASCADE)
+    fees_master = models.ForeignKey(FeesMaster, on_delete=models.CASCADE, related_name='fees_detail')
     fees_type = models.ForeignKey(FeesType,on_delete=models.CASCADE)
     due_date = models.DateField(blank=True,null=True,verbose_name='Due Date')
     amount = models.DecimalField(blank=True, null=True,verbose_name='Amount',max_digits=10,decimal_places=2)
-    fine_type = models.IntegerField(blank=True,null=True,choices=FINE_TYPE)
+    # fine_type = models.IntegerField(blank=True,null=True,choices=FINE_TYPE)
     percentage = models.DecimalField(blank=True, null=True,verbose_name='Percentage %',max_digits=10,decimal_places=2)
     fix_amt = models.PositiveIntegerField(blank=True,null=True, verbose_name='Fix Amount')
     description = models.TextField(blank=True,null=True)

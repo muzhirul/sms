@@ -334,4 +334,95 @@ class FeesDiscountDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Fees Discount {instance.name} Delete successfully", data=None)
 
+'''
+For Fees
+'''
+class FeesCreateList(generics.ListCreateAPIView):
+    serializer_class = FeesMasterViewSerializer
+    # serializer_class = FeesMasterCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = FeesMaster.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(
+        #     self.request.user.id, 'Fees Entry', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        # serializer_class = TokenObtainPairView  # Create this serializer
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+    
+    def create(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Fees Entry', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        data = request.data
+        fees_data = data.copy()
+        fees_details = fees_data.pop('fees_detail',[])
+        serializer_class = FeesMasterCreateSerializer
+        fees_serializer = serializer_class(data=fees_data)
+
+        if fees_serializer.is_valid():
+            fees_serializer.is_valid(raise_exception=True)
+            institution_data = fees_serializer.validated_data.get('institution')
+            branch_data = fees_serializer.validated_data.get('branch')
+            # If data is provided, use it; otherwise, use the values from the request user
+            institution = institution_data if institution_data is not None else self.request.user.institution
+            branch = branch_data if branch_data is not None else self.request.user.branch
+            fees_master = fees_serializer.save(institution=institution, branch=branch)
+
+            details = []
+            for fees_detail in fees_details:
+                fees_detail['fees_master'] = fees_master.id 
+                detail_serializer = FeesDetailsCreateSerializer(data=fees_detail)
+                detail_serializer.is_valid(raise_exception=True)
+                detail = detail_serializer.save(institution=institution, branch=branch)
+                details.append(detail)
+            response_data = fees_serializer.data
+            response_data['fees_detail'] = FeesDetailsViewSerializer(details,many=True).data
+        
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+
 

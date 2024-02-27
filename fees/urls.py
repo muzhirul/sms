@@ -10,4 +10,6 @@ urlpatterns = [
     path('api/fees-discount', FeesDiscountCreateList.as_view(), name='fees-discount-create-list'),
     path('api/fees-discount/detail/<int:pk>', FeesDiscountDetail.as_view(), name='fees-discount-detail'),
     path('api/fees-discount/delete/<int:pk>', FeesDiscountDelete.as_view(), name='fees-discount-delete'),
+    # For Fees Dtails
+    path('api/fees-entry/create', FeesCreateList.as_view(), name='fees-list-create'),
 ]
