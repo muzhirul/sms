@@ -423,6 +423,33 @@ class FeesCreateList(generics.ListCreateAPIView):
         
         return Response(response_data, status=status.HTTP_201_CREATED)
 
+class FeesDetailUpdate(generics.RetrieveUpdateAPIView):
+    queryset = FeesMaster.objects.filter(status=True)
+    serializer_class = FeesMasterCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(
+        #     self.request.user.id, 'Fees Entry', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        instance = self.get_object() 
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=FeesMasterViewSerializer(instance).data)
+    
+    def update(self, request, *args, **kwargs):
+        fees = self.get_object()
+        institution = self.request.user.institution
+        branch = self.request.user.branch
+        fees_serializer = self.get_serializer(fees, data=request.data, partial=True)
+        fees_serializer.is_valid(raise_exception=True)
+        instance = fees_serializer.save()
+        return CustomResponse(code=status.HTTP_200_OK, message="Staff information updated successfully", data=FeesMasterViewSerializer(instance).data)
+
+        
+        
+
 
 
 

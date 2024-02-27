@@ -12,4 +12,5 @@ urlpatterns = [
     path('api/fees-discount/delete/<int:pk>', FeesDiscountDelete.as_view(), name='fees-discount-delete'),
     # For Fees Dtails
     path('api/fees-entry/create', FeesCreateList.as_view(), name='fees-list-create'),
+    path('api/fees-entry/detail/<int:pk>', FeesDetailUpdate.as_view(), name='fees-details-update'),
 ]
