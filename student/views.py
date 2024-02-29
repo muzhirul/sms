@@ -493,14 +493,17 @@ class StudentLeaveCreate(generics.CreateAPIView):
             institution_data = serializer.validated_data.get('institution')
             apply_by = serializer.validated_data.get('apply_by')
             branch_data = serializer.validated_data.get('branch')
+            start_date = serializer.validated_data.get('start_date')
+            end_date = serializer.validated_data.get('end_date')
+            if start_date > end_date:
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="End date must be greater than or equal to start date", data=None)
             institution = institution_data if institution_data is not None else self.request.user.institution
             branch = branch_data if branch_data is not None else self.request.user.branch
             submit_status = Setup.objects.get(status=True,parent__type='APPROVAL_STATUS',type='SUBMITTED',institution=institution,branch=branch)
             if not apply_by:
                 model_name = self.request.user.model_name
                 username = self.request.user
-                if model_name == 'Student':
-                    apply_by = Student.objects.get(student_no=username,status=True)
+                apply_by = Student.objects.get(student_no=username,status=True)
             enroll = StudentEnroll.objects.filter(is_active=True,status=True,student=apply_by).last()
             if enroll:
                 roll = enroll.roll
@@ -527,16 +530,26 @@ class StudentLeaveList(generics.ListAPIView):
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch
             username = self.request.user
-            print(username)
-            # users = Authentication.objects.get(id=user_id)
-            if institution_id and branch_id:
-                queryset = queryset.filter(student_code=username,institution=institution_id, branch=branch_id, status=True).order_by('-id')
-            elif branch_id:
-                queryset = queryset.filter(student_code=username,branch=branch_id, status=True).order_by('-id')
-            elif institution_id:
-                queryset = queryset.filter(student_code=username,institution=institution_id, status=True).order_by('-id')
+            user_id = self.request.user.id
+            staff_info = Staff.objects.get(user=user_id,status=True)
+            if staff_info:
+                if institution_id and branch_id:
+                    queryset = queryset.filter(responsible=staff_info.id,institution=institution_id, branch=branch_id, status=True).order_by('-id')
+                elif branch_id:
+                    queryset = queryset.filter(responsible=staff_info.id,branch=branch_id, status=True).order_by('-id')
+                elif institution_id:
+                    queryset = queryset.filter(responsible=staff_info.id,institution=institution_id, status=True).order_by('-id')
+                else:
+                    queryset
             else:
-                queryset
+                if institution_id and branch_id:
+                    queryset = queryset.filter(student_code=username,institution=institution_id, branch=branch_id, status=True).order_by('-id')
+                elif branch_id:
+                    queryset = queryset.filter(student_code=username,branch=branch_id, status=True).order_by('-id')
+                elif institution_id:
+                    queryset = queryset.filter(student_code=username,institution=institution_id, status=True).order_by('-id')
+                else:
+                    queryset
         except:
             pass
         return queryset
@@ -594,6 +607,8 @@ class StudentLeaveDetails(generics.RetrieveUpdateAPIView):
                 branch_data = serializer.validated_data.get('branch')
                 start_date = serializer.validated_data.get('start_date')
                 end_date = serializer.validated_data.get('end_date')
+                if start_date > end_date:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="End date must be greater than or equal to start date", data=None)
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
