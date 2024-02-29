@@ -1279,6 +1279,10 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
                 apply_by = serializer.validated_data.get('apply_by')
+                start_date = serializer.validated_data.get('start_date')
+                end_date = serializer.validated_data.get('end_date')
+                if start_date > end_date:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="End date must be greater than or equal to start date", data=None)
                 # version = serializer.validated_data.get('version')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
@@ -1331,6 +1335,10 @@ class staffLeaveTransactionUpdate(generics.RetrieveUpdateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
+                start_date = serializer.validated_data.get('start_date')
+                end_date = serializer.validated_data.get('end_date')
+                if start_date > end_date:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="End date must be greater than or equal to start date", data=None)
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
