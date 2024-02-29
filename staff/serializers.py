@@ -148,6 +148,7 @@ class StaffTeacherViewSerializer(serializers.ModelSerializer):
 class StaffLeaveTransactionViewSerializer(serializers.ModelSerializer):
     leave_type = LeaveTypeView2Serializer(read_only=True)
     apply_by = StaffTeacherViewSerializer(read_only=True)
+    app_status = SetupViewSerializer(read_only=True)
     responsible = StaffTeacherViewSerializer(read_only=True)
 
     class Meta:
