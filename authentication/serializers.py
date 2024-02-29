@@ -4,6 +4,7 @@ from .models import Authentication
 from django.contrib.auth.models import Group, Permission
 from django.contrib import auth
 from django.contrib.contenttypes.models import ContentType
+from institution.serializers import *
 
 
 class ContentTypeSerializer(serializers.ModelSerializer):
@@ -54,6 +55,8 @@ class LoginSerializer3(serializers.ModelSerializer):
 class LoginSerializer4(serializers.ModelSerializer):
     username = serializers.CharField(max_length=50,min_length=3)
     password = serializers.CharField(max_length=68, min_length=5, write_only=True)
+    institution = InstitutionViewSerializer(read_only=True)
+    branch = BranchViewSerializer(read_only=True)
     class Meta:
         model = Authentication
         fields = ['id','username','first_name','last_name','user_type','institution','branch','password']
