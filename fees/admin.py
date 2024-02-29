@@ -17,7 +17,7 @@ class FeesDiscountAdmin(admin.ModelAdmin):
 
 class FeesDetailsTabularInline(admin.TabularInline):
     model = FeesDetails
-    fields = ['fees_type','due_date','amount','fine_type','percentage','fix_amt','is_active','status','institution','branch']
+    fields = ['fees_type','due_date','amount','percentage','fix_amt','is_active','status','institution','branch']
     extra = 1
 
 class FeesMasterAdmin(admin.ModelAdmin):

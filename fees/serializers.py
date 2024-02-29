@@ -40,6 +40,12 @@ class FeesDetailsViewSerializer(serializers.ModelSerializer):
         model = FeesDetails
         exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
 
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
 class FeesDetailsCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False) 
 
@@ -68,7 +74,6 @@ class FeesMasterCreateSerializer(serializers.ModelSerializer):
                         f.fees_type = fees_detail.get('fees_type',f.fees_type)
                         f.due_date = fees_detail.get('due_date',f.due_date)
                         f.amount = fees_detail.get('amount',f.amount)
-                        f.fine_type = fees_detail.get('fine_type',f.fine_type)
                         f.percentage = fees_detail.get('percentage',f.percentage)
                         f.fix_amt = fees_detail.get('fix_amt',f.fix_amt)
                         f.description = fees_detail.get('description',f.description)
@@ -102,3 +107,15 @@ class FeesMasterViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeesMaster
         exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Filter out None values from the social_media list 
+        representation['fees_detail'] = [item for item in representation['fees_detail'] if item is not None]
+
+        if not instance.status:
+            # If status is False, exclude the social_media field
+            representation.pop('fees_detail', None)
+
+        return representation
