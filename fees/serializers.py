@@ -38,7 +38,7 @@ class FeesDetailsViewSerializer(serializers.ModelSerializer):
     fees_type = FeesTypeListSerializer(read_only=True)
     class Meta:
         model = FeesDetails
-        exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
+        exclude = ['fees_master','status','created_at','updated_at','created_by','updated_by','institution','branch']
 
     def to_representation(self, instance):
         if instance.status:
