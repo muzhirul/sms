@@ -97,6 +97,26 @@ class ExamRoutineDtl(models.Model):
     def __str__(self):
         return str(self.exam_date)
     
+@receiver(pre_save, sender=ExamRoutineDtl)        
+def calculate_duration(sender, instance, **kwargs):
+    if instance.start_time and instance.end_time:
+        # Get the current date for the calculation
+        current_date = datetime.now().date()
+
+        # Convert start_time and end_time to datetime objects
+        start_datetime = datetime.combine(current_date, instance.start_time)
+        end_datetime = datetime.combine(current_date, instance.end_time)
+
+        # Ensure both start_time and end_time are on the same date
+        if start_datetime > end_datetime:
+            # In case end_time is on the next day, adjust it
+            end_datetime += timedelta(days=1)
+
+        duration = end_datetime - start_datetime
+        instance.duration = duration
+    else:
+        instance.duration = None
+    
 @receiver(pre_save, sender=ExamRoutineDtl)          
 def find_day(sender, instance, **kwargs):
     
