@@ -237,6 +237,55 @@ class ExamNameCreateList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
+class ExamNameDetailsList(generics.RetrieveUpdateAPIView):
+    queryset = ExamName.objects.filter(status=True)
+    serializer_class = ExamNameCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        permission_check = check_permission(self.request.user.id, 'Exam Name', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        try:
+            '''Check user has permission to retrive End'''
+            instance = self.get_object()
+            # Customize the response format for retrieving a single instance
+            return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ExamNameViewSerializer(instance).data)
+        except:
+            return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
+
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        permission_check = check_permission(self.request.user.id, 'Exam Name', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                name = serializer.validated_data.get('name')
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                exam_name_count = ExamName.objects.filter(name=name,institution=institution,branch=branch,status=True).count()
+                if (exam_name_count==0):
+                    # Perform any custom update logic here if needed
+                    instance = serializer.save()
+                    # Customize the response format for successful update
+                    return CustomResponse(code=status.HTTP_200_OK, message="Exam Name updated successfully", data=ExamNameViewSerializer(instance).data)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Exam Name already exits", data=serializer.errors)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+ 
 
 '''
 For Exam Routine
