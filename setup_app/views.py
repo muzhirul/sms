@@ -1489,7 +1489,7 @@ class DayList(generics.ListAPIView):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        queryset = Days.objects.filter(status=True).order_by('sl_no')
+        queryset = Days.objects.filter(status=True,week_end=False).order_by('sl_no')
         try:
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch

@@ -4,6 +4,7 @@ from academic.models import ClassName, ClassRoom, Section, Session, Subject, Ver
 from django_userforeignkey.models.fields import UserForeignKey
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from academic.models import *
 from datetime import datetime, timedelta
 from staff.models import Staff
 # Create your models here.
@@ -50,6 +51,63 @@ class ExamName(models.Model):
     
     def __str__(self):
         return self.name
+    
+class ExamRoutineMst(models.Model):
+    exam = models.ForeignKey(ExamName, on_delete=models.CASCADE)
+    class_name = models.ForeignKey(ClassName, on_delete=models.SET_NULL, blank=True, null=True)
+    section = models.ForeignKey(Section,on_delete=models.SET_NULL,blank=True, null=True)
+    session = models.ForeignKey(Session, on_delete=models.SET_NULL, blank=True, null=True)
+    version = models.ForeignKey(Version, on_delete=models.SET_NULL, blank=True, null=True)
+    group = models.ForeignKey(ClassGroup, on_delete=models.SET_NULL,blank=True,null=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='exam_routine_mst_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='exam_routine_mst_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'e_routine_mst'
+    
+    def __str__(self):
+        return str(self.exam.name)
+
+class ExamRoutineDtl(models.Model):
+    exam_routine_mst = models.ForeignKey(ExamRoutineMst, on_delete=models.CASCADE, related_name='exam_routine_dtl')
+    exam_date = models.DateField()
+    day = models.CharField(max_length=20,verbose_name='Exam Day',blank=True,null=True, editable=False)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    room = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    duration = models.DurationField(blank=True,null=True)
+    teacher = models.ManyToManyField(Staff, verbose_name='Teacher')
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.CASCADE,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.CASCADE,blank=True,null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='exam_routine_dtl_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='exam_routine_dtl_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'e_routine_dtl'
+
+    def __str__(self):
+        return str(self.exam_date)
+    
+@receiver(pre_save, sender=ExamRoutineDtl)          
+def find_day(sender, instance, **kwargs):
+    
+    if instance.exam_date:
+        date_string = str(instance.exam_date)
+        date = datetime.strptime(date_string, "%Y-%m-%d")
+        # Get the day name
+        day_name = date.strftime("%A")
+        instance.day = day_name
+    else:
+        instance.day = None
     
 class ExamRoutine(models.Model):
     exam_date = models.DateField()
