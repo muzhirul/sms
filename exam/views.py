@@ -160,6 +160,7 @@ class GradeDelete(generics.UpdateAPIView):
             return CustomResponse(code=status.HTTP_200_OK, message=f"Grade Delete successfully", data=None)
         except:
             return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
+
 '''
 For Exam Name
 '''
@@ -285,7 +286,29 @@ class ExamNameDetailsList(generics.RetrieveUpdateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
- 
+
+class ExamNameDelete(generics.UpdateAPIView):
+    queryset = ExamName.objects.all()
+    serializer_class = ExamNameCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        permission_check = check_permission(self.request.user.id, 'Exam Name', 'delete')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+        try:
+            instance = self.get_object()
+            if not instance.status:
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Exam Name already Deleted", data=None)
+            # Update the "status" field to False
+            instance.status = False
+            instance.save()
+            # Customize the response format for successful update
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Exam Name Delete successfully", data=None)
+        except:
+            return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
 
 '''
 For Exam Routine

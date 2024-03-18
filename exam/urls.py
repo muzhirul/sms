@@ -8,6 +8,7 @@ urlpatterns = [
     # For exam name
     path('api/exam-name', ExamNameCreateList.as_view(), name='exam-name-list-create'),
     path('api/exam-name/detail/<int:pk>', ExamNameDetailsList.as_view(), name='exam-name-detail-update'),
+    path('api/exam-name/delete/<int:pk>', ExamNameDelete.as_view(), name='exam-name-delete'),
     # For Exam Routine 
     path('api/exam-routine/list', ExamRoutineList.as_view(), name='exam-routine-list'),
 ]
