@@ -164,6 +164,55 @@ class GradeDelete(generics.UpdateAPIView):
 '''
 For Exam Name
 '''
+class ExamNameList(generics.ListCreateAPIView):
+    serializer_class = ExamNameViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+    
+    def get_queryset(self):
+        queryset = ExamName.objects.filter(status=True).order_by('sl_no')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('sl_no')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('sl_no')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('sl_no')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+        
+    def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Exam Name', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+ 
 class ExamNameCreateList(generics.ListCreateAPIView):
     serializer_class = ExamNameViewSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
@@ -313,7 +362,7 @@ class ExamNameDelete(generics.UpdateAPIView):
 '''
 For Exam Routine
 '''
-class ExamRoutineList(generics.ListAPIView):
+class ExamRoutineCreateList(generics.ListCreateAPIView):
     serializer_class = ExamRoutineMstViewSerializers
     # Requires a valid JWT token for access
     permission_classes = [permissions.IsAuthenticated]
@@ -356,4 +405,37 @@ class ExamRoutineList(generics.ListAPIView):
             }
 
         return Response(response_data)
+    
+    def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Class Routine', 'create')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        serializer_class = ExamRoutineMstCreateSerializers
+        serializer = serializer_class(data=request.data)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                class_name = serializer.validated_data.get('class_name')
+                section = serializer.validated_data.get('section')
+                exam = serializer.validated_data.get('exam')
+                session = serializer.validated_data.get('session')
+                version = serializer.validated_data.get('version')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                ex_routine_mst_count = ExamRoutineMst.objects.filter(exam=exam,class_name=class_name,section=section,session=session,version=version,status=True).count()
+                if (ex_routine_mst_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                        # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Exam Routine created successfully", data=ExamRoutineMstViewSerializers(instance).data)
+                else:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Exam Routine already exists for this class", data=serializer.errors)
+            # If the serializer is not valid, return an error response
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 

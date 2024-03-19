@@ -25,7 +25,7 @@ class ExamRoutineDtlAdmin(admin.TabularInline):
     extra = 0
 
 class ExamRoutineMstAdmin(admin.ModelAdmin):
-    list_display = ['class_name','section','group','session','version','status','institution','branch']
+    list_display = ['exam','class_name','section','group','session','version','status','institution','branch']
     class Meta:
         model = ExamRoutineMst
     inlines = [ExamRoutineDtlAdmin]
