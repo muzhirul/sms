@@ -408,9 +408,9 @@ class ExamRoutineCreateList(generics.ListCreateAPIView):
     
     def create(self, request, *args, **kwargs):
         '''Check user has permission to View start'''
-        # permission_check = check_permission(self.request.user.id, 'Class Routine', 'create')
-        # if not permission_check:
-        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        permission_check = check_permission(self.request.user.id, 'Class Routine', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
         serializer_class = ExamRoutineMstCreateSerializers
         serializer = serializer_class(data=request.data)
@@ -447,10 +447,9 @@ class ExamRoutineDetail(generics.RetrieveUpdateAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         '''Check user has permission to retrive start'''
-        # permission_check = check_permission(
-        #     self.request.user.id, 'Exam Routine', 'view')
-        # if not permission_check:
-        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        permission_check = check_permission(self.request.user.id, 'Exam Routine', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to retrive End'''
         try:
             instance = self.get_object()
@@ -461,9 +460,9 @@ class ExamRoutineDetail(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         '''Check user has permission to update start'''
-        # permission_check = check_permission(self.request.user.id, 'Exam Routine', 'update')
-        # if not permission_check:
-        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        permission_check = check_permission(self.request.user.id, 'Exam Routine', 'update')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to retrive End'''
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
