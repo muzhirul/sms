@@ -91,3 +91,38 @@ class ExamRoutineMstCreateSerializers(serializers.ModelSerializer):
             exam_del = ExamRoutineDtl.objects.create(**routine_dtl, exam_routine_mst=routine_mst,institution=routine_mst.institution,branch=routine_mst.branch)
             exam_del.teacher.set(teachers_data)
         return routine_mst
+    
+    def update(self, instance, validated_data):
+        routine_dtls = validated_data.pop('exam_routine_dtl')
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        keep_ids = []
+        for routine_dtl in routine_dtls:
+            if "id" in routine_dtl.keys():
+                if ExamRoutineDtl.objects.filter(id=routine_dtl["id"]).exists():
+                    d = ExamRoutineDtl.objects.get(id=routine_dtl["id"])
+                    d.exam_date = routine_dtl.get('exam_date',d.exam_date)
+                    d.subject = routine_dtl.get('subject',d.subject)
+                    d.room = routine_dtl.get('room',d.room)
+                    d.start_time = routine_dtl.get('start_time',d.start_time)
+                    d.end_time = routine_dtl.get('end_time',d.end_time)
+                    teachers_data = routine_dtl.pop('teacher', [])
+                    d.teacher.set(teachers_data)
+                    d.status = True
+                    d.save()
+                    keep_ids.append(d.id)
+                else:
+                    continue
+            else:
+                d = ExamRoutineDtl.objects.create(**routine_dtl, exam_routine_mst=instance,institution=instance.institution,branch=instance.branch)
+                d.teacher.set(teachers_data)
+                keep_ids.append(d.id)
+            
+            for routine in ExamRoutineDtl.objects.filter(exam_routine_mst=instance):
+                if routine.id not in keep_ids:
+                    routine.status = False
+                    routine.save()
+        return instance
+
+

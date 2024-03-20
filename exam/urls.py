@@ -12,4 +12,5 @@ urlpatterns = [
     path('api/exam-name/delete/<int:pk>', ExamNameDelete.as_view(), name='exam-name-delete'),
     # For Exam Routine 
     path('api/exam-routine', ExamRoutineCreateList.as_view(), name='exam-routine-create-list'),
+    path('api/exam-routine/detail/<int:pk>', ExamRoutineDetail.as_view(), name='exam-routine-detail'),
 ]
