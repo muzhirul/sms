@@ -19,13 +19,23 @@ class StudentList(generics.ListCreateAPIView):
     
     def get_queryset(self):
         queryset = Student.objects.filter(status=True).order_by('id')
+        user_id = self.request.query_params.get('user')
         try:
             user_id = self.request.query_params.get('user')
             users = Authentication.objects.get(id=user_id)
             if users.institution and users.branch:
                 queryset = queryset.filter(institution=users.institution, branch=users.branch)
         except:
-            pass
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('id')
+            else:
+                queryset
         return queryset
     
     def list(self,request,*args, **kwargs):
