@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_userforeignkey',
     'corsheaders',
+    'django_apscheduler',
     'authentication',
     'institution',
     'academic',
@@ -68,6 +69,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'sms.urls'
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # Default
+
+SCHEDULER_DEFAULT = True
 
 TEMPLATES = [
     {
