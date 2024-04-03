@@ -29,6 +29,13 @@ class FeesMasterAdmin(admin.ModelAdmin):
     class Meta:
         model = FeesMaster
 
+class FeesTransactionAdmin(admin.ModelAdmin):
+    list_display = ['student','fees_detail','pay_method','pay_date','is_active']
+    class Meta:
+        model = FeesTransaction
+
+
 admin.site.register(FeesType, FeesTypeAdmin)
 admin.site.register(FeesDiscount, FeesDiscountAdmin)
 admin.site.register(FeesMaster,FeesMasterAdmin)
+admin.site.register(FeesTransaction,FeesTransactionAdmin)

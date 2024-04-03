@@ -491,6 +491,30 @@ class FeesDetailUpdate(generics.RetrieveUpdateAPIView):
         instance = fees_serializer.save()
         return CustomResponse(code=status.HTTP_200_OK, message="Staff information updated successfully", data=FeesMasterViewSerializer(instance).data)
 
+'''
+For Fees Transaction
+'''
+class FeesTrnsManualEntry(generics.ListAPIView):
+    def list(self,request,*args, **kwargs):
+        std_fees_trns = {}
+        student_enrolls = StudentEnroll.objects.filter(status=True,is_active=True).order_by('id')
+        for enroll in student_enrolls:
+            # print(enroll.student.id,enroll.class_name,enroll.section,enroll.session,enroll.version,enroll.group)
+            fees_lists = FeesDetails.objects.filter(status=True,is_active=True,fees_master__version=enroll.version,fees_master__class_name=enroll.class_name,fees_master__section=enroll.section,fees_master__session=enroll.session)
+            for fees_list in fees_lists:
+                std_fees_trns['student'] = enroll.student
+                std_fees_trns['fees_detail'] = fees_list
+                std_fees_trns['institution'] = enroll.institution
+                std_fees_trns['branch'] = enroll.branch
+                # print(fees_list)
+                trns_count = FeesTransaction.objects.filter(status=True,student=enroll.student,fees_detail=fees_list,institution=enroll.institution,branch=enroll.branch).count()
+                if (trns_count==0):
+                    t = FeesTransaction.objects.create(**std_fees_trns)
+                else:
+                    print('Nothing to insert')
+
+        return Response(f"std_fees_trns")
+
         
         
 

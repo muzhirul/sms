@@ -1,6 +1,7 @@
 from django.db import models
 from institution.models import Institution, Branch
 from academic.models import *
+from student.models import *
 from django_userforeignkey.models.fields import UserForeignKey
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -89,4 +90,31 @@ class FeesDetails(models.Model):
     def __str__(self):
         return str(self.fees_type)
 
+class FeesTransaction(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True,related_name='fees_trns')
+    fees_detail = models.ForeignKey(FeesDetails, on_delete=models.SET_NULL, blank=True,null=True)
+    payment_id = models.CharField(max_length=100,blank=True,null=True)
+    pay_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL,blank=True,null=True, verbose_name='Payment Method')
+    pay_date = models.DateField(blank=True,null=True, verbose_name='Payment Date')
+    discount_type = models.ForeignKey(FeesDiscount, on_delete=models.SET_NULL,blank=True,null=True)
+    discount_amt = models.DecimalField(blank=True, null=True,verbose_name='Discount Amount',max_digits=8,decimal_places=2)
+    fine_amt = models.DecimalField(blank=True, null=True,verbose_name='Fine Amount',max_digits=8,decimal_places=2)
+    fees_amt = models.DecimalField(blank=True, null=True,verbose_name='Fees Amount',max_digits=8,decimal_places=2)
+    pay_status = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='fees_trns_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='fees_trns_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'fees_transaction'
+
+    def __str__(self):
+        return str(self.id)
+
+    
 

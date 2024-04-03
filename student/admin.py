@@ -1,5 +1,6 @@
 from django.contrib import admin
 from student.models import *
+from fees.models import *
 import admin_thumbnails
 
 
@@ -28,6 +29,11 @@ class ProcessStAttendanceDailyAdminTabularInline(admin.TabularInline):
     fields = ['attn_date','shift','in_time','out_time','duration','attn_type','late_by_min','early_gone_by_min']
     extra = 0
 
+class FeesTransactionAdminTabularInline(admin.TabularInline):
+    model = FeesTransaction
+    fields = ['fees_detail','payment_id','pay_method','pay_date','discount_type','discount_amt','fine_amt','fees_amt','pay_status']
+    extra = 0
+
 @admin_thumbnails.thumbnail('photo')
 class StudentAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -46,7 +52,7 @@ class StudentAdmin(admin.ModelAdmin):
     save_on_top = True
     list_per_page = 15
 
-    inlines = [GuardianTabularInline,StudentEnrollTabularInline,ProcessStAttendanceDailyAdminTabularInline]
+    inlines = [GuardianTabularInline,StudentEnrollTabularInline,ProcessStAttendanceDailyAdminTabularInline,FeesTransactionAdminTabularInline]
     
     class Meta:
         model = Student

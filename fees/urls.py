@@ -14,4 +14,6 @@ urlpatterns = [
     # For Fees Dtails
     path('api/fees-entry/create', FeesCreateList.as_view(), name='fees-list-create'),
     path('api/fees-entry/detail/<int:pk>', FeesDetailUpdate.as_view(), name='fees-details-update'),
+    # For Fees Transactions
+    path('api/fees-trns/manual', FeesTrnsManualEntry.as_view(), name='fees-transaction-manual-process'),
 ]
