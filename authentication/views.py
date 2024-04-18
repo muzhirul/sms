@@ -9,6 +9,7 @@ from academic.models import *
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from setup_app.models import Role,Permission,Menu
+from student.models import Student,Guardian
 from django.db.models import Q
 from django.contrib.sites.shortcuts import get_current_site
 
@@ -45,6 +46,41 @@ class UserV4LoginView(APIView):
         refresh = RefreshToken.for_user(user)
         user_serializer = LoginSerializer4(user)
         user_data = user_serializer.data
+        user_data['user'] = {}
+        
+        if Student.objects.filter(user=user_data['id']).exists():
+            user_info = Student.objects.get(user=user_data['id'])
+            user_data['user']['first_name'] = user_info.first_name
+            user_data['user']['last_name'] = user_info.last_name
+            user_data['user']['username'] = user_info.student_no
+            if user_info.photo:
+                user_data['user']['image'] = SITE_PROTOCOL+current_site + '/media/'+str(user_info.photo)
+            else:
+                user_data['user']['image'] = None
+            user_data['user']['role'] = 'Student'
+
+        elif Staff.objects.filter(user=user_data['id']).exists():
+            user_info = Staff.objects.get(user=user_data['id'])
+            user_data['user']['first_name'] = user_info.first_name
+            user_data['user']['last_name'] = user_info.last_name
+            user_data['user']['username'] = user_info.staff_id
+            if user_info.photo:
+                user_data['user']['image'] = SITE_PROTOCOL+current_site + '/media/'+str(user_info.photo)
+            else:
+                user_data['user']['image'] = None
+            user_data['user']['role'] = user_info.role.name
+
+        elif Guardian.objects.filter(user=user_data['id']).exists():
+            user_info = Guardian.objects.get(user=user_data['id'])
+            user_data['user']['first_name'] = user_info.first_name
+            user_data['user']['last_name'] = user_info.last_name
+            user_data['user']['username'] = user_info.guardian_no
+            if user_info.photo:
+                user_data['user']['image'] = SITE_PROTOCOL+current_site + '/media/'+str(user_info.photo)
+            else:
+                user_data['user']['image'] = None
+            user_data['user']['role'] = 'Guardian'
+        
         menu_info = {}
         role_id = []
         user_data['menus'] = []

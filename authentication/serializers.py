@@ -59,4 +59,4 @@ class LoginSerializer4(serializers.ModelSerializer):
     branch = BranchViewSerializer(read_only=True)
     class Meta:
         model = Authentication
-        fields = ['id','username','first_name','last_name','user_type','institution','branch','password']
+        fields = ['id','username','first_name','last_name','user_type','institution','branch','model_name','password']
