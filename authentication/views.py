@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import generics, permissions
+from sms.utils import CustomResponse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import LoginSerializer, LoginSerializer2, LoginSerializer3,LoginSerializer4
@@ -9,9 +11,10 @@ from academic.models import *
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from setup_app.models import Role,Permission,Menu
-from student.models import Student,Guardian
+from student.models import Student,Guardian,StudentEnroll,ProcessStAttendanceDaily
 from django.db.models import Q
 from django.contrib.sites.shortcuts import get_current_site
+from datetime import datetime
 
 
 class UserV4LoginView(APIView):
@@ -154,6 +157,99 @@ class UserV4LoginView(APIView):
             'error':[],
             'data':user_data},status=status.HTTP_200_OK)
 
+class DashboardView(generics.ListAPIView):
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    def list(self, request, *args, **kwargs):
+        dashboard_data = {}
+        dashboard_data['basic_info'] = {}
+        SITE_PROTOCOL = 'http://'
+        if request.is_secure():
+            SITE_PROTOCOL = 'https://'
+        current_site = get_current_site(request).domain
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        if Student.objects.filter(user=self.request.user.id,institution=institution_id, branch=branch_id).exists():
+            user_info = Student.objects.get(user=self.request.user.id,institution=institution_id, branch=branch_id)
+            dashboard_data['basic_info']['first_name'] = user_info.first_name
+            dashboard_data['basic_info']['last_name'] = user_info.last_name
+            dashboard_data['basic_info']['username'] = user_info.student_no
+            if user_info.photo:
+                dashboard_data['basic_info']['image'] = SITE_PROTOCOL+current_site + '/media/'+str(user_info.photo)
+            else:
+                dashboard_data['basic_info']['image'] = None
+            if StudentEnroll.objects.filter(student=user_info,status=True,is_active=True,institution=institution_id, branch=branch_id).exists():
+                std_enroll = StudentEnroll.objects.filter(student=user_info,status=True,is_active=True,institution=institution_id, branch=branch_id).order_by('-id').last()
+                session_name = std_enroll.session.session
+                version_name = std_enroll.version.version
+                class_name = std_enroll.class_name.name
+                section = std_enroll.section.section
+                roll_no = std_enroll.roll
+                dashboard_data['basic_info']['session'] = session_name
+                dashboard_data['basic_info']['version'] = version_name
+                dashboard_data['basic_info']['class_name'] = class_name
+                dashboard_data['basic_info']['section'] = section
+                dashboard_data['basic_info']['roll'] = roll_no
+            dashboard_data['basic_info']['role'] = 'Student'
+        
+            dashboard_data['today_class_routine'] = []
+            day_name = datetime.now().date().strftime('%A').lower()
+            day_id = Days.objects.filter(status=True,long_name__iexact=day_name,institution=institution_id, branch=branch_id).last()
+            routine_mst = ClassRoutineMst.objects.filter(session=std_enroll.session,version=std_enroll.version,class_name=std_enroll.class_name,section=std_enroll.section,status=True,institution=institution_id, branch=branch_id).last()
+            class_routines = []
+            for routine_dtl in ClassRoutiineDtl.objects.filter(class_routine_mst=routine_mst,status=True,institution=institution_id, branch=branch_id,day=day_id):
+                class_routine = {}
+                class_routine['subject'] = routine_dtl.subject.name
+                class_routine['room_no'] = routine_dtl.class_room.room_no
+                class_routine['building_name'] = routine_dtl.class_room.building
+                class_routine['floor'] = routine_dtl.class_room.floor_type.name
+                class_routine['start_time'] = routine_dtl.class_period.start_time
+                class_routine['end_time'] = routine_dtl.class_period.end_time
+                class_routine['teacher'] = routine_dtl.teacher.first_name +' '+routine_dtl.teacher.last_name
+                # class_routine['time_slot'] = f"{str(routine_dtl.class_period.start_time) +'-'+str(routine_dtl.class_period.end_time)}"
+                class_routines.append(class_routine)
+            dashboard_data['today_class_routine'] = class_routines
+            dashboard_data['teacher_list'] = []
+            teacher_lists = []
+            class_teacher = ClassTeacher.objects.filter(status=True,institution=institution_id, branch=branch_id,session=std_enroll.session,version=std_enroll.version,class_name=std_enroll.class_name,section=std_enroll.section).last()
+            for teacher in ClassRoutiineDtl.objects.filter(class_routine_mst=routine_mst,status=True,institution=institution_id, branch=branch_id):
+                teacher_info = {}
+                if class_teacher.teacher.id == teacher.teacher.id:
+                    teacher_info['class_teacher'] = True
+                else:
+                    teacher_info['class_teacher'] = False
+                teacher_info['name'] = teacher.teacher.first_name +' '+teacher.teacher.last_name
+                teacher_info['subject'] = teacher.subject.code +' - '+teacher.subject.name
+                teacher_info['phone'] = teacher.teacher.mobile_no
+                teacher_lists.append(teacher_info)
+            dashboard_data['teacher_list'] = teacher_lists
+            if ProcessStAttendanceDaily.objects.filter(student=user_info,status=True,is_active=True,institution=institution_id, branch=branch_id).exists():
+                dashboard_data['attendance_list'] = []
+                attn_lists = []
+                for std_attn in ProcessStAttendanceDaily.objects.filter(student=user_info,status=True,is_active=True,institution=institution_id, branch=branch_id).order_by('-attn_date'):
+                    attn_list = {}
+                    if std_attn.in_time:
+                        in_time = (std_attn.in_time.time())
+                    else:
+                        in_time = None
+                    if std_attn.out_time:
+                        out_time = (std_attn.out_time.time())
+                    else:
+                        out_time = None
+                    attn_list['date'] = std_attn.attn_date
+                    attn_list['shift'] = std_attn.shift.name
+                    attn_list['in_time'] = in_time
+                    attn_list['out_time'] = out_time
+                    attn_list['status'] = std_attn.attn_type.name
+                    attn_lists.append(attn_list)
+                dashboard_data['attendance_list'] = attn_lists
+
+        
+        return Response({
+            'code':200,
+            'message':'Success',
+            'error':[],
+            'data':dashboard_data},status=status.HTTP_200_OK)
 
 class UserV3LoginView(APIView):
     def post(self, request):
