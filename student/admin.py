@@ -21,7 +21,7 @@ class GuardianTabularInline(admin.TabularInline):
 
 class StudentEnrollTabularInline(admin.TabularInline):
     model = StudentEnroll
-    fields = ['version','session','class_name','group','section','roll','start_date','end_date','remarks','is_active','status']
+    fields = ['version','session','class_name','group','section','roll','start_date','end_date','remarks','is_active','status','institution','branch']
     extra = 0
 
 class ProcessStAttendanceDailyAdminTabularInline(admin.TabularInline):
@@ -32,6 +32,11 @@ class ProcessStAttendanceDailyAdminTabularInline(admin.TabularInline):
 class FeesTransactionAdminTabularInline(admin.TabularInline):
     model = FeesTransaction
     fields = ['fees_detail','payment_id','pay_method','pay_date','discount_type','discount_amt','fine_amt','fees_amt','pay_status']
+    extra = 0
+
+class StudentLeaveTransactionTabularInline(admin.TabularInline):
+    model = StudentLeaveTransaction
+    fields = ['start_date','end_date','app_status']
     extra = 0
 
 @admin_thumbnails.thumbnail('photo')
@@ -48,11 +53,11 @@ class StudentAdmin(admin.ModelAdmin):
     search_fields = ['code','first_name','last_name','dob','admission_date','blood_group']
     list_filter = ['blood_group']
 
-    # save_as = True
+    save_as = True
     save_on_top = True
     list_per_page = 15
 
-    inlines = [GuardianTabularInline,StudentEnrollTabularInline,ProcessStAttendanceDailyAdminTabularInline,FeesTransactionAdminTabularInline]
+    inlines = [GuardianTabularInline,StudentEnrollTabularInline,ProcessStAttendanceDailyAdminTabularInline,StudentLeaveTransactionTabularInline,FeesTransactionAdminTabularInline]
     
     class Meta:
         model = Student
