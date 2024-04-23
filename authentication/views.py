@@ -12,6 +12,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from setup_app.models import Role,Permission,Menu
 from student.models import Student,Guardian,StudentEnroll,ProcessStAttendanceDaily,StudentLeaveTransaction
+from fees.models import FeesTransaction
 from django.db.models import Q
 from django.contrib.sites.shortcuts import get_current_site
 from datetime import datetime
@@ -372,6 +373,18 @@ class DashboardView(generics.ListAPIView):
                                 leave_list['status'] = None
                             leave_lists.append(leave_list)
                         std_list['leave_app_list'] = leave_lists
+                    # For Student Fees Information
+                    std_list['fees_trns'] = []
+                    if FeesTransaction.objects.filter(student=std_info.student,status=True,institution=institution_id, branch=branch_id).exists():
+                        fees_lists = []
+                        for fee_trns in FeesTransaction.objects.filter(student=std_info.student,status=True,institution=institution_id, branch=branch_id)[:12]:
+                            fees_list = {}
+                            fees_list['due_date'] = fee_trns.fees_detail.due_date
+                            fees_list['fees_type'] = fee_trns.fees_detail.fees_type.name
+                            fees_list['amount'] = fee_trns.fees_detail.amount
+                            fees_list['status'] = fee_trns.pay_status
+                            fees_lists.append(fees_list)
+                        std_list['fees_trns'] = fees_lists
                 std_lists.append(std_list)
             dashboard_data['student_info'] = std_lists
             
