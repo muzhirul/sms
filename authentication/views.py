@@ -291,8 +291,8 @@ class DashboardView(generics.ListAPIView):
                     std_list['image'] = None
                 std_list['basic_info'] = {}
                 # For Student Basic Information
-                if StudentEnroll.objects.filter(student=std_info.student,status=True,is_active=True,institution=institution_id, branch=branch_id).exists():
-                    std_enroll = StudentEnroll.objects.filter(student=std_info.student,status=True,is_active=True,institution=institution_id, branch=branch_id).order_by('-id').last()
+                if StudentEnroll.objects.filter(student=std_info.student,status=True,is_active=True,institution=std_info.student.institution, branch=std_info.student.branch).exists():
+                    std_enroll = StudentEnroll.objects.filter(student=std_info.student,status=True,is_active=True,institution=std_info.student.institution, branch=std_info.student.branch).order_by('-id').last()
                     session_name = std_enroll.session.session
                     version_name = std_enroll.version.version
                     class_name = std_enroll.class_name.name
@@ -306,10 +306,10 @@ class DashboardView(generics.ListAPIView):
                     # For Current day Student Class Routiine
                     std_list['today_class_routine'] = []
                     day_name = datetime.now().date().strftime('%A').lower()
-                    day_id = Days.objects.filter(status=True,long_name__iexact=day_name,institution=institution_id, branch=branch_id).last()
-                    routine_mst = ClassRoutineMst.objects.filter(session=std_enroll.session,version=std_enroll.version,class_name=std_enroll.class_name,section=std_enroll.section,status=True,institution=institution_id, branch=branch_id).last()
+                    day_id = Days.objects.filter(status=True,long_name__iexact=day_name,institution=std_info.student.institution, branch=std_info.student.branch).last()
+                    routine_mst = ClassRoutineMst.objects.filter(session=std_enroll.session,version=std_enroll.version,class_name=std_enroll.class_name,section=std_enroll.section,status=True,institution=std_info.student.institution, branch=std_info.student.branch).last()
                     class_routines = []
-                    for routine_dtl in ClassRoutiineDtl.objects.filter(class_routine_mst=routine_mst,status=True,institution=institution_id, branch=branch_id,day=day_id):
+                    for routine_dtl in ClassRoutiineDtl.objects.filter(class_routine_mst=routine_mst,status=True,institution=std_info.student.institution, branch=std_info.student.branch,day=day_id):
                         class_routine = {}
                         class_routine['subject'] = routine_dtl.subject.name
                         class_routine['room_no'] = routine_dtl.class_room.room_no
@@ -324,8 +324,8 @@ class DashboardView(generics.ListAPIView):
                     # For Teacher List
                     std_list['teacher_list'] = []
                     teacher_lists = []
-                    class_teacher = ClassTeacher.objects.filter(status=True,institution=institution_id, branch=branch_id,session=std_enroll.session,version=std_enroll.version,class_name=std_enroll.class_name,section=std_enroll.section).last()
-                    for teacher in ClassRoutiineDtl.objects.filter(class_routine_mst=routine_mst,status=True,institution=institution_id, branch=branch_id):
+                    class_teacher = ClassTeacher.objects.filter(status=True,institution=std_info.student.institution, branch=std_info.student.branch,session=std_enroll.session,version=std_enroll.version,class_name=std_enroll.class_name,section=std_enroll.section).last()
+                    for teacher in ClassRoutiineDtl.objects.filter(class_routine_mst=routine_mst,status=True,institution=std_info.student.institution, branch=std_info.student.branch):
                         teacher_info = {}
                         if class_teacher and class_teacher.teacher.id == teacher.teacher.id:
                             teacher_info['class_teacher'] = True
@@ -338,9 +338,9 @@ class DashboardView(generics.ListAPIView):
                     std_list['teacher_list'] = teacher_lists
                     # For Attendance List
                     std_list['attendance_list'] = []
-                    if ProcessStAttendanceDaily.objects.filter(student=std_info.student,status=True,is_active=True,institution=institution_id, branch=branch_id).exists():
+                    if ProcessStAttendanceDaily.objects.filter(student=std_info.student,status=True,is_active=True,institution=std_info.student.institution, branch=std_info.student.branch).exists():
                         attn_lists = []
-                        for std_attn in ProcessStAttendanceDaily.objects.filter(student=std_info.student,status=True,is_active=True,institution=institution_id, branch=branch_id).order_by('-attn_date')[:30]:
+                        for std_attn in ProcessStAttendanceDaily.objects.filter(student=std_info.student,status=True,is_active=True,institution=std_info.student.institution, branch=std_info.student.branch).order_by('-attn_date')[:30]:
                             attn_list = {}
                             if std_attn.in_time:
                                 in_time = (std_attn.in_time.time())
@@ -359,9 +359,9 @@ class DashboardView(generics.ListAPIView):
                         std_list['attendance_list'] = attn_lists
                     # For Student Leave Transaction
                     std_list['leave_app_list'] = []
-                    if StudentLeaveTransaction.objects.filter(apply_by=std_info.student,status=True,institution=institution_id, branch=branch_id).exists():
+                    if StudentLeaveTransaction.objects.filter(apply_by=std_info.student,status=True,institution=std_info.student.institution, branch=std_info.student.branch).exists():
                         leave_lists = []
-                        for leave_trns in StudentLeaveTransaction.objects.filter(apply_by=std_info.student,status=True,institution=institution_id, branch=branch_id).order_by('-start_date')[:30]:
+                        for leave_trns in StudentLeaveTransaction.objects.filter(apply_by=std_info.student,status=True,institution=std_info.student.institution, branch=std_info.student.branch).order_by('-start_date')[:30]:
                             leave_list = {}
                             leave_list['start_date'] = leave_trns.start_date
                             leave_list['end_date'] = leave_trns.end_date
@@ -375,9 +375,9 @@ class DashboardView(generics.ListAPIView):
                         std_list['leave_app_list'] = leave_lists
                     # For Student Fees Information
                     std_list['fees_trns'] = []
-                    if FeesTransaction.objects.filter(student=std_info.student,status=True,institution=institution_id, branch=branch_id).exists():
+                    if FeesTransaction.objects.filter(student=std_info.student,status=True,institution=std_info.student.institution, branch=std_info.student.branch).exists():
                         fees_lists = []
-                        for fee_trns in FeesTransaction.objects.filter(student=std_info.student,status=True,institution=institution_id, branch=branch_id)[:12]:
+                        for fee_trns in FeesTransaction.objects.filter(student=std_info.student,status=True,institution=std_info.student.institution, branch=std_info.student.branch)[:12]:
                             fees_list = {}
                             fees_list['due_date'] = fee_trns.fees_detail.due_date
                             fees_list['fees_type'] = fee_trns.fees_detail.fees_type.name
