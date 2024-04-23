@@ -270,7 +270,7 @@ class DashboardView(generics.ListAPIView):
             dashboard_data['basic_info']['first_name'] = user_info.first_name
             dashboard_data['basic_info']['last_name'] = user_info.last_name
             dashboard_data['basic_info']['username'] = user_info.guardian_no
-            dashboard_data['basic_info']['nid'] = user_info.nid
+            # dashboard_data['basic_info']['nid'] = user_info.nid
             dashboard_data['basic_info']['role'] = 'Guardian'
             if user_info.photo:
                 dashboard_data['basic_info']['image'] = SITE_PROTOCOL+current_site + '/media/'+str(user_info.photo)
