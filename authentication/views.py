@@ -11,6 +11,7 @@ from academic.models import *
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from setup_app.models import Role,Permission,Menu
+from staff.models import ProcessAttendanceDaily,StaffLeaveTransaction
 from student.models import Student,Guardian,StudentEnroll,ProcessStAttendanceDaily,StudentLeaveTransaction
 from fees.models import FeesTransaction
 from django.db.models import Q
@@ -164,6 +165,10 @@ class DashboardView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         dashboard_data = {}
         dashboard_data['basic_info'] = {}
+        day_name = datetime.now().date().strftime('%A').lower()
+        current_date = datetime.now().date()
+        print(day_name)
+        print(current_date)
         SITE_PROTOCOL = 'http://'
         if request.is_secure():
             SITE_PROTOCOL = 'https://'
@@ -197,7 +202,6 @@ class DashboardView(generics.ListAPIView):
             dashboard_data['basic_info']['role'] = 'Student'
             # For Current day Student Class Routiine
             dashboard_data['today_class_routine'] = []
-            day_name = datetime.now().date().strftime('%A').lower()
             day_id = Days.objects.filter(status=True,long_name__iexact=day_name,institution=institution_id, branch=branch_id).last()
             routine_mst = ClassRoutineMst.objects.filter(session=std_enroll.session,version=std_enroll.version,class_name=std_enroll.class_name,section=std_enroll.section,status=True,institution=institution_id, branch=branch_id).last()
             class_routines = []
@@ -387,10 +391,94 @@ class DashboardView(generics.ListAPIView):
                         std_list['fees_trns'] = fees_lists
                 std_lists.append(std_list)
             dashboard_data['student_info'] = std_lists
-            
-
-
-        
+        elif Staff.objects.filter(user=self.request.user.id,institution=institution_id, branch=branch_id,status=True).exists():
+            user_info = Staff.objects.get(user=self.request.user.id,status=True)
+            dashboard_data['basic_info']['first_name'] = user_info.first_name
+            dashboard_data['basic_info']['last_name'] = user_info.last_name
+            dashboard_data['basic_info']['username'] = user_info.staff_id
+            # dashboard_data['basic_info']['nid'] = user_info.nid
+            dashboard_data['basic_info']['role'] = user_info.role.name
+            dashboard_data['basic_info']['shift'] = user_info.shift.name
+            if user_info.photo:
+                dashboard_data['basic_info']['image'] = SITE_PROTOCOL+current_site + '/media/'+str(user_info.photo)
+            else:
+                dashboard_data['basic_info']['image'] = None
+            dashboard_data['basic_info']['total_student'] = 0
+            dashboard_data['basic_info']['total_present'] = 0
+            dashboard_data['basic_info']['total_absent'] = 0
+            if ClassTeacher.objects.filter(status=True,institution=institution_id, branch=branch_id,teacher=user_info).exists():
+                class_info = ClassTeacher.objects.filter(status=True,institution=institution_id, branch=branch_id,teacher=user_info).last()
+                student_count = StudentEnroll.objects.filter(student__shift=user_info.shift,is_active=True,status=True,session=class_info.session,version=class_info.version,class_name=class_info.class_name,section=class_info.section).count()
+                dashboard_data['basic_info']['total_student'] = student_count
+                std_ids = []
+                if student_count > 0:
+                    for student_info in StudentEnroll.objects.filter(student__shift=user_info.shift,is_active=True,status=True,session=class_info.session,version=class_info.version,class_name=class_info.class_name,section=class_info.section):
+                        std_ids.append(student_info.student.id)
+                    total_present = ProcessStAttendanceDaily.objects.filter(shift=user_info.shift,attn_type__name__in=['Present', 'Late'],status=True,is_active=True,student__in=std_ids,attn_date=current_date).count()
+                    total_absent = ProcessStAttendanceDaily.objects.filter(shift=user_info.shift,attn_type__name__in=['Absent'],status=True,is_active=True,student__in=std_ids,attn_date=current_date).count()
+                    dashboard_data['basic_info']['total_present'] = total_present
+                    dashboard_data['basic_info']['total_absent'] = total_absent
+            day_id = Days.objects.filter(status=True,long_name__iexact=day_name,institution=institution_id, branch=branch_id).last()
+            dashboard_data['today_class_routine'] = []
+            class_routines = []
+            for routine_dtl in ClassRoutiineDtl.objects.filter(teacher=user_info,status=True,institution=institution_id, branch=branch_id,day=day_id).order_by('class_period__start_time'):
+                class_routine = {}
+                class_routine['start_time'] = routine_dtl.class_period.start_time
+                class_routine['end_time'] = routine_dtl.class_period.end_time
+                class_routine['subject'] = routine_dtl.subject.name
+                class_routine['class_name'] = routine_dtl.class_routine_mst.class_name.name
+                class_routine['section'] = routine_dtl.class_routine_mst.section.section
+                class_routine['version'] = routine_dtl.class_routine_mst.version.version
+                if routine_dtl.class_routine_mst.group:
+                    class_routine['group'] = routine_dtl.class_routine_mst.group.name
+                else:
+                    class_routine['group'] = None
+                class_routine['room_no'] = routine_dtl.class_room.room_no
+                class_routine['buildingg'] = routine_dtl.class_room.building
+                cls_present = ProcessStAttendanceDaily.objects.filter(session=routine_dtl.class_routine_mst.session,version=routine_dtl.class_routine_mst.version,class_name=routine_dtl.class_routine_mst.class_name,section=routine_dtl.class_routine_mst.section,attn_type__name__in=['Present', 'Late'],status=True,is_active=True,attn_date=current_date).count()
+                cls_absent = ProcessStAttendanceDaily.objects.filter(session=routine_dtl.class_routine_mst.session,version=routine_dtl.class_routine_mst.version,class_name=routine_dtl.class_routine_mst.class_name,section=routine_dtl.class_routine_mst.section,attn_type__name__in=['Absent'],status=True,is_active=True,attn_date=current_date).count()
+                class_routine['present'] = cls_present
+                class_routine['absent'] = cls_absent
+                class_routines.append(class_routine)
+            dashboard_data['today_class_routine'] = class_routines
+            # For Attendance List
+            dashboard_data['attendance_list'] = []
+            if ProcessAttendanceDaily.objects.filter(staff=user_info,status=True,is_active=True,institution=institution_id, branch=branch_id).exists():
+                attn_lists = []
+                for std_attn in ProcessAttendanceDaily.objects.filter(staff=user_info,status=True,is_active=True,institution=institution_id, branch=branch_id).order_by('-attn_date')[:30]:
+                    attn_list = {}
+                    if std_attn.in_time:
+                        in_time = (std_attn.in_time.time())
+                    else:
+                        in_time = None
+                    if std_attn.out_time:
+                        out_time = (std_attn.out_time.time())
+                    else:
+                        out_time = None
+                    attn_list['date'] = std_attn.attn_date
+                    attn_list['shift'] = std_attn.shift.name
+                    attn_list['in_time'] = in_time
+                    attn_list['out_time'] = out_time
+                    attn_list['status'] = std_attn.attn_type.name
+                    attn_lists.append(attn_list)
+                dashboard_data['attendance_list'] = attn_lists
+            # For Student Leave Transaction
+            dashboard_data['leave_app_list'] = []
+            if StaffLeaveTransaction.objects.filter(apply_by=user_info,status=True,institution=institution_id, branch=branch_id).exists():
+                leave_lists = []
+                for leave_trns in StaffLeaveTransaction.objects.filter(apply_by=user_info,status=True,institution=institution_id, branch=branch_id).order_by('-start_date')[:30]:
+                    leave_list = {}
+                    leave_list['start_date'] = leave_trns.start_date
+                    leave_list['end_date'] = leave_trns.end_date
+                    leave_list['duration'] = leave_trns.day_count
+                    leave_list['leave_type'] = leave_trns.leave_type.name
+                    leave_list['reason'] = leave_trns.reason_for_leave
+                    if leave_trns.app_status:
+                        leave_list['status'] = leave_trns.app_status.title
+                    else:
+                        leave_list['status'] = None
+                    leave_lists.append(leave_list)
+                dashboard_data['leave_app_list'] = leave_lists        
         return Response({
             'code':200,
             'message':'Success',
