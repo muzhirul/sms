@@ -144,3 +144,31 @@ class NoticeBoardDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Notice {instance.title} Delete successfully", data=None)
 
+class NoticeBoardFileUpload(generics.UpdateAPIView):
+    queryset = NoticeBoard.objects.filter(status=True)
+    serializer_class = NoticeBoardCreateSerializers
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(
+        #     self.request.user.id, 'Student Admission', 'create')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        # Retrieve the instance
+        instance = self.get_object()
+
+        # Get the image data from the request
+        file_data = request.data.get('attachment', None)
+
+        # Validate and update the image field
+        if file_data:
+            instance.attachment = file_data
+            instance.save()
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Notice Board file Update successfully", data=None)
+        return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"No File for Update", data=None)
+
+
+
