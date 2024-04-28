@@ -13,7 +13,7 @@ class NoticeBoard(models.Model):
     title = models.CharField(max_length=100)
     notice_date = models.DateField()
     publish_date = models.DateField()
-    attachment = models.FileField(upload_to='notice_board/',validators=[validate_file_size])
+    attachment = models.FileField(upload_to='notice_board/',blank=True,null=True,validators=[validate_file_size])
     description = models.TextField()
     notice_for = models.ManyToManyField(Role)
     status = models.BooleanField(default=True)
