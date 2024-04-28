@@ -14,6 +14,7 @@ from setup_app.models import Role,Permission,Menu
 from staff.models import ProcessAttendanceDaily,StaffLeaveTransaction
 from student.models import Student,Guardian,StudentEnroll,ProcessStAttendanceDaily,StudentLeaveTransaction
 from fees.models import FeesTransaction
+from communicate.models import NoticeBoard
 from django.db.models import Q
 from django.contrib.sites.shortcuts import get_current_site
 from datetime import datetime
@@ -418,6 +419,18 @@ class DashboardView(generics.ListAPIView):
                     total_absent = ProcessStAttendanceDaily.objects.filter(shift=user_info.shift,attn_type__name__in=['Absent'],status=True,is_active=True,student__in=std_ids,attn_date=current_date).count()
                     dashboard_data['basic_info']['total_present'] = total_present
                     dashboard_data['basic_info']['total_absent'] = total_absent
+            dashboard_data['notice_board'] = []   
+            notice_boards = []
+            for notice in NoticeBoard.objects.filter(status=True,is_active=True,institution=institution_id, branch=branch_id,notice_for=user_info.role).order_by('-notice_date'):
+                notice_board = {}
+                notice_board['title'] = notice.title
+                notice_board['publish_date'] = notice.publish_date
+                if notice.attachment:
+                    notice_board['file'] = SITE_PROTOCOL+current_site + '/media/'+str(notice.attachment)
+                else:
+                    notice_board['file'] = None
+                notice_boards.append(notice_board)
+            dashboard_data['notice_board'] = notice_boards
             day_id = Days.objects.filter(status=True,long_name__iexact=day_name,institution=institution_id, branch=branch_id).last()
             dashboard_data['today_class_routine'] = []
             class_routines = []
