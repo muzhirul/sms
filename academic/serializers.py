@@ -93,7 +93,7 @@ class SubjectListViewSerializer(serializers.ModelSerializer):
     type = SubjectTypeSerializer(read_only=True)
     class Meta:
         model = Subject
-        fields = ['id','name','type']
+        fields = ['id','code','name','type']
     
     def to_representation(self, instance):
         # Only include instances where status is True
