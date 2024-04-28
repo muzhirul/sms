@@ -6,7 +6,7 @@ class NoticeBoardViewSerializers(serializers.ModelSerializer):
     notice_for = RoleSerializer(read_only=True,many=True)
     class Meta:
         model = NoticeBoard
-        fields = ['id','title','notice_date','publish_date','attachment','description','notice_for','status','is_active']
+        fields = ['id','title','notice_date','publish_date','attachment','description','notice_for','is_active']
 
     def to_representation(self, instance):
         if instance.status:
