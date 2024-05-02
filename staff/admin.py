@@ -25,13 +25,19 @@ class StaffSocialMediaTabularInline(admin.TabularInline):
 
 class StaffLeaveTabulrInline(admin.TabularInline):
     model = StaffLeave
-    fields = ['leave_type','leave_days','taken_days','start_date','end_date','institution','branch','is_active','status']
+    fields = ['leave_type','leave_days','process_days','taken_days','start_date','end_date','institution','branch','is_active','status']
     extra = 1
 
 class ProcessAttendanceDailyAdminTabularInline(admin.TabularInline):
     model = ProcessAttendanceDaily
     fields = ['attn_date','shift','in_time','out_time','duration','attn_type','late_by_min','early_gone_by_min']
     extra = 0
+
+class StaffLeaveTransactionAdminTabularInline(admin.TabularInline):
+    model = StaffLeaveTransaction
+    fields = ['leave_type','start_date','end_date','is_active','status']
+    extra = 0
+    fk_name = 'apply_by'  # Specify the foreign key field name
 
     
 @admin_thumbnails.thumbnail('photo')
@@ -46,7 +52,7 @@ class StaffAdmin(admin.ModelAdmin):
     class Meta:
         model = Staff
     
-    inlines = [EducationTabularInline,PayrollTabularInline,BankAccountDetailsTabularInline,StaffSocialMediaTabularInline,StaffLeaveTabulrInline,ProcessAttendanceDailyAdminTabularInline]
+    inlines = [EducationTabularInline,PayrollTabularInline,BankAccountDetailsTabularInline,StaffSocialMediaTabularInline,StaffLeaveTabulrInline,StaffLeaveTransactionAdminTabularInline,ProcessAttendanceDailyAdminTabularInline]
 
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ['name','dept_ord']

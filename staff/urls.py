@@ -43,4 +43,6 @@ urlpatterns = [
     path('api/leave-trns/all', StaffLeaveTrnsAlllLst.as_view(), name='staff-leave-transaction-all-list'),
     path('api/personal/leave-trns', StaffLeaveTrnsPersonallLst.as_view(), name='staff-leave-transaction-personal-list'),
     path('api/leave-trns/<str:staff_id>', StaffLeaveTrnslLst.as_view(), name='staff-leave-transaction-list'),
+    # Staff Leave Type base on assign 
+    path('api/leave-type/list', StaffLeaveTypeList.as_view(), name='staff-leave-type-list'),
 ]

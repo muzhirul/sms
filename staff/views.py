@@ -13,6 +13,8 @@ from datetime import datetime
 from django.db.models import Min, Max
 from django.db.models.functions import Coalesce
 from django.db.models import F
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 # Create your views here.
 
 class StaffDepartmentList(generics.ListAPIView):
@@ -1278,17 +1280,46 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
-                apply_by = serializer.validated_data.get('apply_by')
-                start_date = serializer.validated_data.get('start_date')
-                end_date = serializer.validated_data.get('end_date')
-                if start_date > end_date:
-                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="End date must be greater than or equal to start date", data=None)
-                # version = serializer.validated_data.get('version')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
+                apply_by = serializer.validated_data.get('apply_by')
+                leave_type = serializer.validated_data.get('leave_type')
+                if not apply_by:
+                    username = self.request.user
+                    apply_by = Staff.objects.get(staff_id=username,status=True)
+                leave_remain_days = 0
+                staff_leave_counnt = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch).count()
+                if staff_leave_counnt == 0:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Leave is not assign", data=None)
+                for leave_status in StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch).order_by('id'):
+                    staff_leave_id = leave_status.id
+                    leave_day = leave_status.leave_days
+                    proces_day = leave_status.process_days
+                    taken_day = leave_status.taken_days
+                    leave_remain_days = leave_day - (taken_day+proces_day)
+                start_date = serializer.validated_data.get('start_date')
+                end_date = serializer.validated_data.get('end_date')
+                duration = 1 + (end_date - start_date).days
+                total_proces_day = proces_day + duration
+                leave_trns_count = StaffLeaveTransaction.objects.filter(Q(is_active=True) ,Q(status=True),Q(apply_by=apply_by),Q(institution=institution), Q(branch=branch),Q(start_date=start_date) | Q(end_date=end_date)).count()
+                if leave_trns_count > 0:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Leave Already Applied", data=None)
+                if duration > leave_remain_days:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="দুঃখিত!! আপনি ইতিমধ্যে সব গ্রহণ করেছেন", data=None)
+                if start_date > end_date:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="End date must be greater than or equal to start date", data=None)
+                # version = serializer.validated_data.get('version')
                 submit_status = Setup.objects.get(status=True,parent__type='APPROVAL_STATUS',type='SUBMITTED',institution=institution,branch=branch)
-                instance = serializer.save(app_status=submit_status,institution=institution, branch=branch)
+                instance = serializer.save(apply_by=apply_by,app_status=submit_status,institution=institution, branch=branch)
+                queryset = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch)
+                leave_date = get_object_or_404(queryset, pk=staff_leave_id)
+                data = {
+                    "process_days" : total_proces_day
+                }
+                leave_serializer = StaffLeaveCreateSerializer(leave_date,partial=True,data=data)
+                if leave_serializer.is_valid():
+                    leave_serializer.save()
                 app_groups = Setup.objects.filter(status=True,parent__type='STAFF_LEAVE_APP_HIR',institution=institution,branch=branch)
                 for app_group in app_groups:
                     if(app_group.type=='SUBMITTED'):
@@ -1607,5 +1638,54 @@ class StaffLeaveList(generics.ListAPIView):
                     "message": "Bad Request",
                     "data": None,
                 }
+
+        return Response(response_data)
+
+class StaffLeaveTypeList(generics.ListAPIView):
+    serializer_class = StaffLeaveListSerialier
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        staff_id = Staff.objects.get(status=True,user=self.request.user.id)
+        queryset = StaffLeave.objects.filter(status=True,is_active=True,staff=staff_id).order_by('-id')
+        try:
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(
+                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(
+                    branch=branch_id, status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(
+                    institution=institution_id, status=True).order_by('-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
 
         return Response(response_data)

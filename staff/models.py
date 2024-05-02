@@ -240,6 +240,7 @@ class StaffLeave(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='staff_leave')
     leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, blank=True, null=True,related_name='staff_leave_type')
     leave_days = models.IntegerField(default=0)
+    process_days = models.IntegerField(default=0)
     taken_days = models.IntegerField(default=0)
     start_date = models.DateField(blank=True,null=True)
     end_date = models.DateField(blank=True,null=True)

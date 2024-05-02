@@ -127,6 +127,24 @@ class StaffLeaveViewSerialier(serializers.ModelSerializer):
     class Meta:
         model = StaffLeave
         fields = ['leave_type','leave_days','taken_days','is_active']
+
+class StaffLeaveListSerialier(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    leave_type_code = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StaffLeave
+        fields = ['id', 'leave_type_code', 'name']
+
+    def get_id(self, obj):
+        return obj.leave_type.id
+
+    def get_leave_type_code(self, obj):
+        return obj.leave_type.leave_type_code
+
+    def get_name(self, obj):
+        return obj.leave_type.name
         
 class StaffTeacherSerializer(serializers.ModelSerializer):
     class Meta:
