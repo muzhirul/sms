@@ -41,5 +41,6 @@ urlpatterns = [
     path('api/leave-trns/detail/<int:pk>', staffLeaveTransactionUpdate.as_view(), name='staff-leave-transaction-update'), 
     path('api/leave/status/<str:staff_id>', staffLeaveStatusList.as_view(), name='staff-leave-status-list'),
     path('api/leave-trns/all', StaffLeaveTrnsAlllLst.as_view(), name='staff-leave-transaction-all-list'),
+    path('api/personal/leave-trns', StaffLeaveTrnsPersonallLst.as_view(), name='staff-leave-transaction-personal-list'),
     path('api/leave-trns/<str:staff_id>', StaffLeaveTrnslLst.as_view(), name='staff-leave-transaction-list'),
 ]
