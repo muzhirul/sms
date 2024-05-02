@@ -1383,6 +1383,22 @@ class staffLeaveTransactionUpdate(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
+class staffLeaveTransactionList(generics.RetrieveAPIView):
+    queryset = StaffLeaveTransaction.objects.all()
+    serializer_class = StaffLeaveTransactionListSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        permission_check = check_permission(self.request.user.id, 'Apply Leave', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=StaffLeaveTransactionListSerializer(instance).data)
+
 class staffLeaveStatusList(generics.ListAPIView):
     serializer_class = StaffLeaveViewSerialier
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access

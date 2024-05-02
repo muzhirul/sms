@@ -163,6 +163,25 @@ class StaffTeacherViewSerializer(serializers.ModelSerializer):
         else:
             return None
 
+class StaffLeaveAppHistoryViewSerializer(serializers.ModelSerializer):
+    approve_group = SetupViewSerializer(read_only=True)
+    approve_by = StaffTeacherViewSerializer(read_only=True)
+    app_status = SetupViewSerializer(read_only=True)
+    class Meta:
+        model = StaffLeaveAppHistory
+        exclude = ['status','is_active','leave_trns','created_at','updated_at','created_by','updated_by','institution','branch']
+
+class StaffLeaveTransactionListSerializer(serializers.ModelSerializer):
+    leave_type = LeaveTypeView2Serializer(read_only=True)
+    apply_by = StaffTeacherViewSerializer(read_only=True)
+    app_status = SetupViewSerializer(read_only=True)
+    responsible = StaffTeacherViewSerializer(read_only=True)
+    approval_path = StaffLeaveAppHistoryViewSerializer(read_only=True,many=True)
+
+    class Meta:
+        model = StaffLeaveTransaction
+        exclude = ['status']
+
 class StaffLeaveTransactionViewSerializer(serializers.ModelSerializer):
     leave_type = LeaveTypeView2Serializer(read_only=True)
     apply_by = StaffTeacherViewSerializer(read_only=True)

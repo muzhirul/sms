@@ -449,12 +449,12 @@ def calculate_duration(sender, instance, **kwargs):
 #     print(leave_status.taken_days)
 
 class StaffLeaveAppHistory(models.Model):
-    leave_trns = models.ForeignKey(StaffLeaveTransaction, on_delete=models.SET_NULL,blank=True,null=True)
+    leave_trns = models.ForeignKey(StaffLeaveTransaction, on_delete=models.SET_NULL,blank=True,null=True,related_name='approval_path')
     approve_group = models.ForeignKey(Setup, on_delete=models.SET_NULL,blank=True,null=True,limit_choices_to={'parent__type': 'STAFF_LEAVE_APP_HIR'},related_name='app_group')
     approve_by = models.ForeignKey(Staff, on_delete=models.SET_NULL,blank=True,null=True)
     app_status = models.ForeignKey(Setup, on_delete=models.SET_NULL,blank=True, null=True,limit_choices_to={'parent__type': 'APPROVAL_STATUS'},related_name='app_status')
     remarks = models.TextField(blank=True,null=True)
-    approve_date = models.DateTimeField(auto_now_add=True)
+    approve_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')

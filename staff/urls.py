@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/leave/balance/list', StaffLeaveList.as_view(), name='staff-leave-list'),
     path('api/leave-trns/create', staffLeaveTransactionCreate.as_view(), name='staff-leave-transaction-create'), 
     path('api/leave-trns/detail/<int:pk>', staffLeaveTransactionUpdate.as_view(), name='staff-leave-transaction-update'), 
+    path('api/leave-trns/view/<int:pk>', staffLeaveTransactionList.as_view(), name='staff-leave-transaction-List'), 
     path('api/leave/status/<str:staff_id>', staffLeaveStatusList.as_view(), name='staff-leave-status-list'),
     path('api/leave-trns/all', StaffLeaveTrnsAlllLst.as_view(), name='staff-leave-transaction-all-list'),
     path('api/personal/leave-trns', StaffLeaveTrnsPersonallLst.as_view(), name='staff-leave-transaction-personal-list'),
