@@ -155,7 +155,7 @@ class StaffTeacherViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Staff
-        fields = ['id','name','staff_id']
+        fields = ['id','name','staff_id','mobile_no']
         
     def to_representation(self, instance):
         if instance.status:

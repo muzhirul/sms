@@ -1285,6 +1285,7 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
                 branch = branch_data if branch_data is not None else self.request.user.branch
                 apply_by = serializer.validated_data.get('apply_by')
                 leave_type = serializer.validated_data.get('leave_type')
+                responsible = serializer.validated_data.get('responsible')
                 if not apply_by:
                     username = self.request.user
                     apply_by = Staff.objects.get(staff_id=username,status=True)
@@ -1302,7 +1303,7 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
                 end_date = serializer.validated_data.get('end_date')
                 duration = 1 + (end_date - start_date).days
                 total_proces_day = proces_day + duration
-                leave_trns_count = StaffLeaveTransaction.objects.filter(Q(is_active=True) ,Q(status=True),Q(apply_by=apply_by),Q(institution=institution), Q(branch=branch),Q(start_date=start_date) | Q(end_date=end_date)).count()
+                leave_trns_count = StaffLeaveTransaction.objects.filter(Q(is_active=True) ,Q(status=True),Q(apply_by=apply_by),Q(institution=institution), Q(branch=branch),Q(start_date__range=(start_date, end_date)) | Q(end_date__range=(start_date, end_date))).count()
                 if leave_trns_count > 0:
                     return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Leave Already Applied", data=None)
                 if duration > leave_remain_days:
@@ -1325,7 +1326,7 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
                     if(app_group.type=='SUBMITTED'):
                         StaffLeaveAppHistory.objects.create(app_status=submit_status,leave_trns=instance,approve_by=apply_by,approve_group=app_group,institution=institution, branch=branch)
                     else:
-                        StaffLeaveAppHistory.objects.create(leave_trns=instance,approve_group=app_group,institution=institution, branch=branch)
+                        StaffLeaveAppHistory.objects.create(approve_by=responsible,leave_trns=instance,approve_group=app_group,institution=institution, branch=branch)
                     # Customize the response data
                 return CustomResponse(code=status.HTTP_200_OK, message="Leave created successfully", data=StaffLeaveTransactionViewSerializer(instance).data)
                 # return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Version {version} already exits", data=serializer.errors)
@@ -1366,16 +1367,78 @@ class staffLeaveTransactionUpdate(generics.RetrieveUpdateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
-                start_date = serializer.validated_data.get('start_date')
-                end_date = serializer.validated_data.get('end_date')
-                if start_date > end_date:
-                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="End date must be greater than or equal to start date", data=None)
-                # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                instance = serializer.save()
-                    # Customize the response data
-                return CustomResponse(code=status.HTTP_200_OK, message="Leave Updated successfully", data=StaffLeaveTransactionViewSerializer(instance).data)
+                start_date = serializer.validated_data.get('start_date')
+                end_date = serializer.validated_data.get('end_date')
+                leave_type = serializer.validated_data.get('leave_type')
+                apply_by = serializer.validated_data.get('apply_by')
+                print(instance.id)
+                # Check applied user is same or not
+                if (apply_by != instance.apply_by):
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Sorry! You can't change leave person.", data=None)
+                # Check Start date < end Date
+                if start_date > end_date:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="End date must be greater than or equal to start date", data=None)
+                # start date , end date and leave type is same
+                if (start_date==instance.start_date and end_date==instance.end_date and leave_type == instance.leave_type):
+                    instance = serializer.save()
+                    return CustomResponse(code=status.HTTP_200_OK, message="Leave Updated successfully", data=StaffLeaveTransactionViewSerializer(instance).data)
+                # Check if leave was applied during those date
+                leave_trns_count = StaffLeaveTransaction.objects.filter(Q(is_active=True),(~Q(id=instance.id)),Q(status=True),Q(apply_by=apply_by),Q(institution=institution), Q(branch=branch),Q(start_date__range=(start_date, end_date)) | Q(end_date__range=(start_date, end_date))).count()
+                if leave_trns_count > 0:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Leave Already Applied", data=None) 
+                if ((start_date!=instance.start_date or end_date!=instance.end_date) and leave_type == instance.leave_type):
+                    duration = 1 + (end_date - start_date).days
+                    old_duration = 1 + (instance.end_date - instance.start_date).days
+                    staff_leave = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch).order_by('-id').last()
+                    process_days = staff_leave.process_days
+                    queryset = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch)
+                    leave_date = get_object_or_404(queryset, pk=staff_leave.id)
+                    duration_diff = (duration-old_duration)
+                    new_duration = process_days + duration_diff
+                    instance = serializer.save()
+                    data = {
+                       "process_days" : new_duration
+                    }
+                    leave_serializer = StaffLeaveCreateSerializer(leave_date,partial=True,data=data)
+                    if leave_serializer.is_valid():
+                        leave_serializer.save()
+                    return CustomResponse(code=status.HTTP_200_OK, message="Leave Updated successfully", data=StaffLeaveTransactionViewSerializer(instance).data)
+                if (leave_type != instance.leave_type):
+                    staff_leave_old = StaffLeave.objects.filter(staff=apply_by,leave_type=instance.leave_type,is_active=True,status=True,institution=institution, branch=branch).order_by('-id').last()
+                    process_days_old = staff_leave_old.process_days
+                    duration = 1 + (end_date - start_date).days
+                    old_duration = 1 + (instance.end_date - instance.start_date).days
+                    queryset_old = StaffLeave.objects.filter(staff=apply_by,leave_type=instance.leave_type,is_active=True,status=True,institution=institution, branch=branch)
+                    leave_date_old = get_object_or_404(queryset_old, pk=staff_leave_old.id)
+                    new_duration = (process_days_old-old_duration)
+                    data_old = {
+                        "process_days" : new_duration
+                        }
+                    leave_serializer_old = StaffLeaveCreateSerializer(leave_date_old,partial=True,data=data_old)
+                    if leave_serializer_old.is_valid():
+                        leave_serializer_old.save()
+
+                    duration = 1 + (end_date - start_date).days
+                    old_duration = 1 + (instance.end_date - instance.start_date).days
+                    staff_leave = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch).order_by('-id').last()
+                    process_days = staff_leave.process_days
+                    queryset = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch)
+                    leave_date = get_object_or_404(queryset, pk=staff_leave.id)
+                    duration_diff = (duration-old_duration)
+                    new_duration = process_days + duration
+                    # instance = serializer.save()
+                    data = {
+                       "process_days" : new_duration
+                    }
+                    leave_serializer = StaffLeaveCreateSerializer(leave_date,partial=True,data=data)
+                    if leave_serializer.is_valid():
+                        leave_serializer.save()
+                    
+                    instance = serializer.save()
+                    return CustomResponse(code=status.HTTP_200_OK, message="Leave Updated successfully", data=StaffLeaveTransactionViewSerializer(instance).data)
+                
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)

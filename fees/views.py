@@ -500,7 +500,7 @@ class FeesTrnsManualEntry(generics.ListAPIView):
         student_enrolls = StudentEnroll.objects.filter(status=True,is_active=True).order_by('id')
         for enroll in student_enrolls:
             # print(enroll.student.id,enroll.class_name,enroll.section,enroll.session,enroll.version,enroll.group)
-            fees_lists = FeesDetails.objects.filter(status=True,is_active=True,fees_master__version=enroll.version,fees_master__class_name=enroll.class_name,fees_master__section=enroll.section,fees_master__session=enroll.session)
+            fees_lists = FeesDetails.objects.filter(status=True,is_active=True,fees_master__version=enroll.version,fees_master__class_name=enroll.class_name,fees_master__section=enroll.section,fees_master__session=enroll.session,institution=enroll.institution,branch=enroll.branch)
             for fees_list in fees_lists:
                 std_fees_trns['student'] = enroll.student
                 std_fees_trns['fees_detail'] = fees_list
