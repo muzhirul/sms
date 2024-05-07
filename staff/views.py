@@ -1289,6 +1289,8 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
                 if not apply_by:
                     username = self.request.user
                     apply_by = Staff.objects.get(staff_id=username,status=True)
+                if apply_by==responsible:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="আপনি নিজেকে নিজে দায়িত্বশীল ব্যক্তি হিসাবে সেট করতে পারবেন না।", data=None)
                 leave_remain_days = 0
                 staff_leave_counnt = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch).count()
                 if staff_leave_counnt == 0:
@@ -1307,7 +1309,7 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
                 if leave_trns_count > 0:
                     return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Leave Already Applied", data=None)
                 if duration > leave_remain_days:
-                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="দুঃখিত!! আপনি ইতিমধ্যে সব গ্রহণ করেছেন", data=None)
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="দুঃখিত!! আপনি ইতিমধ্যে সব ছুটি গ্রহণ করেছেন", data=None)
                 if start_date > end_date:
                     return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="End date must be greater than or equal to start date", data=None)
                 # version = serializer.validated_data.get('version')
@@ -1324,7 +1326,7 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
                 app_groups = Setup.objects.filter(status=True,parent__type='STAFF_LEAVE_APP_HIR',institution=institution,branch=branch)
                 for app_group in app_groups:
                     if(app_group.type=='SUBMITTED'):
-                        StaffLeaveAppHistory.objects.create(app_status=submit_status,leave_trns=instance,approve_by=apply_by,approve_group=app_group,institution=institution, branch=branch)
+                        StaffLeaveAppHistory.objects.create(app_status=submit_status,approve_date=datetime.now(),leave_trns=instance,approve_by=apply_by,approve_group=app_group,institution=institution, branch=branch)
                     else:
                         StaffLeaveAppHistory.objects.create(approve_by=responsible,leave_trns=instance,approve_group=app_group,institution=institution, branch=branch)
                     # Customize the response data
@@ -1373,7 +1375,15 @@ class staffLeaveTransactionUpdate(generics.RetrieveUpdateAPIView):
                 end_date = serializer.validated_data.get('end_date')
                 leave_type = serializer.validated_data.get('leave_type')
                 apply_by = serializer.validated_data.get('apply_by')
-                print(instance.id)
+                responsible = serializer.validated_data.get('responsible')
+                if not apply_by:
+                    username = self.request.user
+                    apply_by = Staff.objects.get(staff_id=username,status=True)
+                if apply_by==responsible:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="আপনি নিজেকে নিজে দায়িত্বশীল ব্যক্তি হিসাবে সেট করতে পারবেন না।", data=None)
+                if not apply_by:
+                    username = self.request.user
+                    apply_by = Staff.objects.get(staff_id=username,status=True)
                 # Check applied user is same or not
                 if (apply_by != instance.apply_by):
                     return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Sorry! You can't change leave person.", data=None)
@@ -1387,7 +1397,9 @@ class staffLeaveTransactionUpdate(generics.RetrieveUpdateAPIView):
                 # Check if leave was applied during those date
                 leave_trns_count = StaffLeaveTransaction.objects.filter(Q(is_active=True),(~Q(id=instance.id)),Q(status=True),Q(apply_by=apply_by),Q(institution=institution), Q(branch=branch),Q(start_date__range=(start_date, end_date)) | Q(end_date__range=(start_date, end_date))).count()
                 if leave_trns_count > 0:
-                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Leave Already Applied", data=None) 
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Leave Already Applied", data=None)
+                # if (start_date!=instance.start_date or end_date!=instance.end_date or leave_type != instance.leave_type):
+
                 if ((start_date!=instance.start_date or end_date!=instance.end_date) and leave_type == instance.leave_type):
                     duration = 1 + (end_date - start_date).days
                     old_duration = 1 + (instance.end_date - instance.start_date).days
@@ -1396,6 +1408,10 @@ class staffLeaveTransactionUpdate(generics.RetrieveUpdateAPIView):
                     queryset = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch)
                     leave_date = get_object_or_404(queryset, pk=staff_leave.id)
                     duration_diff = (duration-old_duration)
+                    if duration_diff > 0:
+                        leave_remain_days = staff_leave.leave_days - (staff_leave.taken_days+(staff_leave.process_days-old_duration))
+                        if duration > leave_remain_days:
+                            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="দুঃখিত!! আপনি ইতিমধ্যে সব ছুটি গ্রহণ করেছেন", data=None)
                     new_duration = process_days + duration_diff
                     instance = serializer.save()
                     data = {
@@ -1407,8 +1423,12 @@ class staffLeaveTransactionUpdate(generics.RetrieveUpdateAPIView):
                     return CustomResponse(code=status.HTTP_200_OK, message="Leave Updated successfully", data=StaffLeaveTransactionViewSerializer(instance).data)
                 if (leave_type != instance.leave_type):
                     staff_leave_old = StaffLeave.objects.filter(staff=apply_by,leave_type=instance.leave_type,is_active=True,status=True,institution=institution, branch=branch).order_by('-id').last()
+                    staff_leave = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch).order_by('-id').last()
                     process_days_old = staff_leave_old.process_days
                     duration = 1 + (end_date - start_date).days
+                    leave_remain_days = staff_leave.leave_days - (staff_leave.taken_days+(staff_leave.process_days))
+                    if duration > leave_remain_days:
+                        return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="দুঃখিত!! আপনি ইতিমধ্যে সব ছুটি গ্রহণ করেছেন", data=None)
                     old_duration = 1 + (instance.end_date - instance.start_date).days
                     queryset_old = StaffLeave.objects.filter(staff=apply_by,leave_type=instance.leave_type,is_active=True,status=True,institution=institution, branch=branch)
                     leave_date_old = get_object_or_404(queryset_old, pk=staff_leave_old.id)
@@ -1422,13 +1442,14 @@ class staffLeaveTransactionUpdate(generics.RetrieveUpdateAPIView):
 
                     duration = 1 + (end_date - start_date).days
                     old_duration = 1 + (instance.end_date - instance.start_date).days
-                    staff_leave = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch).order_by('-id').last()
+                    
                     process_days = staff_leave.process_days
                     queryset = StaffLeave.objects.filter(staff=apply_by,leave_type=leave_type,is_active=True,status=True,institution=institution, branch=branch)
                     leave_date = get_object_or_404(queryset, pk=staff_leave.id)
                     duration_diff = (duration-old_duration)
                     new_duration = process_days + duration
-                    # instance = serializer.save()
+                    
+                    
                     data = {
                        "process_days" : new_duration
                     }

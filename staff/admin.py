@@ -81,7 +81,7 @@ class ProcessAttendanceDailyAdmin(admin.ModelAdmin):
 
 class StaffLeaveAppHistoryTabularInline(admin.TabularInline):
     model = StaffLeaveAppHistory
-    fields = ['approve_group','approve_by','app_status','remarks','is_active','institution','branch','status']
+    fields = ['approve_group','approve_by','app_status','approve_date','remarks','is_active','institution','branch','status']
     extra = 0
 
 

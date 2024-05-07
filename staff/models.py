@@ -454,7 +454,7 @@ class StaffLeaveAppHistory(models.Model):
     approve_by = models.ForeignKey(Staff, on_delete=models.SET_NULL,blank=True,null=True)
     app_status = models.ForeignKey(Setup, on_delete=models.SET_NULL,blank=True, null=True,limit_choices_to={'parent__type': 'APPROVAL_STATUS'},related_name='app_status')
     remarks = models.TextField(blank=True,null=True)
-    approve_date = models.DateTimeField(auto_now=True)
+    approve_date = models.DateTimeField(blank=True,null=True)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
