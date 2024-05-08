@@ -1286,6 +1286,12 @@ class staffLeaveTransactionCreate(generics.CreateAPIView):
                 apply_by = serializer.validated_data.get('apply_by')
                 leave_type = serializer.validated_data.get('leave_type')
                 responsible = serializer.validated_data.get('responsible')
+                start_date = serializer.validated_data.get('start_date')
+                end_date = serializer.validated_data.get('end_date')
+                if start_date == end_date:
+                    day_name = start_date.strftime('%A').lower()
+                    if(day_name=='friday'):
+                        return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="You Can't create leave on Weekend", data=None)
                 if not apply_by:
                     username = self.request.user
                     apply_by = Staff.objects.get(staff_id=username,status=True)
@@ -1376,6 +1382,10 @@ class staffLeaveTransactionUpdate(generics.RetrieveUpdateAPIView):
                 leave_type = serializer.validated_data.get('leave_type')
                 apply_by = serializer.validated_data.get('apply_by')
                 responsible = serializer.validated_data.get('responsible')
+                if start_date == end_date:
+                    day_name = start_date.strftime('%A').lower()
+                    if(day_name=='friday'):
+                        return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="You Can't create leave on Weekend", data=None)
                 if not apply_by:
                     username = self.request.user
                     apply_by = Staff.objects.get(staff_id=username,status=True)
