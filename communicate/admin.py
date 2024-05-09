@@ -9,4 +9,12 @@ class NoticeBoardAdmin(admin.ModelAdmin):
     class Meta:
         model = NoticeBoard
 
+class SmsTemplateAdmin(admin.ModelAdmin):
+    list_display = ['title','message_body','is_active','status','created_by']
+    search_fields = ['title']
+
+    class Meta:
+        model = SmsTemplate
+
+admin.site.register(SmsTemplate,SmsTemplateAdmin)
 admin.site.register(NoticeBoard,NoticeBoardAdmin)

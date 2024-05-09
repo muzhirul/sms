@@ -31,3 +31,20 @@ class NoticeBoard(models.Model):
 
     def __str__(self):
         return str(self.title)
+    
+class SmsTemplate(models.Model):
+    title = models.CharField(max_length=255)
+    message_body = models.TextField()
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sms_temp_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='sms_temp_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'comm_sms_template'
+        verbose_name = 'SMS Template'
+    

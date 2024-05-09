@@ -1700,7 +1700,14 @@ class ClassSubjectViewList(generics.ListAPIView):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        queryset = ClassSubject.objects.filter(status=True).order_by('id')
+        session = self.request.query_params.get('session')
+        version = self.request.query_params.get('version')
+        class_name = self.request.query_params.get('class_name')
+        section = self.request.query_params.get('section')
+        if class_name and section and version and session:
+            queryset = ClassSubject.objects.filter(status=True,session=session,version=version,class_name=class_name,section=section).order_by('id')
+        else:
+            queryset = ClassSubject.objects.filter(status=True).order_by('id')
         try:
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch

@@ -483,11 +483,19 @@ class ClassRoutineMstCreateSerializers(serializers.ModelSerializer):
             #         routine.save()
 
         return instance
+    
+class ClassSubjectRoutineSerializer(serializers.ModelSerializer):
+    subject = SubjectViewSerializer(read_only=True)
+    class Meta:
+        model = ClassSubject
+        # Exclude the specified fields from serialization
+        fields = ['id','code','subject','image']
 
 class ClassRoutineDtlViewSerializers(serializers.ModelSerializer):
     day = DaySerializer(read_only=True)
     teacher = StaffTeacherViewSerializer(read_only=True)
     subject = SubjectViewSerializer(read_only=True)
+    class_subject = ClassSubjectRoutineSerializer(read_only=True)
     class_period = ClassPeriodSerializer2(read_only=True)
     class_room = ClassRoomSerializer2(read_only=True)
     class Meta:
