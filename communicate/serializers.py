@@ -19,3 +19,21 @@ class NoticeBoardCreateSerializers(serializers.ModelSerializer):
     class Meta:
         model = NoticeBoard
         fields = '__all__'
+
+
+class SmsTemplateViewSerializers(serializers.ModelSerializer):
+    
+    class Meta:
+        model = SmsTemplate
+        fields = ['id','title','message_body','is_active','status']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
+class SmsTemplateCreateSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = SmsTemplate
+        fields = '__all__'

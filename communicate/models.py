@@ -47,4 +47,7 @@ class SmsTemplate(models.Model):
     class Meta:
         db_table = 'comm_sms_template'
         verbose_name = 'SMS Template'
+
+    def __str__(self):
+        return str(self.title)
     
