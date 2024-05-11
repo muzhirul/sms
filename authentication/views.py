@@ -208,7 +208,11 @@ class DashboardView(generics.ListAPIView):
             class_routines = []
             for routine_dtl in ClassRoutiineDtl.objects.filter(class_routine_mst=routine_mst,status=True,institution=institution_id, branch=branch_id,day=day_id):
                 class_routine = {}
-                class_routine['subject'] = routine_dtl.subject.name
+                # class_routine['subject'] = routine_dtl.subject.name
+                if routine_dtl.class_subject:
+                    class_routine['subject'] = routine_dtl.class_subject.code +' - '+routine_dtl.class_subject.subject.name+' - '+routine_dtl.class_subject.subject.type.name
+                else:
+                    class_routine['subject'] = None
                 class_routine['room_no'] = routine_dtl.class_room.room_no
                 class_routine['building_name'] = routine_dtl.class_room.building
                 class_routine['floor'] = routine_dtl.class_room.floor_type.name
@@ -229,7 +233,11 @@ class DashboardView(generics.ListAPIView):
                 else:
                     teacher_info['class_teacher'] = False
                 teacher_info['name'] = teacher.teacher.first_name +' '+teacher.teacher.last_name
-                teacher_info['subject'] = teacher.subject.code +' - '+teacher.subject.name
+                # teacher_info['subject'] = teacher.subject.code +' - '+teacher.subject.name
+                if teacher.class_subject:
+                    teacher_info['subject'] = teacher.class_subject.code +' - '+teacher.class_subject.subject.name+' - '+teacher.class_subject.subject.type.name
+                else:
+                    teacher_info['subject'] = None
                 teacher_info['phone'] = teacher.teacher.mobile_no
                 teacher_lists.append(teacher_info)
             dashboard_data['teacher_list'] = teacher_lists
@@ -316,7 +324,11 @@ class DashboardView(generics.ListAPIView):
                     class_routines = []
                     for routine_dtl in ClassRoutiineDtl.objects.filter(class_routine_mst=routine_mst,status=True,institution=std_info.student.institution, branch=std_info.student.branch,day=day_id):
                         class_routine = {}
-                        class_routine['subject'] = routine_dtl.subject.name
+                        # class_routine['subject'] = routine_dtl.subject.name
+                        if routine_dtl.class_subject:
+                            class_routine['subject'] = routine_dtl.class_subject.code +' - '+routine_dtl.class_subject.subject.name+' - '+routine_dtl.class_subject.subject.type.name
+                        else:
+                            class_routine['subject'] = None
                         class_routine['room_no'] = routine_dtl.class_room.room_no
                         class_routine['building_name'] = routine_dtl.class_room.building
                         class_routine['floor'] = routine_dtl.class_room.floor_type.name
@@ -337,7 +349,11 @@ class DashboardView(generics.ListAPIView):
                         else:
                             teacher_info['class_teacher'] = False
                         teacher_info['name'] = teacher.teacher.first_name +' '+teacher.teacher.last_name
-                        teacher_info['subject'] = teacher.subject.code +' - '+teacher.subject.name
+                        # teacher_info['subject'] = teacher.subject.code +' - '+teacher.subject.name
+                        if teacher.class_subject:
+                            teacher_info['subject'] = teacher.class_subject.code +' - '+teacher.class_subject.subject.name+' - '+teacher.class_subject.subject.type.name
+                        else:
+                            teacher_info['subject'] = None
                         teacher_info['phone'] = teacher.teacher.mobile_no
                         teacher_lists.append(teacher_info)
                     std_list['teacher_list'] = teacher_lists

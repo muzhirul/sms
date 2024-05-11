@@ -266,7 +266,7 @@ class ClassSubject(models.Model):
         verbose_name = '9. Class Subject'
 
     def __str__(self):
-        return str(self.id)
+        return str(self.code) + ' | ' +str(self.subject.name) + ' | ' + str(self.subject.type)
 
 class ClassTeacher(models.Model):
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='Version')
