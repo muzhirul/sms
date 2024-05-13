@@ -5,9 +5,10 @@ from rest_framework import generics, permissions
 from sms.utils import CustomResponse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import LoginSerializer, LoginSerializer2, LoginSerializer3,LoginSerializer4
+from .serializers import *
 from django.contrib.auth import authenticate
 from academic.models import *
+from sms.pagination import CustomPagination
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from setup_app.models import Role,Permission,Menu
@@ -239,6 +240,10 @@ class DashboardView(generics.ListAPIView):
                 else:
                     teacher_info['subject'] = None
                 teacher_info['phone'] = teacher.teacher.mobile_no
+                if teacher.teacher.photo:
+                    teacher_info['photo'] = SITE_PROTOCOL+current_site + '/media/'+str(teacher.teacher.photo)
+                else:
+                    teacher_info['photo'] = None
                 teacher_lists.append(teacher_info)
             dashboard_data['teacher_list'] = teacher_lists
             # For Attendance List
@@ -355,6 +360,10 @@ class DashboardView(generics.ListAPIView):
                         else:
                             teacher_info['subject'] = None
                         teacher_info['phone'] = teacher.teacher.mobile_no
+                        if teacher.teacher.photo:
+                            teacher_info['photo'] = SITE_PROTOCOL+current_site + '/media/'+str(teacher.teacher.photo)
+                        else:
+                            teacher_info['photo'] = None
                         teacher_lists.append(teacher_info)
                     std_list['teacher_list'] = teacher_lists
                     # For Attendance List
@@ -676,3 +685,55 @@ class UserLoginView(APIView):
             'message':'Success',
             'error':[],
             'data':user_data},status=status.HTTP_200_OK)
+    
+class UserInformation(generics.ListAPIView):
+    serializer_class = UserViewSerializer
+    queryset = None
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        user_type = self.request.query_params.get('user_type')
+        if user_type == 'student':
+            queryset = Student.objects.filter(status=True).order_by('id')
+        elif user_type == 'guardian':
+            queryset = Guardian.objects.filter(status=True,is_guardian=True).order_by('id')
+        else:
+            queryset = Staff.objects.filter(status=True,role__name__iexact=user_type).order_by('id')
+
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, is_active=True).order_by('id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, is_active=True).order_by('id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, is_active=True).order_by('id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)

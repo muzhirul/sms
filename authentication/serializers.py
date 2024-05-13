@@ -1,6 +1,8 @@
 
 from rest_framework import serializers
 from .models import Authentication
+from student.models import Student, Guardian
+from staff.models import Staff
 from django.contrib.auth.models import Group, Permission
 from django.contrib import auth
 from django.contrib.contenttypes.models import ContentType
@@ -60,3 +62,23 @@ class LoginSerializer4(serializers.ModelSerializer):
     class Meta:
         model = Authentication
         fields = ['id','username','first_name','last_name','user_type','institution','branch','model_name','password']
+
+class UserViewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = None
+        fields = ['user','first_name','last_name']
+
+    def __init__(self, *args, **kwargs):
+        super(UserViewSerializer, self).__init__(*args, **kwargs)
+        # Dynamically set the model and fields based on user_type
+        user_type = self.context['request'].query_params.get('user_type')
+        if user_type == 'student':
+            self.Meta.model = Student
+            self.Meta.fields = ['user','id','student_no','first_name','last_name']
+        elif user_type == 'guardian':
+            self.Meta.model = Guardian
+            self.Meta.fields = ['user','id','guardian_no','first_name','last_name']
+        else:
+            self.Meta.model = Staff
+            self.Meta.fields = ['user','id','staff_id','first_name','last_name']
