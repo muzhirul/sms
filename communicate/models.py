@@ -2,6 +2,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from institution.models import Institution, Branch
 from setup_app.models import Role
+from authentication.models import Authentication
+from academic.models import ClassSection
 from django_userforeignkey.models.fields import UserForeignKey
 
 # Create your models here.
@@ -50,4 +52,31 @@ class SmsTemplate(models.Model):
 
     def __str__(self):
         return str(self.title)
+    
+class SmsSendSetup(models.Model):
+    template = models.ForeignKey(SmsTemplate, on_delete=models.CASCADE, verbose_name='SMS Template')
+    title = models.CharField(max_length=255,blank=True)
+    send_option = models.CharField(max_length=10, verbose_name='Send Through')
+    message_body = models.TextField(verbose_name='Message',blank=True)
+    group = models.ManyToManyField(Role,blank=True)
+    individual = models.ManyToManyField(Authentication,blank=True)
+    class_section = models.ManyToManyField(ClassSection,blank=True)
+    send_datetime = models.DateTimeField(blank=True,null=True)
+    is_process = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sms_setup_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='sms_setup_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'comm_sms_send_setup'
+        verbose_name = 'Send SMS'
+    
+    def __str__(self):
+        return str(self.title)
+
     
