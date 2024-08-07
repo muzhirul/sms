@@ -440,6 +440,22 @@ def calculate_duration(sender, instance, **kwargs):
     else:
         instance.day_count = None
 
+@receiver(post_save, sender=StaffLeaveTransaction)
+def status_update_in_attn(sender, instance, **kwargs):
+    if instance.app_status.type == 'APPROVED':
+        attn_type_id = AttendanceType.objects.filter(status=True,name__iexact=instance.leave_type.leave_type_code).last()
+        if attn_type_id:
+            ProcessAttendanceDaily.objects.filter(status=True,is_active=True,staff=instance.apply_by,attn_date__range=(instance.start_date, instance.end_date)).update(attn_type=attn_type_id)
+        else:
+            print('Something worng in attendance type data')
+
+@receiver(post_save, sender=StaffLeaveTransaction)
+def delete_leave(sender, instance, **kwargs):
+    if instance.status==False:
+        instance.day_count
+        leave_bal = StaffLeave.objects.filter(staff=instance.apply_by,leave_type=instance.leave_type,status=True,is_active=True,institution=instance.institution,branch=instance.branch).last()
+        StaffLeave.objects.filter(pk=leave_bal.pk).update(process_days=leave_bal.process_days - instance.day_count)
+
 # @receiver(post_save, sender=StaffLeaveTransaction)
 # def update_taken_day(sender,instance,**kwargs):
 #     total_taken_days = StaffLeaveTransaction.objects.get(
@@ -475,6 +491,31 @@ class StaffLeaveAppHistory(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+@receiver(post_save, sender=StaffLeaveAppHistory)
+def update_leave_approval_status(sender, instance, **kwargs):
+    if instance.app_status:
+        from datetime import datetime
+        print(instance.leave_trns.day_count,instance.leave_trns.leave_type,instance.leave_trns.apply_by)
+        leave_bal = StaffLeave.objects.filter(staff=instance.leave_trns.apply_by,leave_type=instance.leave_trns.leave_type,status=True,is_active=True,institution=instance.institution,branch=instance.branch).last()
+        print('******',leave_bal.leave_days,leave_bal.process_days)
+        try:
+            if instance.app_status.type == 'APPROVED':
+                StaffLeave.objects.filter(pk=leave_bal.pk).update(
+                    process_days=leave_bal.process_days - instance.leave_trns.day_count,
+                    taken_days=leave_bal.taken_days + instance.leave_trns.day_count
+                )
+            elif instance.app_status.type == 'DENY':
+                StaffLeave.objects.filter(pk=leave_bal.pk).update(
+                    process_days=leave_bal.process_days - instance.leave_trns.day_count
+                )
+            else:
+                pass
+        except Exception as e:
+            print(f"Error updating StaffLeave: {e}")
+        instance.leave_trns.app_status = instance.app_status
+        instance.leave_trns.save()
+
 
 def staff_atnn_code():
     last_staff_attn_code = ProcessStaffAttendanceMst.objects.all().order_by('code').last()

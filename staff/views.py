@@ -2035,4 +2035,47 @@ class StaffStatusCreate(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
+class StaffLeaveHistoryUpdate(generics.RetrieveUpdateAPIView):
+    queryset = StaffLeaveAppHistory.objects.all()
+    serializer_class = StaffLeaveAppHistoryCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Class Subject', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=StaffLeaveAppHistoryViewSerializer(instance).data)
+
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Class Subject', 'update')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer_class = StaffLeaveAppHistoryCreateSerializer
+        serializer = serializer_class(instance, data=request.data, partial=partial)
+        
+        try:
+            if serializer.is_valid():
+                if instance.leave_trns.app_status.type == 'APPROVED':
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Sorry, Staff Leave Already Approved!!!", data=None)
+                if instance.leave_trns.app_status.type == 'DENY':
+                    return CustomResponse(code=status.HTTP_403_FORBIDDEN, message="Sorry, Staff Leave Already Deny!!!", data=None)
+                # Perform any custom update logic here if needed
+                instance = serializer.save()
+                # Customize the response format for successful update
+                return CustomResponse(code=status.HTTP_200_OK, message="Staff Leave Approved successfully", data=StaffLeaveAppHistoryViewSerializer(instance).data)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
 
