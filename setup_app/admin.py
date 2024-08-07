@@ -149,7 +149,13 @@ class PaymentMethodAdmin(admin.ModelAdmin):
     list_display = ['name','status']
 
     class Meta:
-        model = PaymentMethod      
+        model = PaymentMethod     
+
+class ActiveStatusAdmin(admin.ModelAdmin):
+    list_display = ['name','status']
+
+    class Meta:
+        model = ActiveStatus  
 
 
 admin.site.register(Setup, SetupAdmin)
@@ -174,3 +180,4 @@ admin.site.register(MaritalStatus, MaritalStatusAdmin)
 admin.site.register(AttendanceType, AttendanceTypeAdmin)
 admin.site.register(HolidayType, HolidayTypeAdmin)
 admin.site.register(PaymentMethod, PaymentMethodAdmin)
+admin.site.register(ActiveStatus, ActiveStatusAdmin)

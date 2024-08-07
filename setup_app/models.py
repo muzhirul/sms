@@ -385,3 +385,18 @@ class PaymentMethod(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+class ActiveStatus(models.Model):
+    name = models.CharField(max_length=15)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='active_status_creator', editable=False)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='active_status_update_by', editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'setup_active_status'
+
+    def __str__(self):
+        return str(self.name)

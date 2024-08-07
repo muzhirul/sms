@@ -446,3 +446,14 @@ class ProcessStaffAttendanceMstCreateSerializer(serializers.ModelSerializer):
         model = ProcessStaffAttendanceMst
         exclude = ['updated_at','created_at','code','total_day','created_by','updated_by']
 
+class StaffStatusTransactionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffStatusTransaction
+        exclude = ['updated_at','created_at','status','is_active','created_by','updated_by']
+
+class StaffStatusTransactionViewSerializer(serializers.ModelSerializer):
+    staff = StaffTeacherSerializer(read_only=True)
+    staff_status = ActiveStatusViewSerializer(read_only=True)
+    class Meta:
+        model = StaffStatusTransaction
+        fields = ['id','code','staff','staff_status','start_date','end_date','reason','remarks']
