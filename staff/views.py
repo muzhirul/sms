@@ -15,6 +15,7 @@ from django.db.models.functions import Coalesce
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+import requests
 # Create your views here.
 
 class StaffDepartmentList(generics.ListAPIView):
@@ -1799,3 +1800,163 @@ class StaffLeaveTypeList(generics.ListAPIView):
             }
 
         return Response(response_data)
+
+class StaffPunchData(generics.ListAPIView):
+    def list(self, request, *args, **kwargs):
+        url = f"http://192.168.117.152:5002/waltonagro/attn_data"
+        attn_date = self.request.query_params.get('attn_date')
+        if attn_date:
+            pass
+        else:
+            attn_date = datetime.now().date()
+        payload = ""
+        headers = {}
+        response = requests.request("GET",url,headers=headers,data=payload)
+        json_data = response.json()
+        attn_data = json_data['attendance_data']
+        punch_data = {}
+        for i in attn_data:
+            if attn_date == datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S').date():
+                attn_count = AttendanceDailyRaw.objects.filter(staff_code=i['user_id'],trnsc_time=datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S')).count()
+                if attn_count == 0:
+                    punch_data['device_ip'] = i['device_ip']
+                    punch_data['attn_date'] = datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S').date()
+                    punch_data['trnsc_time'] = datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S')
+                    punch_data['device_name'] = i['device_name']
+                    punch_data['device_serial'] = i['device_serial']
+                    punch_data['email'] = i['email']
+                    punch_data['mobile'] = i['mobile']
+                    punch_data['staff_code'] = i['user_id']
+                    punch_data['src_type'] = 'device'
+                    try:
+                        staff_info = Staff.objects.get(staff_id=i['user_id'],status=True)
+                        punch_data['staff'] = staff_info
+                        punch_data['institution'] = staff_info.institution
+                        punch_data['branch'] = staff_info.branch
+                    except:
+                        punch_data['staff'] = None
+                        punch_data['institution'] = None
+                        punch_data['branch'] = None
+                    punch_data['username'] = i['username']
+                    p = AttendanceDailyRaw.objects.create(**punch_data)
+                else:
+                    pass
+        return Response(punch_data)     
+
+class StaffAttendanceSummeryProcess(generics.CreateAPIView):
+    serializer_class = ProcessStaffAttendanceMstCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def create(self, request, *args, **kwargs):
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        from_date = request.data.get('from_date')
+        from_date = datetime.strptime(from_date, '%Y-%m-%d')
+        to_date = request.data.get('to_date')
+        to_date = datetime.strptime(to_date, '%Y-%m-%d')
+        day_diff = (to_date - from_date).days + 1
+        if day_diff <= 0:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="From date is less than To date", data=None)
+        staff_infos = Staff.objects.filter(status=True,institution=institution_id,branch=branch_id)
+        for staff_info in staff_infos:
+            process_count = ProcessStaffAttendanceMst.objects.filter(Q(staff=staff_info),Q(status=True),Q(from_date__range=(from_date, to_date)) | Q(to_date__range=(from_date, to_date))).count()
+            min_duration = timedelta(minutes=10)
+            attn_late_infos = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
+                                                                      staff=staff_info,attn_date__range=(from_date, to_date),
+                                                                    #   late_by_min__gte=min_duration,
+                                                                     late_by_min__gt = min_duration,
+                                                                      attn_type__name__iexact = 'late'
+                                                                      )
+            # Calculate the sum of late_by_min
+            total_late_by_min = attn_late_infos.aggregate(total_late=Sum('late_by_min'))['total_late']
+            for attn_late_info in attn_late_infos:
+                print((attn_late_info.late_by_min/60).total_seconds())
+            print(staff_info,process_count)
+            if process_count == 0:
+                staff_payroll = StaffPayroll.objects.filter(Q(status=True),
+                                                            Q(is_active=True),
+                                                            Q(staff=staff_info),
+                                                            Q(start_date__lte=from_date),
+                                                            Q(end_date__isnull=True) | Q(end_date__gte=to_date)
+                                                            ).order_by('-start_date').last()
+                proc_attn_mst = {}
+                attn_leave_types = ['al','cl','ml']
+                attn_type_queries = Q()
+                for attn_type in attn_leave_types:
+                    attn_type_queries |= Q(attn_type__name__iexact=attn_type)
+
+                if staff_payroll:
+                    staff_payroll_id = staff_payroll
+                    staff_type = staff_payroll.contract_type.name.lower()
+                    staff_gross = staff_payroll.gross
+                else:
+                    staff_type = None
+                    staff_gross = None
+                total_days = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
+                                                                   staff=staff_info,attn_date__range=(from_date, to_date)
+                                                                   ).count()
+                total_present = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
+                                                                      staff=staff_info,attn_date__range=(from_date, to_date),
+                                                                      attn_type__name__iexact = 'present'
+                                                                      ).count()
+                total_absent = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
+                                                                      staff=staff_info,attn_date__range=(from_date, to_date),
+                                                                      attn_type__name__iexact = 'absent'
+                                                                      ).count()
+                total_weekend = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
+                                                                      staff=staff_info,attn_date__range=(from_date, to_date),
+                                                                      attn_type__name__iexact = 'weekend'
+                                                                      ).count()
+                total_holiday = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
+                                                                      staff=staff_info,attn_date__range=(from_date, to_date),
+                                                                      attn_type__name__iexact = 'holiday'
+                                                                      ).count()
+                total_late = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
+                                                                      staff=staff_info,attn_date__range=(from_date, to_date),
+                                                                      attn_type__name__iexact = 'late'
+                                                                      ).count()
+                total_early_gone = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
+                                                                      staff=staff_info,attn_date__range=(from_date, to_date),
+                                                                      attn_type__name__iexact = 'early gone'
+                                                                      ).count()
+                total_on_tour = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
+                                                                      staff=staff_info,attn_date__range=(from_date, to_date),
+                                                                      attn_type__name__iexact = 'on tour'
+                                                                      ).count()
+                total_leave = ProcessAttendanceDaily.objects.filter(Q(status=True),
+                                                                        Q(is_active=True),
+                                                                        Q(staff=staff_info),
+                                                                        Q(attn_date__range=(from_date, to_date)),
+                                                                        attn_type_queries
+                                                                      ).count()
+                if staff_type == 'daily labor':
+                    payable_days = total_present + total_late + total_early_gone + total_on_tour
+                    staff_main_grouss = payable_days * staff_gross
+                else:
+                    payable_days = total_present + total_late + total_early_gone + total_holiday + total_weekend
+                print(total_days,staff_info,payable_days,total_present,total_absent,total_weekend,total_holiday,total_late,staff_main_grouss,total_leave,total_on_tour)
+
+                proc_attn_mst['staff'] = staff_info
+                proc_attn_mst['staff_code'] = staff_info.staff_id
+                proc_attn_mst['from_date'] = from_date
+                proc_attn_mst['to_date'] = to_date
+                proc_attn_mst['staff_payroll'] = staff_payroll_id
+                proc_attn_mst['present_day'] = total_present
+                proc_attn_mst['absent_day'] = total_absent
+                proc_attn_mst['late_day'] = total_late
+                proc_attn_mst['early_gone_day'] = total_early_gone
+                proc_attn_mst['tour_day'] = total_on_tour
+                proc_attn_mst['tot_payble_day'] = payable_days
+                proc_attn_mst['weekend_day'] = total_weekend
+                proc_attn_mst['holiday_day'] = total_holiday
+                proc_attn_mst['actual_gross'] = staff_main_grouss
+                proc_attn_mst['institution'] = staff_info.institution
+                proc_attn_mst['branch'] = staff_info.branch
+                p = ProcessStaffAttendanceMst.objects.create(**proc_attn_mst)
+
+                print(proc_attn_mst)
+
+
+        return CustomResponse(code=status.HTTP_200_OK, message="Process Done", data=None)
+

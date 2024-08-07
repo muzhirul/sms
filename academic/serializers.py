@@ -466,6 +466,7 @@ class ClassRoutineMstCreateSerializers(serializers.ModelSerializer):
                     c.day = routine_dtl.get('day', c.day)
                     c.teacher = routine_dtl.get('teacher', c.teacher)
                     c.subject = routine_dtl.get('subject', c.subject)
+                    c.class_subject = routine_dtl.get('class_subject', c.class_subject)
                     c.class_period = routine_dtl.get('class_period', c.class_period)
                     c.class_room = routine_dtl.get('class_room', c.class_room)
                     c.status = True

@@ -341,6 +341,12 @@ class AttendanceDailyRaw(models.Model):
     staff_code = models.CharField(max_length=20, blank=True,null=True)
     attn_date = models.DateField(verbose_name='Attendance Date',blank=True,null=True)
     trnsc_time = models.DateTimeField(blank=True, null=True)
+    device_ip = models.GenericIPAddressField(blank=True,null=True)
+    device_name = models.CharField(max_length=255,blank=True,null=True)
+    device_serial = models.CharField(max_length=255, blank=True,null=True)
+    email = models.EmailField(blank=True,null=True)
+    mobile = models.CharField(max_length=255,blank=True,null=True)
+    username = models.CharField(max_length=255,blank=True,null=True)
     src_type = models.CharField(max_length=20,blank=True,null=True)
     attn_type = models.CharField(max_length=20,blank=True,null=True)
     remarks = models.CharField(max_length=500, blank=True,null=True)
@@ -470,7 +476,61 @@ class StaffLeaveAppHistory(models.Model):
     def __str__(self):
         return str(self.id)
 
+def staff_atnn_code():
+    last_staff_attn_code = ProcessStaffAttendanceMst.objects.all().order_by('code').last()
+    if not last_staff_attn_code or last_staff_attn_code.code is None:
+        return 'P-' + '1'
+    staff_attn_mst_num = str(last_staff_attn_code.code)[2:]
+    staff_attn_mst_num_int = int(staff_attn_mst_num)
+    new_staff_attn_mst_num = staff_attn_mst_num_int + 1
+    new_gd_num = 'P-' + str(new_staff_attn_mst_num)
+    return new_gd_num   
 
+class ProcessStaffAttendanceMst(models.Model):
+    code = models.CharField(max_length=15,verbose_name='Code',default=staff_atnn_code,editable=False)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    staff_code = models.CharField(max_length=100, blank=True,null=True)
+    from_date = models.DateField()
+    to_date = models.DateField()
+    staff_payroll = models.ForeignKey(StaffPayroll, on_delete=models.SET_NULL, blank=True, null=True)
+    total_day = models.IntegerField(default=0,editable=False)
+    present_day = models.IntegerField(default=0)
+    absent_day = models.IntegerField(default=0)
+    late_day = models.IntegerField(default=0)
+    early_gone_day = models.IntegerField(default=0)
+    tot_payble_day = models.IntegerField(default=0)
+    ot_hour = models.IntegerField(default=0)
+    gen_type = models.CharField(max_length=15, default='AUTO')
+    tour_day = models.IntegerField(default=0)
+    weekend_day = models.IntegerField(default=0)
+    holiday_day = models.IntegerField(default=0)
+    actual_gross = models.IntegerField(default=0)
+    calc_gross = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='staff_proc_atnn_mst_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='staff_proc_atnn_mst_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'staff_proc_out_attn_mst'
+
+    def save(self, *args, **kwargs):
+        # Calculate the number of days between from_date and to_date
+        if self.from_date and self.to_date:
+            delta = self.to_date - self.from_date
+            self.total_day = delta.days + 1
+        else:
+            self.total_day = 0
+        
+        # Call the original save method
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.code)
 
 
 
