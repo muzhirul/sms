@@ -1,18 +1,24 @@
 import requests
 from datetime import datetime
-from django.contrib.sites.shortcuts import get_current_site
 from decouple import config
 
-# current_site = get_current_site(request).domain
-# SITE_PROTOCOL = 'http://'
-#     if request.is_secure():
-#         SITE_PROTOCOL = 'https://'
-
-def attendence_loader():
-    # url = f"http://127.0.0.1:8000/student/api/attendance/process"
-    urlList = ["/student/api/attendance/process","/staff/api/attendance/process"]
-    url = f"{config('BASE_URL')}/student/api/attendance/process"
-    payload = {}
+def product_registration():
+    print('**********Scheduler Start************')
+    # For insert attendance data for each employee
+    url = f"{config('BASE_URL')}/staff/api/attendance/process"
+    payload={}
     headers = {}
     response = requests.request("GET", url, headers=headers, data=payload)
-    print('Insert student attendanc process DONE')
+    print('Insert Attendance data process DONE')
+    url = f"{config('BASE_URL')}/staff/api/attendance/update/process"
+    payload={}
+    headers = {}
+    response = requests.request("GET", url, headers=headers, data=payload)
+    print('Attendance data update process DONE')
+    url = f"{config('BASE_URL')}/student/api/attendance/process"
+    payload={}
+    headers = {}
+    response = requests.request("GET", url, headers=headers, data=payload)
+    print('Attendance for student data update process DONE')
+    
+    print('**********Scheduler End************')
