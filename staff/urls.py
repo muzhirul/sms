@@ -54,4 +54,6 @@ urlpatterns = [
     path('api/status/trns/create',StaffStatusCreate.as_view(), name='staff-status-trns-create-list'),
     # Staff Leave History
     path('api/leave-approval/<int:pk>',StaffLeaveHistoryUpdate.as_view(), name='staff-leave-history-update'),
+    # Staff attendance List
+    path('api/daily/attn-list',StaffDailyAttnList.as_view(), name='staff-daily-attn-list'),
 ]

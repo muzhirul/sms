@@ -2078,4 +2078,57 @@ class StaffLeaveHistoryUpdate(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
+class StaffDailyAttnList(generics.ListAPIView):
+    serializer_class = ProcessAttendanceViewDailySerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
 
+    def get_queryset(self):
+        username = self.request.user
+        user_info = self.request.user.id
+        model_name = self.request.user.model_name
+        institution = self.request.user.institution
+        branch = self.request.user.branch
+        from_date = self.request.query_params.get('from_date')
+        to_date = self.request.query_params.get('to_date')
+        print(from_date,to_date)
+        # staff_id = self.request.query_params.get('staff_id')
+        if from_date and to_date:
+            queryset = ProcessAttendanceDaily.objects.filter(attn_date__range=(from_date, to_date),staff__user=user_info,status=True,is_active=True,institution=institution,branch=branch).order_by('attn_date')
+        else:
+            queryset = ProcessAttendanceDaily.objects.filter(staff__user=user_info,status=True,is_active=True,institution=institution,branch=branch).order_by('-attn_date')[:5]
+        return queryset
+
+
+    def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Staff Shift', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                response_data = self.get_paginated_response(serializer.data).data
+            else:
+                serializer = self.get_serializer(queryset, many=True)
+                response_data = {
+                    "code": 200,
+                    "message": "Success",
+                    "data": serializer.data,
+                    "pagination": {
+                        "next": None,
+                        "previous": None,
+                        "count": queryset.count(),
+                    },
+                }
+        except:
+            response_data = {
+                    "code": 400,
+                    "message": "Bad Request",
+                    "data": None,
+                }
+
+        return Response(response_data)

@@ -541,14 +541,29 @@ class StudentLeaveList(generics.ListAPIView):
             branch_id = self.request.user.branch
             username = self.request.user
             user_id = self.request.user.id
-            staff_info = Staff.objects.get(user=user_id,status=True)
-            if staff_info:
+            model_name = self.request.user.model_name
+            print(user_id,'********',model_name)
+            staff_count = Staff.objects.filter(user=user_id,status=True).count()
+            std_count = Student.objects.filter(user=user_id,status=True).count()
+            print(user_id,'********',staff_count,std_count)
+            if staff_count > 0:
+                staff_info = Staff.objects.get(user=user_id,status=True)
                 if institution_id and branch_id:
                     queryset = queryset.filter(responsible=staff_info.id,institution=institution_id, branch=branch_id, status=True).order_by('-id')
                 elif branch_id:
                     queryset = queryset.filter(responsible=staff_info.id,branch=branch_id, status=True).order_by('-id')
                 elif institution_id:
                     queryset = queryset.filter(responsible=staff_info.id,institution=institution_id, status=True).order_by('-id')
+                else:
+                    queryset
+            elif std_count > 0:
+                std_info = Student.objects.get(user=user_id,status=True)
+                if institution_id and branch_id:
+                    queryset = queryset.filter(apply_by=std_info.id,institution=institution_id, branch=branch_id, status=True).order_by('-id')
+                elif branch_id:
+                    queryset = queryset.filter(apply_by=std_info.id,branch=branch_id, status=True).order_by('-id')
+                elif institution_id:
+                    queryset = queryset.filter(apply_by=std_info.id,institution=institution_id, status=True).order_by('-id')
                 else:
                     queryset
             else:
@@ -685,6 +700,59 @@ class TeacherWiseStudentList(generics.ListAPIView):
         #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
         '''Check user has permission to View end'''
         # serializer_class = TokenObtainPairView  # Create this serializer
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+class StudentResponsibleLeaveList(generics.ListAPIView):
+    serializer_class = StudentLeaveTransactionListSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        # Get the role ID from the URL parameter
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        user_info = self.request.user.id
+        queryset = StudentLeaveTransaction.objects.filter(responsible__user=user_info,status=True,institution=institution_id,branch=branch_id)
+        # staff_id = int(self.kwargs['staff_id'])
+        # queryset = StaffLeaveTransaction.objects.filter(apply_by__id=staff_id,status=True,institution=institution_id,branch=branch_id)
+        try:
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Student Leave', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
