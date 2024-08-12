@@ -4,7 +4,8 @@ from institution.models import Institution, Branch
 from setup_app.models  import HolidayType
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
 # Create your models here.
 def validate_alpha_chars_only(value):
     if not value.replace(' ', '').isalpha():
@@ -77,3 +78,32 @@ class Holiday(models.Model):
 
     def __str__(self):
         return self.name
+
+class PayrollElement(models.Model):
+    ELEMENT_TYPE = (('Allowance','Allowance'),('Deduction','Deduction'))
+    name = models.CharField(max_length=255)
+    type_name =models.CharField(max_length=255,verbose_name='Type',choices=ELEMENT_TYPE)
+    type = models.IntegerField(blank=True,null=True,editable=False)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='pay_ele_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='pay_ele_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hrms_payroll_elmnt'
+
+    def __str__(self):
+        return self.name
+
+@receiver(pre_save, sender=PayrollElement)
+def update_element_type(sender, instance, **kwargs):
+    if instance.type_name=='Allowance':
+        print(instance.type_name)
+        instance.type = 1
+    elif instance.type_name=='Deduction':
+        print(instance.type_name)
+        instance.type = -1
+    else:
+        instance.type = 0

@@ -23,7 +23,13 @@ class HolidayAdmin(admin.ModelAdmin):
     class Meta:
         model = Holiday
 
+class PayrollElementAdmin(admin.ModelAdmin):
+    list_display = ['name','type_name','type','status']
+
+    class Meta:
+        model = PayrollElement
 
 admin.site.register(AccountBank, AccountBankAdmin)
 admin.site.register(LeaveType, LeaveTypeAdmin)
 admin.site.register(Holiday, HolidayAdmin)
+admin.site.register(PayrollElement, PayrollElementAdmin)
