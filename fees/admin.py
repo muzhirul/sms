@@ -20,6 +20,11 @@ class FeesDetailsTabularInline(admin.TabularInline):
     fields = ['fees_type','due_date','amount','percentage','fix_amt','is_active','status','institution','branch']
     extra = 1
 
+class FeesTransactionDetailTabularInline(admin.TabularInline):
+    model = FeesTransactionDetails
+    fields = ['student','name','amount','is_active','status','institution','branch']
+    extra = 1
+
 class FeesMasterAdmin(admin.ModelAdmin):
     fields = ['class_name','section','group','session','version']
     list_display = ['class_name','group','section','session','version','status']
@@ -31,6 +36,7 @@ class FeesMasterAdmin(admin.ModelAdmin):
 
 class FeesTransactionAdmin(admin.ModelAdmin):
     list_display = ['student','fees_detail','pay_method','pay_date','is_active']
+    inlines = [FeesTransactionDetailTabularInline]
     class Meta:
         model = FeesTransaction
 
