@@ -135,6 +135,9 @@ def calculate_discount_amt(sender, instance, **kwargs):
         instance.discount_amt = discount_amt
     if instance.discount_type is None:
         instance.discount_amt = discount_amt
+    if instance.fees_detail and instance.pay_status==False:
+        instance.fees_amt = instance.fees_detail.amount
+
         
     
 class FeesTransactionDetails(models.Model):
