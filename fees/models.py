@@ -93,6 +93,26 @@ class FeesDetails(models.Model):
     def __str__(self):
         return f"{self.id}. {self.fees_type}"
     
+class FeeDetailsBreakDown(models.Model):
+    fees_detail = models.ForeignKey(FeesDetails, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255,verbose_name='Name')
+    amount = models.IntegerField()
+    remarks = models.TextField(blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='fees_dtl_br_dw_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='fees_dtl_br_dw_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'fees_dtl_break_down'
+
+    def __str__(self):
+        return f"{self.id}. {self.name}"
+    
 
 
 class FeesTransaction(models.Model):

@@ -19,6 +19,13 @@ class FeesDetailsTabularInline(admin.TabularInline):
     model = FeesDetails
     fields = ['fees_type','due_date','amount','percentage','fix_amt','is_active','status','institution','branch']
     extra = 1
+    show_change_link = True
+
+class FeeDetailsBreakDownTabularInline(admin.TabularInline):
+    model = FeeDetailsBreakDown
+    fields = ['name','amount','is_active','status','institution','branch']
+    extra = 1
+    # show_change_link = True
 
 class FeesTransactionDetailTabularInline(admin.TabularInline):
     model = FeesTransactionDetails
@@ -40,8 +47,14 @@ class FeesTransactionAdmin(admin.ModelAdmin):
     class Meta:
         model = FeesTransaction
 
+class FeesDetailsAdmin(admin.ModelAdmin):
+    inlines = [FeeDetailsBreakDownTabularInline]
+    class Meta:
+        model = FeesDetails
+
 
 admin.site.register(FeesType, FeesTypeAdmin)
 admin.site.register(FeesDiscount, FeesDiscountAdmin)
 admin.site.register(FeesMaster,FeesMasterAdmin)
+admin.site.register(FeesDetails,FeesDetailsAdmin)
 admin.site.register(FeesTransaction,FeesTransactionAdmin)
