@@ -21,7 +21,6 @@ class FeesTypeListSerializer(serializers.ModelSerializer):
         model = FeesType
         fields = ['id','name','code']
 
-
 class FeesDiscountCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -53,6 +52,25 @@ class FeesDetailsCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeesDetails
         exclude = ['status','created_at','updated_at','created_by','updated_by']
+
+class FeeDetailsBreakDownViewSerializer(serializers.ModelSerializer):
+    fees_type = FeesTypeListSerializer(read_only=True)
+    class Meta:
+        model = FeeDetailsBreakDown
+        exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
+class FeeDetailsBreakDownCreateSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = FeeDetailsBreakDown
+        exclude = ['status','is_active','created_at','updated_at','created_by','updated_by']
+
 
 class FeesMasterCreateSerializer(serializers.ModelSerializer):
     fees_detail = FeesDetailsCreateSerializer(many=True)

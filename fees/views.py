@@ -492,6 +492,255 @@ class FeesDetailUpdate(generics.RetrieveUpdateAPIView):
         return CustomResponse(code=status.HTTP_200_OK, message="Staff information updated successfully", data=FeesMasterViewSerializer(instance).data)
 
 '''
+For Fees detail breakdown
+'''
+class FeesDetailsBreakDownList(generics.ListCreateAPIView):
+    serializer_class = FeeDetailsBreakDownViewSerializer
+    # serializer_class = FeesMasterCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+    
+
+    def get_queryset(self):
+        fees_dtl = self.request.query_params.get('fees_dtl')
+        if fees_dtl:
+            queryset = FeeDetailsBreakDown.objects.filter(status=True,fees_detail=fees_dtl ).order_by('id')
+        else:
+            queryset = FeeDetailsBreakDown.objects.filter(status=True).order_by('id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(
+        #     self.request.user.id, 'Fees Entry', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        # serializer_class = TokenObtainPairView  # Create this serializer
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+    
+    # def create(self, request, *args, **kwargs):
+    #     '''Check user has permission to Create start'''
+    #     # permission_check = check_permission(self.request.user.id, 'Fees Discount', 'create')
+    #     # if not permission_check:
+    #     #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+    #     '''Check user has permission to Create End'''
+    #     serializer_class = FeeDetailsBreakDownCreateSerializer
+    #     serializer = serializer_class(data=request.data)
+    #     try:
+    #         if serializer.is_valid():
+    #             institution_data = serializer.validated_data.get('institution')
+    #             branch_data = serializer.validated_data.get('branch')
+    #             # If data is provided, use it; otherwise, use the values from the request user
+    #             institution = institution_data if institution_data is not None else self.request.user.institution
+    #             branch = branch_data if branch_data is not None else self.request.user.branch
+    #             instance = serializer.save(institution=institution, branch=branch)
+    #                 # Customize the response data
+    #             return CustomResponse(code=status.HTTP_200_OK, message="Fees Details Break Down created successfully", data=FeeDetailsBreakDownViewSerializer(instance).data)
+    #         # If the serializer is not valid, return an error response
+    #         return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+    #     except Exception as e:
+    #         # Handle other exceptions
+    #         return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+# class FeesDetailsBreakDownCreate(generics.ListCreateAPIView):
+#     serializer_class = FeeDetailsBreakDownCreateSerializer
+#     # serializer_class = FeesMasterCreateSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+#     pagination_class = CustomPagination
+
+#     def create(self, request, *args, **kwargs):
+#         try:
+#             institution_id = self.request.user.institution.id
+#             branch_id = self.request.user.branch.id
+#             fees_break_down_data = request.data.get("fees_break_down", [])
+#             for item in fees_break_down_data:
+#                 item["institution"] = institution_id
+#                 item["branch"] = branch_id
+#             serializer = self.get_serializer(data=fees_break_down_data, many=True)
+#             serializer.is_valid(raise_exception=True)
+#             self.perform_create(serializer)
+#             return CustomResponse(code=status.HTTP_200_OK, message="Fees Details Break Down created successfully", data=serializer.data)
+#         except Exception as e:
+#             # Handle other exceptions
+#             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+# class FeesDetailsBreakDownCreate(generics.ListCreateAPIView):
+#     serializer_class = FeeDetailsBreakDownCreateSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+#     pagination_class = CustomPagination
+
+#     def create(self, request, *args, **kwargs):
+#         try:
+#             institution_id = self.request.user.institution.id
+#             branch_id = self.request.user.branch.id
+#             fees_break_down_data = request.data.get("fees_break_down", [])
+#             created_data = []
+#             updated_data = []
+
+#             for item in fees_break_down_data:
+#                 item["institution"] = institution_id
+#                 item["branch"] = branch_id
+#                 if "id" in item:
+#                     # If ID is present, update the existing entry
+#                     try:
+#                         instance = FeeDetailsBreakDown.objects.get(id=item["id"])
+#                         serializer = self.get_serializer(instance, data=item, partial=True)
+#                         serializer.is_valid(raise_exception=True)
+#                         serializer.save()
+#                         updated_data.append(serializer.data)
+#                     except FeeDetailsBreakDown.DoesNotExist:
+#                         return CustomResponse(
+#                             code=status.HTTP_400_BAD_REQUEST,
+#                             message=f"FeeDetailsBreakDown with ID {item['id']} does not exist.",
+#                             data=None
+#                         )
+#                 else:
+#                     # If ID is not present, create a new entry
+#                     created_data.append(item)
+
+#             if created_data:
+#                 create_serializer = self.get_serializer(data=created_data, many=True)
+#                 create_serializer.is_valid(raise_exception=True)
+#                 self.perform_create(create_serializer)
+#                 created_data = create_serializer.data
+
+#             return CustomResponse(
+#                 code=status.HTTP_200_OK,
+#                 message="Fees Details Break Down processed successfully",
+#                 data={"created": created_data, "updated": updated_data}
+#             )
+#         except Exception as e:
+#             return CustomResponse(
+#                 code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#                 message="An error occurred during the Create/Update process",
+#                 data=str(e)
+#             )
+
+class FeesDetailsBreakDownCreate(generics.ListCreateAPIView):
+    serializer_class = FeeDetailsBreakDownCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def create(self, request, *args, **kwargs):
+        try:
+            institution_id = self.request.user.institution.id
+            branch_id = self.request.user.branch.id
+            fees_break_down_data = request.data.get("fees_break_down", [])
+            provided_ids = [item.get("id") for item in fees_break_down_data if "id" in item]
+
+            # Get all existing records for the provided fees_detail, institution, and branch
+            fees_detail_id = fees_break_down_data[0]['fees_detail'] if fees_break_down_data else None
+            existing_records = FeeDetailsBreakDown.objects.filter(
+                fees_detail=fees_detail_id,
+                institution=institution_id,
+                branch=branch_id
+            )
+
+            # Update the status to False for records that exist in DB but are not in the request
+            records_to_update = existing_records.exclude(id__in=provided_ids)
+            records_to_update.update(status=False)
+
+            created_data = []
+            updated_data = []
+
+            for item in fees_break_down_data:
+                item["institution"] = institution_id
+                item["branch"] = branch_id
+                if "id" in item:
+                    # If ID is present, update the existing entry
+                    try:
+                        instance = FeeDetailsBreakDown.objects.get(id=item["id"])
+                        serializer = self.get_serializer(instance, data=item, partial=True)
+                        serializer.is_valid(raise_exception=True)
+                        serializer.save()
+                        updated_data.append(serializer.data)
+                    except FeeDetailsBreakDown.DoesNotExist:
+                        return CustomResponse(
+                            code=status.HTTP_400_BAD_REQUEST,
+                            message=f"FeeDetailsBreakDown with ID {item['id']} does not exist.",
+                            data=None
+                        )
+                else:
+                    # If ID is not present, create a new entry
+                    created_data.append(item)
+
+            if created_data:
+                create_serializer = self.get_serializer(data=created_data, many=True)
+                create_serializer.is_valid(raise_exception=True)
+                self.perform_create(create_serializer)
+                created_data = create_serializer.data
+
+            return CustomResponse(
+                code=status.HTTP_200_OK,
+                message="Fees Details Break Down processed successfully",
+                data={"created": created_data, "updated": updated_data}
+            )
+        except Exception as e:
+            return CustomResponse(
+                code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="An error occurred during the Create/Update process",
+                data=str(e)
+            )
+
+class FeesDetailUpdate(generics.RetrieveUpdateAPIView):
+    queryset = FeesMaster.objects.filter(status=True)
+    serializer_class = FeesMasterCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(
+        #     self.request.user.id, 'Fees Entry', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        instance = self.get_object() 
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=FeesMasterViewSerializer(instance).data)
+    
+    def update(self, request, *args, **kwargs):
+        fees = self.get_object()
+        institution = self.request.user.institution
+        branch = self.request.user.branch
+        fees_serializer = self.get_serializer(fees, data=request.data, partial=True)
+        fees_serializer.is_valid(raise_exception=True)
+        instance = fees_serializer.save()
+        return CustomResponse(code=status.HTTP_200_OK, message="Staff information updated successfully", data=FeesMasterViewSerializer(instance).data)
+
+
+'''
 For Fees Transaction
 '''
 class FeesTrnsManualEntry(generics.ListAPIView):

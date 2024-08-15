@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import pre_save,post_save
 from django.dispatch import receiver
 from datetime import datetime
+from django.db.models import Sum
 
 def validate_alpha_chars_only(value):
     if not value.replace(' ', '').isalpha():
@@ -100,8 +101,8 @@ class FeeDetailsBreakDown(models.Model):
     remarks = models.TextField(blank=True,null=True)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
-    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True)
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='fees_dtl_br_dw_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='fees_dtl_br_dw_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -112,6 +113,32 @@ class FeeDetailsBreakDown(models.Model):
 
     def __str__(self):
         return f"{self.id}. {self.name}"
+    
+# @receiver(post_save, sender=FeeDetailsBreakDown)
+# def calculate_total_amt(sender, instance, **kwargs):
+#     if instance.status and instance.is_active:
+#         total_amt = FeeDetailsBreakDown.objects.filter(status=True,is_active=True,fees_detail=instance.fees_detail).aaggregate(total_amt=Sum('amount'))
+#         # Accessing the total amount, but handling the case where total_amt might be None
+#         total_value = total_amt['total_amt'] if total_amt['total_amt'] is not None else 0
+
+#     # You can now print or return total_value
+#     print(total_value)
+@receiver(post_save, sender=FeeDetailsBreakDown)
+def calculate_total_amt(sender, instance, **kwargs):
+    if instance.status and instance.is_active:
+        total_amt = FeeDetailsBreakDown.objects.filter(
+            status=True,
+            is_active=True,
+            fees_detail=instance.fees_detail,
+            institution = instance.institution,
+            branch = instance.branch
+        ).aggregate(total_amt=Sum('amount'))
+        # Handle the case where total_amt might be None
+        total_value = total_amt['total_amt'] if total_amt['total_amt'] is not None else 0
+        # You can now print or return total_value
+        FeesDetails.objects.filter(status=True,is_active=True,institution = instance.institution,branch = instance.branch,id=instance.fees_detail.id).update(
+            amount=total_value
+        )
     
 
 
