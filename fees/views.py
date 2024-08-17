@@ -739,7 +739,6 @@ class FeesDetailUpdate(generics.RetrieveUpdateAPIView):
         instance = fees_serializer.save()
         return CustomResponse(code=status.HTTP_200_OK, message="Staff information updated successfully", data=FeesMasterViewSerializer(instance).data)
 
-
 '''
 For Fees Transaction
 '''

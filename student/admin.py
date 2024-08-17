@@ -49,7 +49,7 @@ class StudentAdmin(admin.ModelAdmin):
         # ("Basic Information",{'fields':[('code','first_name','last_name','gender'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','admission_date','blood_group','Institution','status','is_online'),]}),
         ("Address",{'fields':[('present_address','permanent_address'),]})        
     ]
-    list_display = ['student_no','first_name','last_name','dob','admission_date','blood_group','status','photo_thumbnail']
+    list_display = ['student_no','first_name','last_name','dob','admission_date','blood_group','status','photo_thumbnail','std_status']
     search_fields = ['code','first_name','last_name','dob','admission_date','blood_group']
     list_filter = ['blood_group']
 
@@ -75,9 +75,16 @@ class StudentLeaveTransactionAdmin(admin.ModelAdmin):
     class Meta:
         model = StudentLeaveTransaction
 
+class StudentStatusTransactionAdmin(admin.ModelAdmin):
+    list_display = ['code','student','reason','std_status','status']
+
+    class Meta:
+        model = StudentStatusTransaction
+
 
 
 admin.site.register(Student,StudentAdmin)
 admin.site.register(Category,CategoryAdmin)
 admin.site.register(ProcessStAttendanceDaily,ProcessStAttendanceDailyAdmin)
 admin.site.register(StudentLeaveTransaction,StudentLeaveTransactionAdmin)
+admin.site.register(StudentStatusTransaction,StudentStatusTransactionAdmin)
