@@ -268,7 +268,7 @@ def calculate_duration(sender, instance, **kwargs):
     else:
         instance.day_count = None
 
-def staff_status_code():
+def std_status_code():
     last_staff_status_code = StudentStatusTransaction.objects.all().order_by('code').last()
     if not last_staff_status_code or last_staff_status_code.code is None:
         return 'STS-' + '1'
@@ -279,7 +279,7 @@ def staff_status_code():
     return new_gd_num  
 
 class StudentStatusTransaction(models.Model):
-    code = models.CharField(max_length=15,default=staff_status_code,editable=False)
+    code = models.CharField(max_length=15,default=std_status_code,editable=False)
     start_date = models.DateTimeField(blank=True,null=True)
     end_date = models.DateTimeField(blank=True,null=True)
     student = models.ForeignKey(Student, on_delete=models.SET_NULL,blank=True,null=True)

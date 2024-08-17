@@ -19,4 +19,6 @@ urlpatterns = [
     path('api/responsible/leave/list', StudentResponsibleLeaveList.as_view(), name='student-responsible-leave-list'),
     # Teacher Wise Student List
     path('api/teacher-wise', TeacherWiseStudentList.as_view(), name='teacher-wise-student'),
+    # stuent Status Transaction
+    path('api/std-status/trns/create',StudentStatusCreate.as_view(), name='student-status-trns-create-list'),
 ]

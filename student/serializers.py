@@ -142,3 +142,15 @@ class StudentViewSerializer(serializers.ModelSerializer):
 
         return representation
 
+class StudentStatusTransactionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentStatusTransaction
+        exclude = ['updated_at','created_at','status','is_active','created_by','updated_by']
+
+class StudentStatusTransactionViewSerializer(serializers.ModelSerializer):
+    student = StudentSortViewSerializer(read_only=True)
+    std_status = ActiveStatusViewSerializer(read_only=True)
+    class Meta:
+        model = StudentStatusTransaction
+        fields = ['id','code','student','std_status','start_date','end_date','reason','remarks']
+
