@@ -14,7 +14,6 @@ def validate_alpha_chars_only(value):
             code='alpha_chars_only'
         )
 
-
 class AccountBank(models.Model):
     name = models.CharField(max_length=255, verbose_name='Bank Name')
     remarks = models.CharField(max_length=255, blank=True, null=True)
@@ -83,6 +82,7 @@ class PayrollElement(models.Model):
     ELEMENT_TYPE = (('Allowance','Allowance'),('Deduction','Deduction'))
     name = models.CharField(max_length=255)
     type_name =models.CharField(max_length=255,verbose_name='Type',choices=ELEMENT_TYPE)
+    value = models.CharField(max_length=255,blank=True,null=True)
     type = models.IntegerField(blank=True,null=True,editable=False)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
@@ -107,3 +107,33 @@ def update_element_type(sender, instance, **kwargs):
         instance.type = -1
     else:
         instance.type = 0
+
+def salary_setup_code():
+    last_leave_code = SalarySetupMst.objects.all().order_by('code').last()
+    if not last_leave_code or last_leave_code.code is None:
+        return 'ST-' + '01'
+    leave_num = str(last_leave_code.code)[-2:]
+    leave_num_int = int(leave_num)
+    new_leave_num = leave_num_int + 1
+    new_gd_num = 'ST-' + str(new_leave_num).zfill(2)
+    return new_gd_num  
+
+class SalarySetupMst(models.Model):
+    code = models.CharField(max_length=255,verbose_name='Salary Setup Code',editable=False,default=salary_setup_code)
+    name = models.CharField(max_length=255)
+    remarks = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sal_stp_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='sal_stp_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hrms_salary_setup_mst'
+    
+    def __str__(self):
+        return str(self.name)
+

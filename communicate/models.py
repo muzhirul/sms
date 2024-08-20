@@ -5,6 +5,8 @@ from setup_app.models import Role
 from authentication.models import Authentication
 from academic.models import ClassSection
 from django_userforeignkey.models.fields import UserForeignKey
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
 
 # Create your models here.
 def validate_file_size(value):
@@ -53,6 +55,24 @@ class SmsTemplate(models.Model):
     def __str__(self):
         return str(self.title)
     
+@receiver(pre_save, sender=SmsTemplate)
+def calculate_info(sender, instance, **kwargs):
+    if instance.message_body:
+        context = {
+            'gross_pay': 50000,
+            'basic_pay':26000,
+            'house_rent': None,
+            'medical': None,
+            'convence': None,
+            'others': None,
+        }
+        formatted_formula = instance.message_body.format(**context)
+        import ast
+        basic = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+        print((basic))
+    else:
+        instance.message_body = None
+    
 class SmsSendSetup(models.Model):
     template = models.ForeignKey(SmsTemplate, on_delete=models.CASCADE, verbose_name='SMS Template')
     title = models.CharField(max_length=255,blank=True)
@@ -78,5 +98,7 @@ class SmsSendSetup(models.Model):
     
     def __str__(self):
         return str(self.title)
+    
+
 
     
