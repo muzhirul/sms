@@ -613,3 +613,54 @@ class LeaveTypeDelete(generics.UpdateAPIView):
         return CustomResponse(code=status.HTTP_200_OK, message=f"Leave Type {instance.name} Delete successfully", data=None)
 
 
+'''
+For Salary Setup
+'''
+class SalarySetupList(generics.ListAPIView):
+    serializer_class = SalarySetupMstViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+    
+    def get_queryset(self):
+        # month = self.request.query_params.get('month')
+        # year = self.request.query_params.get('year')
+        # if month or year:
+        #     queryset = Holiday.objects.filter(Q(end_date__month=month) | Q(start_date__month=month),Q(start_date__year=year),status=True).order_by('start_date','-id')
+        # else:
+        queryset = SalarySetupMst.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+        
+    def list(self,request,*args, **kwargs):        
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)

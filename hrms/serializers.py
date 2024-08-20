@@ -61,3 +61,22 @@ class LeaveTypeView2Serializer(serializers.ModelSerializer):
         model = LeaveType
         fields = ['id','leave_type_code','name']
         # exclude = ['status','institution','branch']
+
+class PayrollElementViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PayrollElement
+        fields = ['id','name']
+
+class SalarySetupDtlViewSerializer(serializers.ModelSerializer):
+    payroll_ele = PayrollElementViewSerializer()
+    class Meta:
+        model = SalarySetupDtl
+        fields = ['id', 'payroll_ele','fixed_amt','formula','min_amt','max_amt','remarks','status']
+
+class SalarySetupMstViewSerializer(serializers.ModelSerializer):
+    salary_setup_dtl = SalarySetupDtlViewSerializer(many=True, required=False, read_only=True)
+    class Meta:
+        model = SalarySetupMst
+        fields = ['id','code','name','status','salary_setup_dtl']
+
+

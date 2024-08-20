@@ -138,7 +138,7 @@ class SalarySetupMst(models.Model):
         return str(self.name)
     
 class SalarySetupDtl(models.Model):
-    salary_setup_mst = models.ForeignKey(SalarySetupMst,on_delete=models.SET_NULL,blank=True,null=True)
+    salary_setup_mst = models.ForeignKey(SalarySetupMst,on_delete=models.SET_NULL,blank=True,null=True,related_name='salary_setup_dtl')
     payroll_ele = models.ForeignKey(PayrollElement,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Element',limit_choices_to={'is_active': 'True'},)
     fixed_amt = models.DecimalField(blank=True, null=True,verbose_name='Fixed Amount',max_digits=8,decimal_places=2)
     formula = models.CharField(max_length=255,blank=True,null=True)
@@ -159,4 +159,22 @@ class SalarySetupDtl(models.Model):
     
     def __str__(self):
         return str(self.payroll_ele)
+    
+@receiver(pre_save, sender=SalarySetupDtl)
+def calculate_info(sender, instance, **kwargs):
+    if instance.formula:
+        context = {
+            'gross_pay': 50000,
+            'basic_pay':None,
+            'house_rent': None,
+            'medical': None,
+            'convence': None,
+            'others': None,
+        }
+        formatted_formula = instance.formula.format(**context)
+        import ast
+        basic = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+        print((basic))
+    else:
+        instance.message_body = None
 

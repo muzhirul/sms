@@ -17,4 +17,6 @@ urlpatterns = [
     path('api/leave-type', LeaveTypeCreateList.as_view(), name='leave-type-list-create'),
     path('api/leave-type/detail/<int:pk>', LeaveTypeDetail.as_view(), name='leave-type-detail'),
     path('api/leave-type/delete/<int:pk>', LeaveTypeDelete.as_view(), name='leave-type-delete'),
+    # For Salary Setup
+    path('api/salary-setup/list', SalarySetupList.as_view(), name='salary-setup-list'),
 ]
