@@ -79,7 +79,7 @@ class Holiday(models.Model):
         return self.name
 
 class PayrollElement(models.Model):
-    ELEMENT_TYPE = (('Allowance','Allowance'),('Deduction','Deduction'))
+    ELEMENT_TYPE = (('Allowance','Allowance'),('Deduction','Deduction'),('Other','Other'))
     name = models.CharField(max_length=255)
     type_name =models.CharField(max_length=255,verbose_name='Type',choices=ELEMENT_TYPE)
     value = models.CharField(max_length=255,blank=True,null=True)
@@ -136,4 +136,27 @@ class SalarySetupMst(models.Model):
     
     def __str__(self):
         return str(self.name)
+    
+class SalarySetupDtl(models.Model):
+    salary_setup_mst = models.ForeignKey(SalarySetupMst,on_delete=models.SET_NULL,blank=True,null=True)
+    payroll_ele = models.ForeignKey(PayrollElement,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Element',limit_choices_to={'is_active': 'True'},)
+    fixed_amt = models.DecimalField(blank=True, null=True,verbose_name='Fixed Amount',max_digits=8,decimal_places=2)
+    formula = models.CharField(max_length=255,blank=True,null=True)
+    min_amt = models.DecimalField(blank=True, null=True,verbose_name='Minimum Amount',max_digits=8,decimal_places=2)
+    max_amt = models.DecimalField(blank=True, null=True,verbose_name='Max Amount',max_digits=8,decimal_places=2)
+    remarks = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sal_stp_dtl_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='sal_stp_dtl_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hrms_salary_setup_dtl'
+    
+    def __str__(self):
+        return str(self.payroll_ele)
 

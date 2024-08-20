@@ -26,8 +26,16 @@ class PayrollElementAdmin(admin.ModelAdmin):
     class Meta:
         model = PayrollElement
 
+class SalarySetupDtlTabularInline(admin.TabularInline):
+    model = SalarySetupDtl
+    fields = ['payroll_ele','fixed_amt','formula','min_amt','max_amt','remarks','status','institution','branch']
+    extra = 0
+
 class SalarySetupMstAdmin(admin.ModelAdmin):
     list_display = ['code','name','status']
+    search_fields = ['code','name','status']
+    inlines = [SalarySetupDtlTabularInline]
+    save_on_top = True
 
     class Meta:
         model = SalarySetupMst
