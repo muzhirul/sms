@@ -72,7 +72,6 @@ class PayrollElementListSerializer(serializers.ModelSerializer):
         model = PayrollElement
         fields = ['value','name']
 
-
 class SalarySetupDtlViewSerializer(serializers.ModelSerializer):
     payroll_ele = PayrollElementViewSerializer()
     class Meta:
@@ -115,5 +114,53 @@ class SalarySetupMstViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalarySetupMst
         fields = ['id','code','name','status','salary_setup_dtl']
+
+class SalarySetupDtlCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    class Meta:
+        model = SalarySetupDtl
+        exclude = ['status','created_at','updated_at','created_by','updated_by']
+        read_only_fields = ('salary_setup_dtl',)
+
+class SalarySetupMstCreateSerializer(serializers.ModelSerializer):
+    salary_setup_dtl = SalarySetupDtlCreateSerializer(many=True)
+    class Meta:
+        model = SalarySetupMst
+        exclude = ['status','created_at','updated_at','created_by','updated_by']
+
+    def create(self, validated_data):
+        salary_setup_dtls = validated_data.pop('salary_setup_dtl')
+        salary_mst = SalarySetupMst.objects.create(**validated_data)
+        for salary_setup_dtl in salary_setup_dtls:
+            SalarySetupDtl.objects.create(**salary_setup_dtl, salary_setup_mst=salary_mst,institution=salary_mst.institution,branch=salary_mst.branch)
+        return salary_mst
+    
+    def update(self, instance, validated_data):
+        salary_setup_dtls = validated_data.pop('salary_setup_dtl')
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        keep_choices = []
+        for salary_setup_dtl in salary_setup_dtls:
+            if "id" in salary_setup_dtl.keys():
+                if SalarySetupDtl.objects.filter(id=salary_setup_dtl["id"]).exists():
+                    c = SalarySetupDtl.objects.get(id=salary_setup_dtl["id"])
+                    c.payroll_ele = salary_setup_dtl.get('payroll_ele', c.payroll_ele)
+                    c.fixed_amt = salary_setup_dtl.get('fixed_amt', c.fixed_amt)
+                    c.formula = salary_setup_dtl.get('formula', c.formula)
+                    c.min_amt = salary_setup_dtl.get('min_amt', c.min_amt)
+                    c.max_amt = salary_setup_dtl.get('max_amt', c.max_amt)
+                    c.remarks = salary_setup_dtl.get('remarks', c.remarks)
+                    c.status = True
+                    c.save()
+                    keep_choices.append(c.id)
+                else:
+                    continue
+            else:
+                c = SalarySetupDtl.objects.create(**salary_setup_dtl, salary_setup_mst=instance,institution=instance.institution,branch=instance.branch)
+                keep_choices.append(c.id)
+
+
+        return instance
 
 

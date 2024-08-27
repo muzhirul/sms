@@ -678,6 +678,41 @@ class SalarySpecificElementList(generics.ListAPIView):
 
         return Response(response_data)
 
+class SalarySetupCreate(generics.CreateAPIView):
+    serializer_class = SalarySetupMstViewSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+   
+    def create(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(self.request.user.id, 'Salary Setup', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        serializer_class = SalarySetupMstCreateSerializer
+        serializer = serializer_class(data=request.data)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                name = serializer.validated_data.get('name')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                salary_mst_count = SalarySetupMst.objects.filter(name=name,status=True).count()
+                if (salary_mst_count==0):
+                    instance = serializer.save(institution=institution, branch=branch)
+                        # Customize the response data
+                    return CustomResponse(code=status.HTTP_200_OK, message="Salary Setup created successfully", data=SalarySetupMstViewSerializer(instance).data)
+                else:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Salary Setup already exists for this class", data=serializer.errors)
+            # If the serializer is not valid, return an error response
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
 class SalarySetupList(generics.ListAPIView):
     serializer_class = SalarySetupMstViewSerializer
