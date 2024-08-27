@@ -20,4 +20,5 @@ urlpatterns = [
     # For Salary Setup
     path('api/salary-setup/list', SalarySetupList.as_view(), name='salary-setup-list'),
     path('api/salary-all-element/list',SalaryElementList.as_view(), name='salary-element-list'),
+    path('api/salary-element/list',SalarySpecificElementList.as_view(), name='salary-specific-element-list'),
 ]

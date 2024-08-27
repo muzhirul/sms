@@ -647,6 +647,37 @@ class SalaryElementList(generics.ListAPIView):
 
         return Response(response_data)
 
+class SalarySpecificElementList(generics.ListAPIView):
+    serializer_class = PayrollElementViewSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = PayrollElement.objects.filter(is_active=True,status=True).order_by('-id')
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
 
 class SalarySetupList(generics.ListAPIView):
     serializer_class = SalarySetupMstViewSerializer
