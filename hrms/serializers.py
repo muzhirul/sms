@@ -67,6 +67,12 @@ class PayrollElementViewSerializer(serializers.ModelSerializer):
         model = PayrollElement
         fields = ['id','name']
 
+class PayrollElementListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PayrollElement
+        fields = ['value','name']
+
+
 class SalarySetupDtlViewSerializer(serializers.ModelSerializer):
     payroll_ele = PayrollElementViewSerializer()
     class Meta:

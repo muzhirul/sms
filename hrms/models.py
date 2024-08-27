@@ -165,7 +165,7 @@ def calculate_info(sender, instance, **kwargs):
     if instance.formula:
         context = {
             'gross_pay': 50000,
-            'basic_pay':None,
+            'basic_pay':26000,
             'house_rent': None,
             'medical': None,
             'convence': None,
