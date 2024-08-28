@@ -742,6 +742,59 @@ class FeesDetailUpdate(generics.RetrieveUpdateAPIView):
 '''
 For Fees Transaction
 '''
+class StudentWiseFeesTransaction(generics.ListAPIView):
+    serializer_class = FeesTransactionViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        student_id = self.request.query_params.get('student_id')
+        if student_id is None:
+            student_id = Student.objects.get(status=True,user=self.request.user.id)
+        queryset = FeesTransaction.objects.filter(status=True,institution=institution_id,branch=branch_id,student=student_id).order_by('id')
+        
+        try:
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    def list(self,request,*args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Staff Shift', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
 class FeesTrnsManualEntry(generics.ListAPIView):
     def list(self,request,*args, **kwargs):
         std_fees_trns = {}
