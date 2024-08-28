@@ -28,7 +28,7 @@ class PayrollElementAdmin(admin.ModelAdmin):
 
 class SalarySetupDtlTabularInline(admin.TabularInline):
     model = SalarySetupDtl
-    fields = ['payroll_ele','fixed_amt','formula','min_amt','max_amt','remarks','status','institution','branch']
+    fields = ['seq_order','payroll_ele','fixed_amt','formula','min_amt','max_amt','remarks','status','institution','branch']
     extra = 0
 
 class SalarySetupMstAdmin(admin.ModelAdmin):

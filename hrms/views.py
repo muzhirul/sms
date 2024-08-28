@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics, permissions
 from sms.utils import CustomResponse
 from .models import *
+from staff.models import *
 from .serializers import *
 from rest_framework import status
 from sms.permission import check_permission
@@ -760,5 +761,168 @@ class SalarySetupList(generics.ListAPIView):
                     "count": queryset.count(),
                 },
             }
+
+        return Response(response_data)
+
+# class StaffSalaryCalculation(generics.ListAPIView):
+        
+#     def list(self,request,*args, **kwargs):    
+           
+#         for staff_list in Staff.objects.filter(status=True,pk=96):
+#             salary_info = {}
+#             staff_sal = StaffPayroll.objects.filter(status=True,is_active=True,staff=staff_list).order_by('start_date').last()
+#             staff_gross = staff_sal.gross
+#             sal_for_ele = SalarySetupMst.objects.filter(status=True,is_active=True,pk=1).order_by('id').last()
+#             for sal_dtl_ele in SalarySetupDtl.objects.filter(status=True,salary_setup_mst=sal_for_ele).order_by('seq_order'):
+#                 context = {
+#                     'gross_pay': staff_gross,
+#                 }
+#                 import ast
+#                 if sal_dtl_ele.payroll_ele.name =='Gross Salary':
+#                     formatted_formula = sal_dtl_ele.formula.format(**context)
+#                     gross_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+#                     print('Gross Pay:',gross_pay)
+#                 elif sal_dtl_ele.payroll_ele.name =='Basic Pay':
+#                     formatted_formula = sal_dtl_ele.formula.format(**context)
+#                     basic_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+#                     print('Basic Pay',basic_pay)
+#                 elif sal_dtl_ele.payroll_ele.name =='House Rent':
+#                     context = {
+#                         'gross_pay': gross_pay,
+#                         'basic_pay':basic_pay,
+#                     }
+#                     formatted_formula = sal_dtl_ele.formula.format(**context)
+#                     house_rent = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+#                     if sal_dtl_ele.max_amt:
+#                         if house_rent > sal_dtl_ele.max_amt:
+#                             house_rent = sal_dtl_ele.max_amt
+#                     print('House Rent',house_rent)
+#                 elif sal_dtl_ele.payroll_ele.name =='Medical':
+#                     context = {
+#                         'gross_pay': gross_pay,
+#                         'basic_pay':basic_pay,
+#                         'house_rent': house_rent,
+#                         # 'medical': 10,
+#                         # 'convence': 5,
+#                         # 'others': 5,
+#                     }
+#                     formatted_formula = sal_dtl_ele.formula.format(**context)
+#                     medical_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+#                     if sal_dtl_ele.max_amt:
+#                         if medical_pay > sal_dtl_ele.max_amt:
+#                             medical_pay = sal_dtl_ele.max_amt
+#                     print('Medical Pay:',medical_pay)
+#                 elif sal_dtl_ele.payroll_ele.name =='Conveyance':
+#                     context = {
+#                         'gross_pay': gross_pay,
+#                         'basic_pay':basic_pay,
+#                         'house_rent': house_rent,
+#                         'medical': medical_pay,
+#                         # 'convence': 5,
+#                         # 'others': 5,
+#                     }
+#                     formatted_formula = sal_dtl_ele.formula.format(**context)
+#                     conveyance_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+#                     if sal_dtl_ele.max_amt:
+#                         if conveyance_pay > sal_dtl_ele.max_amt:
+#                             conveyance_pay = sal_dtl_ele.max_amt
+#                     print('Conveyance Pay:',conveyance_pay)
+#                 elif sal_dtl_ele.payroll_ele.name == 'Other':
+#                     context = {
+#                         'gross_pay': gross_pay,
+#                         'basic_pay':basic_pay,
+#                         'house_rent': house_rent,
+#                         'medical': medical_pay,
+#                         'convence': conveyance_pay,
+#                         # 'others': 5,
+#                     }
+#                     formatted_formula = sal_dtl_ele.formula.format(**context)
+#                     others_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+#                     print('Others Pay:',others_pay)
+
+
+
+#         response_data = {
+#             "code": 200,
+#             "message": "Success",
+#             "data": salary_info
+#         }
+
+#         return Response(response_data)
+
+class StaffSalaryCalculation(generics.ListAPIView):
+    
+    def list(self, request, *args, **kwargs):
+        salary_info = {}
+        
+        for staff_list in Staff.objects.filter(status=True, pk=96):
+            staff_sal = StaffPayroll.objects.filter(status=True, is_active=True, staff=staff_list).order_by('start_date').last()
+            staff_gross = staff_sal.gross
+            sal_for_ele = SalarySetupMst.objects.filter(status=True, is_active=True, pk=1).order_by('id').last()
+
+            context = {
+                'gross_pay': staff_gross,
+            }
+
+            for sal_dtl_ele in SalarySetupDtl.objects.filter(status=True, salary_setup_mst=sal_for_ele).order_by('seq_order'):
+                import ast
+                if sal_dtl_ele.payroll_ele.name == 'Gross Salary':
+                    formatted_formula = sal_dtl_ele.formula.format(**context)
+                    gross_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                    salary_info['Gross Pay'] = gross_pay
+                    context['gross_pay'] = gross_pay  # Update context with the calculated gross pay
+
+                elif sal_dtl_ele.payroll_ele.name == 'Basic Pay':
+                    formatted_formula = sal_dtl_ele.formula.format(**context)
+                    basic_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                    salary_info['Basic Pay'] = basic_pay
+                    context['basic_pay'] = basic_pay  # Update context with the calculated basic pay
+
+                elif sal_dtl_ele.payroll_ele.name == 'House Rent':
+                    context.update({
+                        'basic_pay': salary_info.get('Basic Pay', 0),  # Ensure basic_pay is added to the context
+                    })
+                    formatted_formula = sal_dtl_ele.formula.format(**context)
+                    house_rent = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                    if sal_dtl_ele.max_amt and house_rent > sal_dtl_ele.max_amt:
+                        house_rent = sal_dtl_ele.max_amt
+                    salary_info['House Rent'] = house_rent
+                    context['house_rent'] = house_rent  # Update context with the calculated house rent
+
+                elif sal_dtl_ele.payroll_ele.name == 'Medical':
+                    context.update({
+                        'house_rent': salary_info.get('House Rent', 0),  # Ensure house_rent is added to the context
+                    })
+                    formatted_formula = sal_dtl_ele.formula.format(**context)
+                    medical_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                    if sal_dtl_ele.max_amt and medical_pay > sal_dtl_ele.max_amt:
+                        medical_pay = sal_dtl_ele.max_amt
+                    salary_info['Medical Pay'] = medical_pay
+                    context['medical'] = medical_pay  # Update context with the calculated medical pay
+
+                elif sal_dtl_ele.payroll_ele.name == 'Conveyance':
+                    context.update({
+                        'medical': salary_info.get('Medical Pay', 0),  # Ensure medical is added to the context
+                    })
+                    formatted_formula = sal_dtl_ele.formula.format(**context)
+                    conveyance_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                    if sal_dtl_ele.max_amt and conveyance_pay > sal_dtl_ele.max_amt:
+                        conveyance_pay = sal_dtl_ele.max_amt
+                    salary_info['Conveyance Pay'] = conveyance_pay
+                    context['convence'] = conveyance_pay  # Update context with the calculated conveyance pay
+
+                elif sal_dtl_ele.payroll_ele.name == 'Other':
+                    context.update({
+                        'convence': salary_info.get('Conveyance Pay', 0),  # Ensure conveyance is added to the context
+                    })
+                    formatted_formula = sal_dtl_ele.formula.format(**context)
+                    others_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                    salary_info['Others Pay'] = others_pay
+
+        response_data = {
+            "code": 200,
+            "message": "Success",
+            "data": salary_info
+        }
 
         return Response(response_data)

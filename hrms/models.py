@@ -145,6 +145,7 @@ class SalarySetupDtl(models.Model):
     min_amt = models.DecimalField(blank=True, null=True,verbose_name='Minimum Amount',max_digits=8,decimal_places=2)
     max_amt = models.DecimalField(blank=True, null=True,verbose_name='Max Amount',max_digits=8,decimal_places=2)
     remarks = models.TextField(blank=True, null=True)
+    seq_order = models.IntegerField(blank=True, null=True,verbose_name='Ordering')
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
@@ -166,10 +167,10 @@ def calculate_info(sender, instance, **kwargs):
         context = {
             'gross_pay': 50000,
             'basic_pay':26000,
-            'house_rent': None,
-            'medical': None,
-            'convence': None,
-            'others': None,
+            'house_rent': 20,
+            'medical': 10,
+            'convence': 5,
+            'others': 5,
         }
         formatted_formula = instance.formula.format(**context)
         import ast
