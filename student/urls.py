@@ -22,4 +22,6 @@ urlpatterns = [
     path('api/teacher-wise', TeacherWiseStudentList.as_view(), name='teacher-wise-student'),
     # stuent Status Transaction
     path('api/std-status/trns/create',StudentStatusCreate.as_view(), name='student-status-trns-create-list'),
+    # Student attendance List
+    path('api/daily/attn-list',StudentDailyAttnList.as_view(), name='staff-daily-attn-list'),
 ]

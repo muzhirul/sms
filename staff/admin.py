@@ -93,6 +93,13 @@ class StaffLeaveTransactionAdmin(admin.ModelAdmin):
     
     inlines = [StaffLeaveAppHistoryTabularInline]
 
+class ProcessStaffAttendanceMstAdmin(admin.ModelAdmin):
+    list_display = ['code','staff','staff_code','staff_payroll','from_date','to_date','total_day','actual_gross']
+    search_fields = ['code','staff_code','from_date','to_date','total_day']
+
+    class Meta:
+        model = ProcessStaffAttendanceMst
+
 
 
 admin.site.register(Staff,StaffAdmin)
@@ -102,3 +109,4 @@ admin.site.register(StaffShift,StaffShiftAdmin)
 admin.site.register(ProcessAttendanceDaily,ProcessAttendanceDailyAdmin)
 admin.site.register(StaffLeaveTransaction,StaffLeaveTransactionAdmin)
 admin.site.register(StaffLeaveAppHistory)
+admin.site.register(ProcessStaffAttendanceMst,ProcessStaffAttendanceMstAdmin)

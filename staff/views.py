@@ -16,6 +16,7 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 import requests
+from datetime import timedelta
 # Create your views here.
 
 class StaffDepartmentList(generics.ListAPIView):
@@ -1892,7 +1893,8 @@ class StaffAttendanceSummeryProcess(generics.CreateAPIView):
                     staff_gross = staff_payroll.gross
                 else:
                     staff_type = None
-                    staff_gross = None
+                    staff_payroll_id = None
+                    staff_gross = 0
                 total_days = ProcessAttendanceDaily.objects.filter(status=True,is_active=True,
                                                                    staff=staff_info,attn_date__range=(from_date, to_date)
                                                                    ).count()
@@ -1935,7 +1937,8 @@ class StaffAttendanceSummeryProcess(generics.CreateAPIView):
                     staff_main_grouss = payable_days * staff_gross
                 else:
                     payable_days = total_present + total_late + total_early_gone + total_holiday + total_weekend
-                print(total_days,staff_info,payable_days,total_present,total_absent,total_weekend,total_holiday,total_late,staff_main_grouss,total_leave,total_on_tour)
+                    staff_main_grouss = staff_gross
+                # print(total_days,staff_info,payable_days,total_present,total_absent,total_weekend,total_holiday,total_late,staff_main_grouss,total_leave,total_on_tour)
 
                 proc_attn_mst['staff'] = staff_info
                 proc_attn_mst['staff_code'] = staff_info.staff_id
@@ -1955,7 +1958,7 @@ class StaffAttendanceSummeryProcess(generics.CreateAPIView):
                 proc_attn_mst['branch'] = staff_info.branch
                 p = ProcessStaffAttendanceMst.objects.create(**proc_attn_mst)
 
-                print(proc_attn_mst)
+                # print(proc_attn_mst)
 
 
         return CustomResponse(code=status.HTTP_200_OK, message="Process Done", data=None)

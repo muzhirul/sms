@@ -518,7 +518,7 @@ def update_leave_approval_status(sender, instance, **kwargs):
 
 
 def staff_atnn_code():
-    last_staff_attn_code = ProcessStaffAttendanceMst.objects.all().order_by('code').last()
+    last_staff_attn_code = ProcessStaffAttendanceMst.objects.all().order_by('id').last()
     if not last_staff_attn_code or last_staff_attn_code.code is None:
         return 'P-' + '1'
     staff_attn_mst_num = str(last_staff_attn_code.code)[2:]
