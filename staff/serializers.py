@@ -171,14 +171,20 @@ class StaffTeacherWithSubjectSerializer(serializers.ModelSerializer):
             branch=branch
         ).select_related('class_subject')
 
-        # Return a list of subjects taught by the teacher
-        return [
-            {
-                "subject_id": rd.class_subject.id,
-                "subject_name": rd.class_subject.subject.name
-            }
-            for rd in routine_details if rd.class_subject
-        ]
+        # Use a set to track seen subjects to avoid duplicates
+        seen_subjects = set()
+        subjects = []
+
+        for rd in routine_details:
+            if rd.class_subject and rd.class_subject.id not in seen_subjects:
+                subjects.append({
+                    "subject_id": rd.class_subject.id,
+                    "subject_name": rd.class_subject.subject.name
+                })
+                seen_subjects.add(rd.class_subject.id)
+
+        return subjects
+
 
 
 class StaffTeacherViewSerializer(serializers.ModelSerializer):
