@@ -2,14 +2,17 @@ from django.shortcuts import render
 from rest_framework import generics, permissions
 from sms.utils import CustomResponse
 from .models import *
+from academic.models import *
 from .serializers import *
 from sms.pagination import CustomPagination
 from rest_framework import status
 from authentication.models import Authentication
 from rest_framework.response import Response
 from sms.permission import check_permission
+from staff.serializers import StaffTeacherWithSubjectSerializer
 from datetime import datetime
 from academic.models import ClassTeacher
+import traceback
 
 # Create your views here.
 class StudentShortList(generics.ListAPIView):
@@ -958,4 +961,164 @@ class StudentDailyAttnList(generics.ListAPIView):
                 }
 
         return Response(response_data)
+
+# class StudentWiseTeacherList(generics.ListAPIView):
+#     serializer_class = StaffTeacherSerializer
+#     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+#     pagination_class = CustomPagination
+
+#     def get_queryset(self):
+#         student_id = self.request.query_params.get('student_id')
+#         if student_id:
+#             std_info = Student.objects.get(id=student_id,status=True)
+#             user_info = std_info.user.id
+#             institution = std_info.institution
+#             branch = std_info.branch
+#         else:
+#             username = self.request.user
+#             user_info = self.request.user.id
+#             model_name = self.request.user.model_name
+#             institution = self.request.user.institution
+#             branch = self.request.user.branch
+        
+#         if StudentEnroll.objects.filter(student__user=user_info,status=True,is_active=True,institution=institution, branch=branch).exists():
+#             std_enroll = StudentEnroll.objects.filter(student__user=user_info,status=True,is_active=True,institution=institution, branch=branch).order_by('-id').last()
+#             session_name = std_enroll.session.session
+#             version_name = std_enroll.version.version
+#             class_name = std_enroll.class_name.name
+#             section = std_enroll.section.section
+#             routine_mst = ClassRoutineMst.objects.filter(session=std_enroll.session,version=std_enroll.version,class_name=std_enroll.class_name,section=std_enroll.section,status=True,institution=institution, branch=branch).last()
+#             teacher_ids = []
+#             for routine_dtl in ClassRoutiineDtl.objects.filter(class_routine_mst=routine_mst,status=True,institution=institution, branch=branch):
+#                 teacher_ids.append(routine_dtl.teacher.id)
+#             queryset = Staff.objects.filter(id__in=teacher_ids,status=True,institution=institution,branch=branch)
+#         else:
+#             queryset = Staff.objects.none()  # Return an empty queryset if no matching enrollments are found
+        
+#         return queryset
+
+
+#     def list(self,request,*args, **kwargs):
+#         '''Check user has permission to View start'''
+#         # permission_check = check_permission(self.request.user.id, 'Staff Shift', 'view')
+#         # if not permission_check:
+#         #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+#         '''Check user has permission to View end'''
+#         try:
+#             queryset = self.filter_queryset(self.get_queryset())
+#             page = self.paginate_queryset(queryset)
+#             if page is not None:
+#                 serializer = self.get_serializer(page, many=True)
+#                 response_data = self.get_paginated_response(serializer.data).data
+#             else:
+#                 serializer = self.get_serializer(queryset, many=True)
+#                 response_data = {
+#                     "code": 200,
+#                     "message": "Success",
+#                     "data": serializer.data,
+#                     "pagination": {
+#                         "next": None,
+#                         "previous": None,
+#                         "count": queryset.count(),
+#                     },
+#                 }
+#         except Exception as e:
+#             print(traceback.format_exc())  # Print the full traceback to the console or logs
+#             response_data = {
+#                 "code": 400,
+#                 "message": "Bad Request",
+#                 "data": None,
+#             }
+
+#         return Response(response_data)
+
+class StudentWiseTeacherList(generics.ListAPIView):
+    serializer_class = StaffTeacherWithSubjectSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        student_id = self.request.query_params.get('student_id')
+        if student_id:
+            std_info = Student.objects.get(id=student_id, status=True)
+            user_info = std_info.user.id
+            institution = std_info.institution
+            branch = std_info.branch
+        else:
+            user_info = self.request.user.id
+            institution = self.request.user.institution
+            branch = self.request.user.branch
+
+        teacher_subjects = []
+        if StudentEnroll.objects.filter(student__user=user_info, status=True, is_active=True, institution=institution, branch=branch).exists():
+            std_enroll = StudentEnroll.objects.filter(
+                student__user=user_info, status=True, is_active=True, institution=institution, branch=branch
+            ).order_by('-id').last()
+
+            routine_mst = ClassRoutineMst.objects.filter(
+                session=std_enroll.session,
+                version=std_enroll.version,
+                class_name=std_enroll.class_name,
+                section=std_enroll.section,
+                status=True,
+                institution=institution,
+                branch=branch
+            ).last()
+
+            routine_details = ClassRoutiineDtl.objects.filter(
+                class_routine_mst=routine_mst,
+                status=True,
+                institution=institution,
+                branch=branch
+            )
+
+            for routine_dtl in routine_details:
+                teacher_subjects.append({
+                    "teacher": routine_dtl.teacher,
+                    "subject": routine_dtl.class_subject  # Assuming class_subject is linked to ClassSubject model
+                })
+
+            # Extract unique teacher IDs
+            teacher_ids = {ts['teacher'].id for ts in teacher_subjects}
+
+            queryset = Staff.objects.filter(id__in=teacher_ids, status=True, institution=institution, branch=branch)
+        else:
+            queryset = Staff.objects.none()  # Return an empty queryset if no matching enrollments are found
+        print(teacher_subjects)
+        return queryset, teacher_subjects
+
+
+
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset, _ = self.get_queryset()
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True, context={'request': request})
+                response_data = self.get_paginated_response(serializer.data).data
+            else:
+                serializer = self.get_serializer(queryset, many=True, context={'request': request})
+                response_data = {
+                    "code": 200,
+                    "message": "Success",
+                    "data": serializer.data,
+                    "pagination": {
+                        "next": None,
+                        "previous": None,
+                        "count": queryset.count(),
+                    },
+                }
+        except Exception as e:
+            print(traceback.format_exc())
+            response_data = {
+                "code": 400,
+                "message": "Bad Request",
+                "data": None,
+            }
+
+        return Response(response_data)
+
+
+
+
 

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from setup_app.serializers import *
 from hrms.serializers import AccountBankViewSerializer
 from staff.models import *
+from academic.models import *
 from hrms.serializers import *
 
 
@@ -149,8 +150,37 @@ class StaffLeaveListSerialier(serializers.ModelSerializer):
 class StaffTeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
-        fields = ['id','first_name','last_name','staff_id','user']
+        fields = ['id','first_name','last_name','mobile_no','staff_id','user']
         
+class StaffTeacherWithSubjectSerializer(serializers.ModelSerializer):
+    subjects = serializers.SerializerMethodField()
+    class Meta:
+        model = Staff
+        fields = ['id','first_name','last_name','mobile_no','staff_id', 'subjects']
+    
+    def get_subjects(self, obj):
+        # Assuming `obj` is an instance of `Staff`
+        institution = self.context['request'].user.institution
+        branch = self.context['request'].user.branch
+        
+        # Find all routine details related to this teacher
+        routine_details = ClassRoutiineDtl.objects.filter(
+            teacher=obj,
+            status=True,
+            institution=institution,
+            branch=branch
+        ).select_related('class_subject')
+
+        # Return a list of subjects taught by the teacher
+        return [
+            {
+                "subject_id": rd.class_subject.id,
+                "subject_name": rd.class_subject.subject.name
+            }
+            for rd in routine_details if rd.class_subject
+        ]
+
+
 class StaffTeacherViewSerializer(serializers.ModelSerializer):
 
     class Meta:
