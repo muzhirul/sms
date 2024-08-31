@@ -48,9 +48,18 @@ class AccountCostCenterAdmin(admin.ModelAdmin):
     class Meta:
         model = AccountCostCenter
 
+class AccountTaxMstAdmin(admin.ModelAdmin):
+    list_display = ['code','name','tax_year','status']
+    search_fields = ['code','name','tax_year','status']
+    save_on_top = True
+
+    class Meta:
+        model = AccountTaxMst
+
 admin.site.register(AccountBank, AccountBankAdmin)
 admin.site.register(LeaveType, LeaveTypeAdmin)
 admin.site.register(Holiday, HolidayAdmin)
 admin.site.register(PayrollElement, PayrollElementAdmin)
 admin.site.register(SalarySetupMst, SalarySetupMstAdmin)
 admin.site.register(AccountCostCenter, AccountCostCenterAdmin)
+admin.site.register(AccountTaxMst, AccountTaxMstAdmin)
