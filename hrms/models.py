@@ -179,3 +179,32 @@ def calculate_info(sender, instance, **kwargs):
     else:
         instance.message_body = None
 
+def acc_cost_center_code():
+    last_acc_cost_code = AccountCostCenter.objects.all().order_by('code').last()
+    if not last_acc_cost_code or last_acc_cost_code.code is None:
+        return 'AC-' + '01'
+    acc_cost_num = str(last_acc_cost_code.code)[-2:]
+    acc_cost_num_int = int(acc_cost_num)
+    new_acc_cost_num = acc_cost_num_int + 1
+    new_gd_num = 'AC-' + str(new_acc_cost_num).zfill(2)
+    return new_gd_num  
+
+class AccountCostCenter(models.Model):
+    code = models.CharField(max_length=30,editable=False,default=acc_cost_center_code)
+    name = models.CharField(max_length=255,verbose_name='Cost Center Name')
+    start_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='acc_cost_center_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='acc_cost_center_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hrms_acc_cost_cetr'
+
+    def __str__(self):
+        return str(self.name)

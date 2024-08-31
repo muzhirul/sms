@@ -185,8 +185,6 @@ class StaffTeacherWithSubjectSerializer(serializers.ModelSerializer):
 
         return subjects
 
-
-
 class StaffTeacherViewSerializer(serializers.ModelSerializer):
 
     class Meta:
