@@ -612,5 +612,53 @@ def update_staff_status(sender, instance, **kwargs):
         instance.staff.staff_status = instance.staff_status
         instance.staff.save()
 
+class ProcessStaffSalaryTable(models.Model):
+    staff=models.ForeignKey(Staff, on_delete=models.SET_NULL,blank=True,null=True)
+    staff_no = models.CharField(max_length=50,blank=True,null=True)
+    staff_name = models.CharField(max_length=200,blank=True,null=True)
+    staff_payroll = models.ForeignKey(StaffPayroll, on_delete=models.SET_NULL,blank=True,null=True)
+    department = models.ForeignKey(Department,on_delete=models.SET_NULL,blank=True,null=True)
+    designation = models.ForeignKey(Designation,on_delete=models.SET_NULL, blank=True,null=True)
+    from_date = models.DateField()
+    to_date = models.DateField()
+    bank_acc_no = models.CharField(max_length=255,blank=True,null=True)
+    is_hold = models.BooleanField(default=False)
+    prl_ele_basic = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_house_rent = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_medical = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_conveyance = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_others_a = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    gross = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_adjustment_a = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_adjustment_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_cash_advance = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_donation = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_award = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_ait = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_mobile_bill_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_rpf = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_other_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_absent_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_food_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    total_deduction = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    new_payable_amt = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    payable_day = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    remarks = models.TextField(blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='proc_sal_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='proc_sal_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'staff_proc_sal_tbl'
+
+    def __str__(self):
+        return str(self.id)
+        
+
 
     
