@@ -239,3 +239,37 @@ class AccountTaxMst(models.Model):
 
     def __str__(self):
         return str(self.name)
+    
+class AccountTaxDtl(models.Model):
+    acc_tax_mst = models.ForeignKey(AccountTaxMst,on_delete=models.SET_NULL,blank=True,null=True)
+    phase = models.CharField(max_length=20,verbose_name='Phase')
+    name = models.CharField(max_length=255,verbose_name='Phase Title')
+    lmt = models.IntegerField(verbose_name='Limit')
+    pct = models.DecimalField(max_digits=4,decimal_places=2,verbose_name='%')
+    start_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='acc_tax_dtl_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='acc_tax_dtl_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hrms_acc_tax_dtl'
+
+    def __str__(self):
+        return str(self.name)
+    
+@receiver(pre_save, sender=AccountTaxDtl)
+def input_inst_branc_info(sender, instance, **kwargs):
+    if instance.phase:
+        try:
+            instance.institution = instance.acc_tax_mst.institution
+            instance.branch = instance.acc_tax_mst.branch
+        except:
+            print('******')
+
+

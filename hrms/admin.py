@@ -31,6 +31,11 @@ class SalarySetupDtlTabularInline(admin.TabularInline):
     fields = ['seq_order','payroll_ele','fixed_amt','formula','min_amt','max_amt','remarks','status','institution','branch']
     extra = 0
 
+class AccountTaxDtlTabularInline(admin.TabularInline):
+    model = AccountTaxDtl
+    fields = ['phase','name','lmt','pct','start_date','end_date','status','institution','branch']
+    extra = 0
+
 class SalarySetupMstAdmin(admin.ModelAdmin):
     list_display = ['code','name','status']
     search_fields = ['code','name','status']
@@ -39,6 +44,7 @@ class SalarySetupMstAdmin(admin.ModelAdmin):
 
     class Meta:
         model = SalarySetupMst
+
 
 class AccountCostCenterAdmin(admin.ModelAdmin):
     list_display = ['code','name','status']
@@ -51,6 +57,7 @@ class AccountCostCenterAdmin(admin.ModelAdmin):
 class AccountTaxMstAdmin(admin.ModelAdmin):
     list_display = ['code','name','tax_year','status']
     search_fields = ['code','name','tax_year','status']
+    inlines = [AccountTaxDtlTabularInline]
     save_on_top = True
 
     class Meta:
