@@ -6,7 +6,7 @@ from setup_app.models import *
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from datetime import datetime,date, time
-from hrms.models import AccountBank, LeaveType
+from hrms.models import *
 import datetime
 from authentication.models import Authentication
 
@@ -178,6 +178,7 @@ class StaffPayroll(models.Model):
     others = models.IntegerField(default=0)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
+    salary_Setup = models.ForeignKey(SalarySetupMst,on_delete=models.SET_NULL,blank=True,null=True)
     remarks = models.CharField(max_length=255,blank=True, null=True)
     contract_type = models.ForeignKey(ContractType, on_delete=models.SET_NULL, blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -193,7 +194,7 @@ class StaffPayroll(models.Model):
         db_table = 'sta_payroll'
 
     def __str__(self):
-        return str(self.id)
+        return str(self.gross)
     
 class StaffBankAccountDetails(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True,related_name='bank_info')
@@ -623,26 +624,26 @@ class ProcessStaffSalaryTable(models.Model):
     to_date = models.DateField()
     bank_acc_no = models.CharField(max_length=255,blank=True,null=True)
     is_hold = models.BooleanField(default=False)
-    prl_ele_basic = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_house_rent = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_medical = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_conveyance = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_others_a = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    gross = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_adjustment_a = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_adjustment_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_cash_advance = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_donation = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_award = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_ait = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_mobile_bill_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_rpf = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_other_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_absent_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    prl_ele_food_d = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    total_deduction = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    new_payable_amt = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
-    payable_day = models.DecimalField(max_digits=4,decimal_places=2,blank=True,null=True)
+    prl_ele_basic = models.IntegerField(blank=True,null=True)
+    prl_ele_house_rent = models.IntegerField(blank=True,null=True)
+    prl_ele_medical = models.IntegerField(blank=True,null=True)
+    prl_ele_conveyance = models.IntegerField(blank=True,null=True)
+    prl_ele_others_a = models.IntegerField(blank=True,null=True)
+    gross = models.IntegerField(blank=True,null=True)
+    prl_ele_adjustment_a = models.IntegerField(blank=True,null=True)
+    prl_ele_adjustment_d = models.IntegerField(blank=True,null=True)
+    prl_ele_cash_advance = models.IntegerField(blank=True,null=True)
+    prl_ele_donation = models.IntegerField(blank=True,null=True)
+    prl_ele_award = models.IntegerField(blank=True,null=True)
+    prl_ele_ait = models.IntegerField(blank=True,null=True)
+    prl_ele_mobile_bill_d = models.IntegerField(blank=True,null=True)
+    prl_ele_rpf = models.IntegerField(blank=True,null=True)
+    prl_ele_other_d = models.IntegerField(blank=True,null=True)
+    prl_ele_absent_d = models.IntegerField(blank=True,null=True)
+    prl_ele_food_d = models.IntegerField(blank=True,null=True)
+    total_deduction = models.IntegerField(blank=True,null=True)
+    new_payable_amt = models.IntegerField(blank=True,null=True)
+    payable_day = models.IntegerField(blank=True,null=True)
     remarks = models.TextField(blank=True,null=True)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
@@ -659,6 +660,87 @@ class ProcessStaffSalaryTable(models.Model):
     def __str__(self):
         return str(self.id)
         
+@receiver(pre_save, sender=ProcessStaffSalaryTable)
+def fill_staff_info(sender, instance, **kwargs):
+    if instance.staff:
+        instance.staff_no = instance.staff.staff_id
+        instance.staff_name = instance.staff.first_name+' '+instance.staff.last_name
+        instance.department = instance.staff.department
+        instance.designation = instance.staff.designation
+        payroll_info=StaffPayroll.objects.filter(status=True,is_active=True,staff=instance.staff,
+                                                        institution=instance.institution,branch=instance.branch).last()
+        if payroll_info:
+            instance.staff_payroll = payroll_info
+            if payroll_info.salary_Setup:
+                context = {
+                        'gross_pay': payroll_info.gross,
+                    }
+                for sal_dtl_ele in SalarySetupDtl.objects.filter(status=True, salary_setup_mst=payroll_info.salary_Setup).order_by('seq_order'):
+                    import ast
+                    
+                    if sal_dtl_ele.payroll_ele.name == 'Gross Salary':
+                        formatted_formula = sal_dtl_ele.formula.format(**context)
+                        gross_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                        instance.gross = gross_pay
+                        context['gross_pay'] = gross_pay  # Update context with the calculated gross pay
+                    elif sal_dtl_ele.payroll_ele.name == 'Basic Pay':
+                        formatted_formula = sal_dtl_ele.formula.format(**context)
+                        basic_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                        instance.prl_ele_basic = basic_pay
+                        context['basic_pay'] = basic_pay  # Update context with the calculated basic pay
+                    elif sal_dtl_ele.payroll_ele.name == 'House Rent':
+                        context.update({
+                            'basic_pay':basic_pay,  # Ensure basic_pay is added to the context
+                        })
+                        formatted_formula = sal_dtl_ele.formula.format(**context)
+                        house_rent = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                        if sal_dtl_ele.max_amt and house_rent > sal_dtl_ele.max_amt:
+                            house_rent = sal_dtl_ele.max_amt
+                        instance.prl_ele_house_rent = house_rent
+                        context['house_rent'] = house_rent  # Update context with the calculated house rent
 
+                    elif sal_dtl_ele.payroll_ele.name == 'Medical':
+                        context.update({
+                            'house_rent': house_rent,  # Ensure house_rent is added to the context
+                        })
+                        
+                        formatted_formula = sal_dtl_ele.formula.format(**context)
+                        medical_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                        if sal_dtl_ele.max_amt and medical_pay > sal_dtl_ele.max_amt:
+                            medical_pay = sal_dtl_ele.max_amt
+                        instance.prl_ele_medical = medical_pay
+                        context['medical'] = medical_pay  # Update context with the calculated medical pay
+                        
+                    elif sal_dtl_ele.payroll_ele.name == 'Conveyance':
+                        context.update({
+                            'medical': medical_pay,  # Ensure medical is added to the context
+                        })
+                        formatted_formula = sal_dtl_ele.formula.format(**context)
+                        conveyance_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                        if sal_dtl_ele.max_amt and conveyance_pay > sal_dtl_ele.max_amt:
+                            conveyance_pay = sal_dtl_ele.max_amt
+                        instance.prl_ele_conveyance = conveyance_pay
+                        context['convence'] = conveyance_pay  # Update context with the calculated conveyance pay
+
+                    elif sal_dtl_ele.payroll_ele.name == 'Other':
+                        context.update({
+                            'convence': conveyance_pay,  # Ensure conveyance is added to the context
+                        })
+                        formatted_formula = sal_dtl_ele.formula.format(**context)
+                        others_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
+                        instance.prl_ele_others_a = others_pay
+
+
+        account_info = StaffBankAccountDetails.objects.filter(status=True,is_active=True,staff=instance.staff,
+                                                        institution=instance.institution,branch=instance.branch).last()
+        if account_info:
+            instance.bank_acc_no = account_info.account_number
+
+        if instance.from_date and instance.to_date:
+            duration = 1 + (instance.to_date - instance.from_date).days
+            instance.payable_day = duration
+        else:
+            instance.payable_day = None
+            
 
     
