@@ -9,7 +9,7 @@ from datetime import datetime,date, time
 from hrms.models import *
 import datetime
 from authentication.models import Authentication
-
+from django.utils.translation import gettext_lazy as _
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.db.models import F
@@ -659,7 +659,13 @@ class ProcessStaffSalaryTable(models.Model):
 
     def __str__(self):
         return str(self.id)
-        
+    
+    def save(self, *args, **kwargs):
+        if self.from_date > self.to_date:
+            raise ValidationError(_("The 'from_date' cannot be greater than the 'to_date'."))
+        super(ProcessStaffSalaryTable, self).save(*args, **kwargs)
+
+
 @receiver(pre_save, sender=ProcessStaffSalaryTable)
 def fill_staff_info(sender, instance, **kwargs):
     if instance.staff:
