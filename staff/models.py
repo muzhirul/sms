@@ -13,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.db.models import F
+from django.db.models import Q
 # Create your models here.
 
 def validate_pdf_file_size(value):
@@ -663,6 +664,11 @@ class ProcessStaffSalaryTable(models.Model):
     def save(self, *args, **kwargs):
         if self.from_date > self.to_date:
             raise ValidationError(_("The 'from_date' cannot be greater than the 'to_date'."))
+        data_count = ProcessStaffSalaryTable.objects.filter(Q(status=True),Q(is_active=True),Q(staff=self.staff),
+                                                            Q(from_date__range=(self.from_date, self.to_date)) | Q(to_date__range=(self.from_date, self.to_date))
+                                                            ).count()
+        if data_count > 0:
+            raise ValidationError(_("The data already exists."))
         super(ProcessStaffSalaryTable, self).save(*args, **kwargs)
 
 
@@ -678,6 +684,7 @@ def fill_staff_info(sender, instance, **kwargs):
         if payroll_info:
             instance.staff_payroll = payroll_info
             if payroll_info.salary_Setup:
+                print('*******')
                 context = {
                         'gross_pay': payroll_info.gross,
                     }
@@ -735,6 +742,14 @@ def fill_staff_info(sender, instance, **kwargs):
                         formatted_formula = sal_dtl_ele.formula.format(**context)
                         others_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
                         instance.prl_ele_others_a = others_pay
+            else:
+                instance.gross = None
+                instance.prl_ele_basic = None
+                instance.prl_ele_house_rent = None
+                instance.prl_ele_medical = None
+                instance.prl_ele_conveyance = None
+                instance.prl_ele_others_a = None
+
 
 
         account_info = StaffBankAccountDetails.objects.filter(status=True,is_active=True,staff=instance.staff,
