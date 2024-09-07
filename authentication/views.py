@@ -75,7 +75,10 @@ class UserV4LoginView(APIView):
                 user_data['user']['image'] = SITE_PROTOCOL+current_site + '/media/'+str(user_info.photo)
             else:
                 user_data['user']['image'] = None
-            user_data['user']['role'] = user_info.role.name
+            if user_info.role:
+                user_data['user']['role'] = user_info.role.name
+            else:
+                user_data['user']['role'] = None
 
         elif Guardian.objects.filter(user=user_data['id']).exists():
             user_info = Guardian.objects.get(user=user_data['id'])

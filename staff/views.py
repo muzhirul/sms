@@ -1713,10 +1713,10 @@ class StaffLeaveList(generics.ListAPIView):
         branch = self.request.user.branch
         staff_id = self.request.query_params.get('staff_id')
         if staff_id:
-            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,institution=institution,branch=branch)
+            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,leave_days__gt = F('taken_days')+F('process_days'),institution=institution,branch=branch)
         else:
             staff_id = Staff.objects.get(staff_id=username,status=True)
-            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,institution=institution,branch=branch)
+            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,leave_days__gt = F('taken_days')+F('process_days'),institution=institution,branch=branch)
         return queryset
 
 
