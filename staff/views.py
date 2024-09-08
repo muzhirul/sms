@@ -1708,15 +1708,14 @@ class StaffLeaveList(generics.ListAPIView):
 
     def get_queryset(self):
         username = self.request.user
-        model_name = self.request.user.model_name
         institution = self.request.user.institution
         branch = self.request.user.branch
         staff_id = self.request.query_params.get('staff_id')
         if staff_id:
-            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,leave_days__gt = F('taken_days')+F('process_days'),institution=institution,branch=branch)
+            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,institution=institution,branch=branch)
         else:
             staff_id = Staff.objects.get(staff_id=username,status=True)
-            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,leave_days__gt = F('taken_days')+F('process_days'),institution=institution,branch=branch)
+            queryset = StaffLeave.objects.filter(staff=staff_id,status=True,is_active=True,institution=institution,branch=branch)
         return queryset
 
 
@@ -1763,18 +1762,15 @@ class StaffLeaveTypeList(generics.ListAPIView):
         institution_id = self.request.user.institution
         branch_id = self.request.user.branch
         staff_id = Staff.objects.get(status=True,user=self.request.user.id)
-        queryset = StaffLeave.objects.filter(status=True,is_active=True,staff=staff_id).order_by('-id')
+        queryset = StaffLeave.objects.filter(status=True,is_active=True,staff=staff_id,leave_days__gt = F('taken_days')+F('process_days')).order_by('-id')
         try:
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-id')
             elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('-id')
             elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('-id')
             else:
                 queryset
         except:
