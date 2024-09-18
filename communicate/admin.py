@@ -17,32 +17,19 @@ class SmsTemplateAdmin(admin.ModelAdmin):
     class Meta:
         model = SmsTemplate
 
-# class SmsSendSetupAdminForm(forms.ModelForm):
-#     class Meta:
-#         model = SmsSendSetup
-#         fields = '__all__'
+class SmsEmailLogAttachmentInline(admin.TabularInline):
+    model = SmsEmailLogAttachment 
+    extra = 1
 
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-        
-#         if 'template' in self.data:
-#             try:
-#                 template_id = int(self.data.get('template'))
-#                 template = SmsTemplate.objects.get(id=template_id)
-#                 self.initial['title'] = template.title
-#                 self.initial['message_body'] = template.message_body
-#             except (ValueError, TypeError, SmsTemplate.DoesNotExist):
-#                 pass
-#         elif self.instance and self.instance.template:
-#             self.initial['title'] = self.instance.template.title
-#             self.initial['message_body'] = self.instance.template.message_body
-
-class SmsSendSetupAdmin(admin.ModelAdmin):
-    filter_horizontal = ('group', 'individual','class_section')
-    # form = SmsSendSetupAdminForm
+class SmsEmailLogAdmin(admin.ModelAdmin):
+    list_display = ['subject','email','sms','is_active','status','created_by','created_at']
+    search_fields = ['subject']
+    
+    inlines = [SmsEmailLogAttachmentInline]
     class Meta:
-        model = SmsSendSetup
+        model = SmsEmailLog
+
 
 admin.site.register(SmsTemplate,SmsTemplateAdmin)
 admin.site.register(NoticeBoard,NoticeBoardAdmin)
-admin.site.register(SmsSendSetup,SmsSendSetupAdmin)
+admin.site.register(SmsEmailLog,SmsEmailLogAdmin)

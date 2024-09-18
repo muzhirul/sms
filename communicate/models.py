@@ -2,11 +2,12 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from institution.models import Institution, Branch
 from setup_app.models import Role
-from authentication.models import Authentication
+from academic.models import ClassSection,Section
+from staff.models import Staff
+from student.models import Student, Guardian
+from bleach import clean
 from academic.models import ClassSection
 from django_userforeignkey.models.fields import UserForeignKey
-from django.db.models.signals import pre_save, post_save
-from django.dispatch import receiver
 
 # Create your models here.
 def validate_file_size(value):
@@ -55,49 +56,65 @@ class SmsTemplate(models.Model):
     def __str__(self):
         return str(self.title)
     
-@receiver(pre_save, sender=SmsTemplate)
-def calculate_info(sender, instance, **kwargs):
-    if instance.message_body:
-        context = {
-            'gross_pay': 50000,
-            'basic_pay':26000,
-            'house_rent': None,
-            'medical': None,
-            'convence': None,
-            'others': None,
-        }
-        formatted_formula = instance.message_body.format(**context)
-        import ast
-        basic = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
-        print((basic))
-    else:
-        instance.message_body = None
-    
-class SmsSendSetup(models.Model):
-    template = models.ForeignKey(SmsTemplate, on_delete=models.CASCADE, verbose_name='SMS Template')
-    title = models.CharField(max_length=255,blank=True)
-    send_option = models.CharField(max_length=10, verbose_name='Send Through')
-    message_body = models.TextField(verbose_name='Message',blank=True)
-    group = models.ManyToManyField(Role,blank=True)
-    individual = models.ManyToManyField(Authentication,blank=True)
-    class_section = models.ManyToManyField(ClassSection,blank=True)
-    send_datetime = models.DateTimeField(blank=True,null=True)
-    is_process = models.BooleanField(default=False)
+class SmsEmailLog(models.Model):
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    email_recipient_list = models.TextField(default='')
+    email_cc_recipient_list = models.TextField(default='')
+    cc_staff = models.ManyToManyField(Staff, blank=True, related_name='sms_email_log_cc_staff')
+    cc_students = models.ManyToManyField(Student, blank=True, related_name='sms_email_log_cc_students')
+    cc_guardians = models.ManyToManyField(Guardian, blank=True, related_name='sms_email_log_cc_guardians')
+    sms_recipient_list = models.TextField(default='')
     is_active = models.BooleanField(default=True)
+    email = models.BooleanField(default=False)
+    email_sent = models.BooleanField(default=False)
+    sms = models.BooleanField(default=False)
+    sms_sent = models.BooleanField(default=False)
+    mobile_app = models.BooleanField(default=False, blank=True, null=True)
+    group = models.BooleanField(default=False)
+    group_ids = models.ManyToManyField(Role, blank=True)
+    individual = models.BooleanField(default=False)
+    individual_staff = models.ManyToManyField(Staff, blank=True, related_name='sms_email_log_individual_staff')
+    individual_students = models.ManyToManyField(Student, blank=True, related_name='sms_email_log_individual_students')
+    individual_guardians = models.ManyToManyField(Guardian, blank=True, related_name='sms_email_log_individual_guardians')
+    academic_class = models.BooleanField(default=False)
+    academic_class_info = models.ForeignKey(ClassSection, on_delete=models.SET_NULL, blank=True, null=True, related_name='sms_email_log_academic_class_info')
+    academic_class_sections_info = models.ManyToManyField(Section, blank=True, related_name='sms_email_log_academic_class_sections_info')
+    birthdays = models.BooleanField(default=False)
+    birthdays_staff = models.ManyToManyField(Staff, blank=True, related_name='sms_email_log_birthdays_staff')
+    birthdays_students = models.ManyToManyField(Student, blank=True, related_name='sms_email_log_birthdays_students')
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
-    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sms_setup_creator', editable=False, blank=True, null=True)
-    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='sms_setup_update_by', editable=False, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sms_email_log_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='sms_email_log_update_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'comm_sms_send_setup'
-        verbose_name = 'Send SMS'
-    
+        db_table = 'comm_sms_email_log'
+        verbose_name = 'SMS Email Log'
+
     def __str__(self):
-        return str(self.title)
+        return str(self.subject)
+    
+    def clean(self):
+        if self.message:  
+            self.message = clean(self.message, tags=None, attributes=None, strip=False)
+        else:
+            self.message = ""
+
+class SmsEmailLogAttachment(models.Model):
+    sms_email_log = models.ForeignKey(SmsEmailLog, on_delete=models.CASCADE, related_name='attachments')
+    attachment = models.ImageField(upload_to='sms_email_log_attachments/', blank=True, null=True, verbose_name='Attachment')
+
+    class Meta:
+        db_table = 'comm_sms_email_log_attachments'
+        verbose_name = 'SMS Email Log Attachment'
+
+    def __str__(self):
+        return f"Attachment for {self.sms_email_log.subject}"    
+
     
 
 
