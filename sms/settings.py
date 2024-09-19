@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'hrms',
     'fees',
     'communicate',
+    'account'
 ]
 
 MIDDLEWARE = [
