@@ -76,7 +76,7 @@ class FeesDetails(models.Model):
     amount = models.DecimalField(blank=True, null=True,verbose_name='Amount',max_digits=10,decimal_places=2)
     # fine_type = models.IntegerField(blank=True,null=True,choices=FINE_TYPE)
     percentage = models.DecimalField(blank=True, null=True,verbose_name='Percentage %',max_digits=10,decimal_places=2)
-    fix_amt = models.PositiveIntegerField(blank=True,null=True, verbose_name='Fix Amount')
+    fix_amt = models.IntegerField(blank=True,null=True, verbose_name='Fix Amount')
     description = models.TextField(blank=True,null=True)
     remarks= models.TextField(blank=True,null=True)
     is_active = models.BooleanField(default=True)
