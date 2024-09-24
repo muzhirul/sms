@@ -31,4 +31,5 @@ urlpatterns = [
     path('hrms/',include('hrms.urls')),
     path('fees/',include('fees.urls')),
     path('communicate/',include('communicate.urls')),
+    path('account/',include('account.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
