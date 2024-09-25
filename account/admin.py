@@ -14,4 +14,15 @@ class ChartofAccountsAdmin(admin.ModelAdmin):
     class Meta:
         model = ChartofAccounts
 
+class AccountPeriodAdmin(admin.ModelAdmin):
+    list_display = ['code','start_date','end_date','title']
+    search_fields = ['code','start_date','end_date','title']
+
+    save_on_top = True
+    list_per_page = 20
+
+    class Meta:
+        model = AccountPeriod
+
 admin.site.register(ChartofAccounts, ChartofAccountsAdmin)
+admin.site.register(AccountPeriod, AccountPeriodAdmin)
