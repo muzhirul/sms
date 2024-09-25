@@ -73,3 +73,21 @@ class AccountPeriod(models.Model):
         # Call the parent class's save method to ensure the object is saved
         super().save(*args,**kwargs)
 
+class AccountBanks(models.Model):
+    bank_name = models.CharField(max_length=255)
+    branch_name = models.CharField(max_length=255, blank=True, null=True)
+    account_no = models.CharField(max_length=100)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='acc_ba_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='acc_ba_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'acc_banks'
+
+    
+    def __str__(self):
+        return self.account_no

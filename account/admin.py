@@ -15,8 +15,8 @@ class ChartofAccountsAdmin(admin.ModelAdmin):
         model = ChartofAccounts
 
 class AccountPeriodAdmin(admin.ModelAdmin):
-    list_display = ['code','start_date','end_date','title']
-    search_fields = ['code','start_date','end_date','title']
+    list_display = ['code','start_date','end_date','title','status']
+    search_fields = ['code','start_date','end_date','title','status']
 
     save_on_top = True
     list_per_page = 20
@@ -24,5 +24,18 @@ class AccountPeriodAdmin(admin.ModelAdmin):
     class Meta:
         model = AccountPeriod
 
+class AccountBanksAdmin(admin.ModelAdmin):
+    list_display = ['bank_name','branch_name','account_no','status']
+    search_fields = ['bank_name','branch_name','account_no','status']
+    list_filter = ['status']
+
+    save_on_top = True
+    list_per_page = 20
+
+    class Meta:
+        model = AccountBanks
+
+
 admin.site.register(ChartofAccounts, ChartofAccountsAdmin)
 admin.site.register(AccountPeriod, AccountPeriodAdmin)
+admin.site.register(AccountBanks, AccountBanksAdmin)
