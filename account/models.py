@@ -2,6 +2,7 @@ from django.db import models
 from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 from django.core.exceptions import ValidationError
+from authentication.models import Authentication
 
 # Create your models here.
 class ChartofAccounts(models.Model):
@@ -55,6 +56,7 @@ class AccountPeriod(models.Model):
 
     class Meta:
         db_table = 'acc_period'
+        verbose_name = 'Account Period'
 
     def __str__(self):
         return self.title
@@ -87,7 +89,40 @@ class AccountBanks(models.Model):
 
     class Meta:
         db_table = 'acc_banks'
+        verbose_name = 'Account Bank'
 
     
     def __str__(self):
         return self.account_no
+
+class AccountLedger(models.Model):
+    VOUCHER_TYPE = [
+        ('PAYMENT','Payment'),
+        ('RECEIVE','Receive'),
+    ]
+    gl_date = models.DateField()
+    voucher_type = models.CharField(max_length=30,choices=VOUCHER_TYPE)
+    acc_coa = models.ForeignKey(ChartofAccounts,on_delete=models.SET_NULL,blank=True,null=True,related_name='acc_coa')
+    acc_coa_ref = models.ForeignKey(ChartofAccounts, on_delete=models.SET_NULL, blank=True,null=True,related_name='acc_ref_coa')
+    acc_period = models.ForeignKey(AccountPeriod, on_delete=models.SET_NULL, blank=True,null=True)
+    credit_amt = models.DecimalField(blank=True, null=True,max_digits=10,decimal_places=2,verbose_name='Credit Amount')
+    debit_amt = models.DecimalField(blank=True, null=True,max_digits=10,decimal_places=2, verbose_name='Debit Amount')
+    narration = models.TextField(blank=True,null=True)
+    ref_source = models.CharField(max_length=100,blank=True, null=True)
+    particulars = models.TextField(blank=True, null=True)
+    user = models.OneToOneField(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='acc_le_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='acc_le_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'acc_ledger'
+        verbose_name = 'Account Ledger'
+
+    def __str__(self):
+        return self.gl_date
+

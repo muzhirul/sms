@@ -35,7 +35,15 @@ class AccountBanksAdmin(admin.ModelAdmin):
     class Meta:
         model = AccountBanks
 
+class AccountLedgerAdmin(admin.ModelAdmin):
+    list_display = ['voucher_type','gl_date','acc_coa','acc_coa_ref','acc_period','narration','particulars','credit_amt','debit_amt']
+    search_fields = ['voucher_type','gl_date','acc_coa','acc_coa_ref','acc_period','narration','particulars','credit_amt','debit_amt']
+
+    class Meta:
+        model = AccountLedger
+
 
 admin.site.register(ChartofAccounts, ChartofAccountsAdmin)
 admin.site.register(AccountPeriod, AccountPeriodAdmin)
 admin.site.register(AccountBanks, AccountBanksAdmin)
+admin.site.register(AccountLedger, AccountLedgerAdmin)
