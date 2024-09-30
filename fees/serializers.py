@@ -34,30 +34,6 @@ class FeesDiscountViewSerializer(serializers.ModelSerializer):
         model = FeesDiscount
         exclude = ['status','institution','branch','created_by','updated_by']
 
-class FeesDiscountSortSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FeesDiscount
-        fields = ['id','code','name','percentage','amount']
-
-class FeesDetailsViewSerializer(serializers.ModelSerializer):
-    fees_type = FeesTypeListSerializer(read_only=True)
-    class Meta:
-        model = FeesDetails
-        exclude = ['fees_master','status','created_at','updated_at','created_by','updated_by','institution','branch']
-
-    def to_representation(self, instance):
-        if instance.status:
-            return super().to_representation(instance)
-        else:
-            return None
-
-class FeesDetailsCreateSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=False) 
-
-    class Meta:
-        model = FeesDetails
-        exclude = ['status','created_at','updated_at','created_by','updated_by']
-
 class FeeDetailsBreakDownViewSerializer(serializers.ModelSerializer):
     fees_type = FeesTypeListSerializer(read_only=True)
     class Meta:
@@ -75,6 +51,31 @@ class FeeDetailsBreakDownCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeeDetailsBreakDown
         exclude = ['status','is_active','created_at','updated_at','created_by','updated_by']
+
+class FeesDiscountSortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeesDiscount
+        fields = ['id','code','name','percentage','amount']
+
+class FeesDetailsViewSerializer(serializers.ModelSerializer):
+    fees_type = FeesTypeListSerializer(read_only=True)
+    detail_break_down = FeeDetailsBreakDownViewSerializer(many=True)
+    class Meta:
+        model = FeesDetails
+        exclude = ['fees_master','status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
+class FeesDetailsCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False) 
+
+    class Meta:
+        model = FeesDetails
+        exclude = ['status','created_at','updated_at','created_by','updated_by']
 
 class FeesMasterCreateSerializer(serializers.ModelSerializer):
     fees_detail = FeesDetailsCreateSerializer(many=True)

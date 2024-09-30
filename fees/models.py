@@ -95,7 +95,7 @@ class FeesDetails(models.Model):
         return f"{self.id}. {self.fees_type}"
     
 class FeeDetailsBreakDown(models.Model):
-    fees_detail = models.ForeignKey(FeesDetails, on_delete=models.CASCADE)
+    fees_detail = models.ForeignKey(FeesDetails, on_delete=models.CASCADE, related_name='detail_break_down')
     name = models.CharField(max_length=255,verbose_name='Name')
     amount = models.IntegerField()
     remarks = models.TextField(blank=True,null=True)
