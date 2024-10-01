@@ -108,7 +108,8 @@ class StaffStatusTransactionAdmin(admin.ModelAdmin):
         model = StaffStatusTransaction
 
 class ProcessStaffSalaryTableAdmin(admin.ModelAdmin):
-    list_display = ['staff','from_date','to_date']
+    list_display = ['staff','from_date','to_date','is_paid']
+    list_editable = ['is_paid']
     save_on_top = True
 
     class Meta:

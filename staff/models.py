@@ -3,6 +3,7 @@ from institution.models import Institution, Branch
 from setup_app.models import EducationBoard
 from django_userforeignkey.models.fields import UserForeignKey
 from setup_app.models import *
+from account.models import *
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from datetime import datetime,date, time
@@ -648,6 +649,7 @@ class ProcessStaffSalaryTable(models.Model):
     new_payable_amt = models.IntegerField(blank=True,null=True)
     payable_day = models.IntegerField(blank=True,null=True)
     remarks = models.TextField(blank=True,null=True)
+    is_paid = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
@@ -666,11 +668,12 @@ class ProcessStaffSalaryTable(models.Model):
     def save(self, *args, **kwargs):
         if self.from_date > self.to_date:
             raise ValidationError(_("The 'from_date' cannot be greater than the 'to_date'."))
-        data_count = ProcessStaffSalaryTable.objects.filter(Q(status=True),Q(is_active=True),Q(staff=self.staff),
-                                                            Q(from_date__range=(self.from_date, self.to_date)) | Q(to_date__range=(self.from_date, self.to_date))
-                                                            ).count()
-        if data_count > 0:
-            raise ValidationError(_("The data already exists."))
+        if self.id is None:
+            data_count = ProcessStaffSalaryTable.objects.filter(Q(status=True),Q(is_active=True),Q(staff=self.staff),
+                                                                Q(from_date__range=(self.from_date, self.to_date)) | Q(to_date__range=(self.from_date, self.to_date))
+                                                                ).count()
+            if data_count > 0:
+                raise ValidationError(_("The data already exists."))
         super(ProcessStaffSalaryTable, self).save(*args, **kwargs)
 
 
@@ -686,7 +689,6 @@ def fill_staff_info(sender, instance, **kwargs):
         if payroll_info:
             instance.staff_payroll = payroll_info
             if payroll_info.salary_Setup:
-                print('*******')
                 context = {
                         'gross_pay': payroll_info.gross,
                     }
@@ -697,6 +699,7 @@ def fill_staff_info(sender, instance, **kwargs):
                         formatted_formula = sal_dtl_ele.formula.format(**context)
                         gross_pay = eval(compile(ast.parse(formatted_formula, mode='eval'), '', 'eval'))
                         instance.gross = gross_pay
+                        instance.new_payable_amt = gross_pay
                         context['gross_pay'] = gross_pay  # Update context with the calculated gross pay
                     elif sal_dtl_ele.payroll_ele.name == 'Basic Pay':
                         formatted_formula = sal_dtl_ele.formula.format(**context)
@@ -765,5 +768,20 @@ def fill_staff_info(sender, instance, **kwargs):
         else:
             instance.payable_day = None
             
+@receiver(post_save, sender=ProcessStaffSalaryTable)
+def account_posting(sender, instance, **kwargs):
+    if instance.is_paid:
+        print(instance.new_payable_amt)
+        # For Debit amt
+        acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='EXPENSE',title__iexact='salary',institution=instance.institution,branch=instance.branch).last()
+        acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='cash',institution=instance.institution,branch=instance.branch).last()
+        print(acc_coa.code,acc_coa_ref.code)
+        acc_dbt_ledger = {}
+        from datetime import datetime
+        acc_dbt_ledger['gl_date'] = datetime.now().strftime('%Y-%m-%d')
+        acc_dbt_ledger['acc_coa'] = acc_coa
+        acc_dbt_ledger['acc_coa_ref'] = acc_coa_ref
+        print(acc_dbt_ledger)
 
+        print('okay...................')
     
