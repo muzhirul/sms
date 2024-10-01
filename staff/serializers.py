@@ -505,3 +505,11 @@ class StaffStatusTransactionViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = StaffStatusTransaction
         fields = ['id','code','staff','staff_status','start_date','end_date','reason','remarks']
+
+class ProcessStaffSalaryTableCreateSerializer(serializers.ModelSerializer):
+    from_date = serializers.DateField()
+    to_date = serializers.DateField()
+    class Meta:
+        model = ProcessStaffSalaryTable
+        fields = ['from_date','to_date','staff']
+

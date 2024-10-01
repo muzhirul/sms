@@ -124,6 +124,8 @@ class Staff(models.Model):
     shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
     step = models.IntegerField(default=1)
     user = models.OneToOneField(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
+    category = models.ForeignKey(ContractType, on_delete=models.SET_NULL, blank=True, null=True)
+    staff_status = models.ForeignKey(ActiveStatus, on_delete=models.SET_NULL, blank=True, null=True)
     last_attn_proc_date = models.DateField(blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)

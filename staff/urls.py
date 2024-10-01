@@ -56,4 +56,6 @@ urlpatterns = [
     path('api/leave-approval/<int:pk>',StaffLeaveHistoryUpdate.as_view(), name='staff-leave-history-update'),
     # Staff attendance List
     path('api/daily/attn-list',StaffDailyAttnList.as_view(), name='staff-daily-attn-list'),
+    # Staff payroll process
+    path('api/payroll/process', StaffPayrollProcess.as_view(), name='staff-payroll-process'),
 ]

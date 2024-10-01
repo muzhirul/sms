@@ -100,6 +100,13 @@ class ProcessStaffAttendanceMstAdmin(admin.ModelAdmin):
     class Meta:
         model = ProcessStaffAttendanceMst
 
+class StaffStatusTransactionAdmin(admin.ModelAdmin):
+    list_display = ['code','staff','start_date','end_date','reason','status']
+    # search_fields = ['code','staff_code','from_date','to_date','total_day']
+
+    class Meta:
+        model = StaffStatusTransaction
+
 class ProcessStaffSalaryTableAdmin(admin.ModelAdmin):
     list_display = ['staff','from_date','to_date']
     save_on_top = True
@@ -116,4 +123,5 @@ admin.site.register(ProcessAttendanceDaily,ProcessAttendanceDailyAdmin)
 admin.site.register(StaffLeaveTransaction,StaffLeaveTransactionAdmin)
 admin.site.register(StaffLeaveAppHistory)
 admin.site.register(ProcessStaffAttendanceMst,ProcessStaffAttendanceMstAdmin)
+admin.site.register(StaffStatusTransaction,StaffStatusTransactionAdmin)
 admin.site.register(ProcessStaffSalaryTable,ProcessStaffSalaryTableAdmin)

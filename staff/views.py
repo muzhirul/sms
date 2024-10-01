@@ -2131,3 +2131,52 @@ class StaffDailyAttnList(generics.ListAPIView):
                 }
 
         return Response(response_data)
+
+class StaffPayrollProcess(generics.ListAPIView):
+    # serializer_class = ProcessStaffSalaryTableCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    # def get_queryset(self):
+    #     institution_id = self.request.user.institution
+    #     branch_id = self.request.user.branch
+    #     staff_id = self.request.query_params.get('staff_id')
+        
+        
+
+    def list(self,request,*args, **kwargs):
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        from_date = self.request.query_params.get('from_date')
+        if from_date:
+            from_date = datetime.strptime(from_date,'%Y-%m-%d').date()
+        to_date = self.request.query_params.get('to_date')
+        if to_date:
+            to_date = datetime.strptime(to_date,'%Y-%m-%d').date()
+
+        if from_date > to_date:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"From date {from_date} is less than To date {to_date}", data=None)
+        staff_id = self.request.query_params.get('staff_id')
+        if staff_id:
+            staffs_data = Staff.objects.filter(status=True,institution=institution_id,branch=branch_id,staff_id=staff_id)
+        else:
+            staffs_data = Staff.objects.filter(status=True,institution=institution_id,branch=branch_id)
+        for staff_data in staffs_data:
+            print(staff_data.staff_id)
+            process_count = ProcessStaffSalaryTable.objects.filter(status=True,is_active=True,staff_no=staff_data.
+                                                                   staff_id,from_date__range=(from_date, to_date),to_date__range=(from_date, to_date)).count()
+            print(process_count)
+            if process_count == 0:
+                print(staff_data.staff_status.name.lower())
+                payroll_proc_data = {}
+                payroll_proc_data['from_date'] = from_date
+                payroll_proc_data['to_date'] = to_date
+                payroll_proc_data['staff'] = staff_data
+                payroll_proc_data['institution'] = staff_data.institution
+                payroll_proc_data['branch'] = staff_data.branch
+                if staff_data.staff_status.name.lower()!='active':
+                    payroll_proc_data['is_hold']=True
+                p = ProcessStaffSalaryTable.objects.create(**payroll_proc_data)
+                print(payroll_proc_data)
+
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Process Done....", data=None)
