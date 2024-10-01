@@ -10,6 +10,10 @@ class ChartofAccounts(models.Model):
         ('Operating','Operating'),
         ('Financial','Financial'),
     ]
+    FINANCIAL_STATEMENT = [
+        ('BALANCE','Balance Sheet'),
+        ('INCOME','Income Sheet'),
+    ]
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='sub_coa')
     coa_type = models.CharField(max_length=10,verbose_name='COA Type')
     code = models.BigIntegerField(unique=True)
@@ -18,6 +22,7 @@ class ChartofAccounts(models.Model):
     keyword = models.CharField(max_length=255,blank=True,null=True,editable=False)
     income_stat_type = models.CharField(max_length=50,blank=True, null=True, verbose_name='Income Statement Type',choices=INCOME_STATEMENT)
     balance_sheet_type = models.CharField(max_length=50,blank=True,null=True,verbose_name='Balance Sheet Type')
+    fin_stat_type = models.CharField(max_length=50,blank=True, null=True, verbose_name='Financial Statement',choices=FINANCIAL_STATEMENT)
     direct_posting = models.BooleanField(default=False)
     carry_forward = models.BooleanField(default=False)
     status = models.BooleanField(default=True)
