@@ -770,18 +770,60 @@ def fill_staff_info(sender, instance, **kwargs):
             
 @receiver(post_save, sender=ProcessStaffSalaryTable)
 def account_posting(sender, instance, **kwargs):
-    if instance.is_paid:
+    if instance.is_paid and instance.gross > 0:
         print(instance.new_payable_amt)
         # For Debit amt
         acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='EXPENSE',title__iexact='salary',institution=instance.institution,branch=instance.branch).last()
         acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='cash',institution=instance.institution,branch=instance.branch).last()
         print(acc_coa.code,acc_coa_ref.code)
-        acc_dbt_ledger = {}
         from datetime import datetime
-        acc_dbt_ledger['gl_date'] = datetime.now().strftime('%Y-%m-%d')
-        acc_dbt_ledger['acc_coa'] = acc_coa
-        acc_dbt_ledger['acc_coa_ref'] = acc_coa_ref
-        print(acc_dbt_ledger)
+        gl_date = datetime.now().strftime('%Y-%m-%d')
+        acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=gl_date,end_date__gte=gl_date).last()
+        user_info = Authentication.objects.filter(username=instance.staff_no,institution=instance.institution,branch=instance.branch).last()
+        acc_ledger_dbt_count = AccountLedger.objects.filter(status=True,institution=instance.institution,debit_amt=instance.gross,acc_period=acc_period,
+                                                            voucher_type='PAYMENT',acc_coa=acc_coa,acc_coa_ref=acc_coa_ref,
+                                                            branch=instance.branch,user=user_info,ref_source='staff_proc_sal_tbl',ref_no=instance.id).count()
+        print(acc_ledger_dbt_count)
+        if acc_ledger_dbt_count == 0:
+            acc_dbt_ledger = {}
+            acc_dbt_ledger['gl_date'] = gl_date
+            acc_dbt_ledger['voucher_type'] = 'PAYMENT'
+            acc_dbt_ledger['acc_coa'] = acc_coa
+            acc_dbt_ledger['acc_coa_ref'] = acc_coa_ref
+            acc_dbt_ledger['acc_period'] = acc_period
+            acc_dbt_ledger['credit_amt'] = 0
+            acc_dbt_ledger['debit_amt'] = instance.gross
+            acc_dbt_ledger['narration'] = f"Auto salary paid for staff No: {instance.staff_no}, Name: {instance.staff_name}"
+            acc_dbt_ledger['ref_source'] = 'staff_proc_sal_tbl'
+            acc_dbt_ledger['ref_no'] = instance.id
+            acc_dbt_ledger['particulars'] = f"Salary paid"
+            acc_dbt_ledger['user'] = user_info
+            acc_dbt_ledger['institution'] = instance.institution
+            acc_dbt_ledger['branch'] = instance.branch
+            acc_dbt = AccountLedger.objects.create(**acc_dbt_ledger)
+            print(acc_dbt_ledger)
+
+        acc_ledger_cr_count = AccountLedger.objects.filter(status=True,institution=instance.institution,credit_amt=instance.gross,acc_period=acc_period,
+                                                            voucher_type='PAYMENT',acc_coa=acc_coa_ref,acc_coa_ref=acc_coa,
+                                                            branch=instance.branch,user=user_info,ref_source='staff_proc_sal_tbl',ref_no=instance.id).count()
+        if acc_ledger_cr_count == 0:
+            acc_cr_ledger = {}
+            acc_cr_ledger['gl_date'] = gl_date
+            acc_cr_ledger['voucher_type'] = 'PAYMENT'
+            acc_cr_ledger['acc_coa'] = acc_coa_ref
+            acc_cr_ledger['acc_coa_ref'] = acc_coa
+            acc_cr_ledger['acc_period'] = acc_period
+            acc_cr_ledger['credit_amt'] = instance.gross
+            acc_cr_ledger['debit_amt'] = 0
+            acc_cr_ledger['narration'] = f"Auto salary paid for staff No: {instance.staff_no}, Name: {instance.staff_name}"
+            acc_cr_ledger['ref_source'] = 'staff_proc_sal_tbl'
+            acc_cr_ledger['ref_no'] = instance.id
+            acc_cr_ledger['particulars'] = f"Expense for salary"
+            acc_cr_ledger['user'] = user_info
+            acc_cr_ledger['institution'] = instance.institution
+            acc_cr_ledger['branch'] = instance.branch
+            acc_cr = AccountLedger.objects.create(**acc_cr_ledger)
+            print(acc_cr_ledger)
 
         print('okay...................')
     
