@@ -22,13 +22,13 @@ class AccLedgerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AccountLedger
-        fields = ['gl_date', 'acc_coa', 'acc_coa_ref', 'debit_amt', 'credit_amt', 'balance']
+        fields = ['gl_date', 'acc_coa', 'acc_coa_ref','narration','particulars', 'debit_amt', 'credit_amt', 'balance']
         # fields = ['gl_date', 'acc_coa', 'acc_coa_ref', 'debit_amt', 'credit_amt']
 
     # Custom method for formatting balance
     def get_balance(self, obj):
         balance = obj.balance  # Ensure balance is accessed correctly
-        print(f"Balance value: {balance}")  # Debugging output
+        # print(f"Balance value: {balance}")  # Debugging output
         # Format negative numbers as (100) and positive numbers normally
         return f"({abs(balance)})" if balance < 0 else f"{balance}"
 
