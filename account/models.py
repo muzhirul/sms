@@ -130,5 +130,5 @@ class AccountLedger(models.Model):
         verbose_name = 'Account Ledger'
 
     def __str__(self):
-        return self.gl_date
+        return f"{self.gl_date.strftime('%Y-%m-%d')} - COA ID: {self.acc_coa_id}"
 

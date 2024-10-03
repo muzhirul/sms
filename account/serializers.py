@@ -9,9 +9,26 @@ class CostofAccountSerializer(serializers.ModelSerializer):
         model = ChartofAccounts
         fields = ['id','coa_type','code','title','keyword','sub_coa']
 
+
+class CostofAccountListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChartofAccounts
+        fields = ['id','coa_type','code','title']
+
 class AccLedgerSerializer(serializers.ModelSerializer):
-    cumulative_balance = serializers.FloatField(read_only=True)
+    acc_coa = CostofAccountListSerializer(read_only=True)
+    acc_coa_ref = CostofAccountListSerializer(read_only=True)
+    balance = serializers.SerializerMethodField()
 
     class Meta:
         model = AccountLedger
-        fields = ['gl_date', 'acc_coa', 'acc_coa_ref', 'debit_amt', 'credit_amt', 'cumulative_balance']
+        fields = ['gl_date', 'acc_coa', 'acc_coa_ref', 'debit_amt', 'credit_amt', 'balance']
+        # fields = ['gl_date', 'acc_coa', 'acc_coa_ref', 'debit_amt', 'credit_amt']
+
+    # Custom method for formatting balance
+    def get_balance(self, obj):
+        balance = obj.balance  # Ensure balance is accessed correctly
+        print(f"Balance value: {balance}")  # Debugging output
+        # Format negative numbers as (100) and positive numbers normally
+        return f"({abs(balance)})" if balance < 0 else f"{balance}"
+
