@@ -9,6 +9,11 @@ class CostofAccountSerializer(serializers.ModelSerializer):
         model = ChartofAccounts
         fields = ['id','coa_type','code','title','keyword','sub_coa']
 
+class ChartOfAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChartofAccounts
+        fields = ['id', 'title', 'code']
+
 
 class CostofAccountListSerializer(serializers.ModelSerializer):
     class Meta:

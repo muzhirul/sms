@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from sms.pagination import CustomPagination
 from rest_framework import generics
-from django.db.models import F, Window, Sum
+from django.db.models import F, Window, Sum, Count
 from .models import *
 from .serializers import *
 from rest_framework import generics, permissions
@@ -117,3 +117,43 @@ class AccLedgerListView(generics.ListAPIView):
         }
 
         return Response(response_data)
+    
+class COAHeadList(generics.ListAPIView):
+    serializer_class = ChartOfAccountSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        # queryset = ChartofAccounts.objects.filter(parent_id__isnull=True,status=True).order_by('id')
+        queryset = ChartofAccounts.objects.annotate(
+            transaction_count=Count('acc_coa')
+        ).filter(transaction_count__gt=0)
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = {
+            "code": 200,
+            "message": "Success",
+            "data": serializer.data,
+        }
+
+        return Response(response_data)
+    
+
+    
