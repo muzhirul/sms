@@ -133,11 +133,11 @@ class COAHeadList(generics.ListAPIView):
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('id')
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('code')
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id, status=True).order_by('id')
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('code')
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id, status=True).order_by('id')
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('code')
             else:
                 queryset
         except:

@@ -793,7 +793,7 @@ def account_posting(sender, instance, **kwargs):
             acc_dbt_ledger['acc_period'] = acc_period
             acc_dbt_ledger['credit_amt'] = 0
             acc_dbt_ledger['debit_amt'] = instance.gross
-            acc_dbt_ledger['narration'] = f"Auto salary paid for staff No: {instance.staff_no}, Name: {instance.staff_name}"
+            acc_dbt_ledger['narration'] = f"Paid for staff No: {instance.staff_no}, Name: {instance.staff_name}"
             acc_dbt_ledger['ref_source'] = 'staff_proc_sal_tbl'
             acc_dbt_ledger['ref_no'] = instance.id
             acc_dbt_ledger['particulars'] = f"Salary paid"
