@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from sms.pagination import CustomPagination
 from rest_framework import generics
-from django.db.models import F, Window, Sum, Count
+from django.db.models import F, Window, Sum, Count,Case,When,Value, DecimalField
 from .models import *
 from .serializers import *
 from rest_framework import generics, permissions
@@ -155,5 +155,65 @@ class COAHeadList(generics.ListAPIView):
 
         return Response(response_data)
     
+class TrialBalanceAPIView(generics.ListAPIView):
+    serializer_class = TrialBalanceSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    
+    def get_queryset(self):
+        from_date = self.request.query_params.get('from_date')
+        if from_date:
+            from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
+        to_date = self.request.query_params.get('to_date')
+        if to_date:
+            to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
+
+        # Date validation
+        if from_date > to_date:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"From date {from_date} is less than To date {to_date}", data=None)
+
+        # Calculate amounts
+        amounts = (AccountLedger.objects
+                   .filter(gl_date__range=[from_date, to_date])
+                   .values('acc_coa')
+                   .annotate(
+                       title=F('acc_coa__title'),  # Assuming 'title' is a field in the ChartofAccounts model
+                       amount=Sum('debit_amt') - Sum('credit_amt')
+                   ))
+
+        queryset = (
+            amounts.annotate(
+                debit_amt=Case(
+                    When(amount__gte=Value(0), then=F('amount')),
+                    default=Value(0),
+                    output_field=DecimalField(),
+                ),
+                credit_amt=Case(
+                    When(amount__lt=Value(0), then=-F('amount')),
+                    default=Value(0),
+                    output_field=DecimalField(),
+                )
+            ).values('acc_coa', 'title', 'debit_amt', 'credit_amt')
+        )
+        
+        # Additional filtering based on institution and branch
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        if institution_id and branch_id:
+            queryset = queryset.filter(institution=institution_id, branch=branch_id)
+        elif branch_id:
+            queryset = queryset.filter(branch=branch_id)
+        elif institution_id:
+            queryset = queryset.filter(institution=institution_id)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = {
+            "code": 200,
+            "message": "Success",
+            "data": serializer.data,
+        }
+
+        return Response(response_data)

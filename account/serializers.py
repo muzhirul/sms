@@ -36,4 +36,11 @@ class AccLedgerSerializer(serializers.ModelSerializer):
         # print(f"Balance value: {balance}")  # Debugging output
         # Format negative numbers as (100) and positive numbers normally
         return f"({abs(balance)})" if balance < 0 else f"{balance}"
+    
+class TrialBalanceSerializer(serializers.Serializer):  # Use Serializer instead of ModelSerializer
+    acc_coa = serializers.IntegerField()
+    title = serializers.CharField()
+    debit_amt = serializers.DecimalField(max_digits=10, decimal_places=2)
+    credit_amt = serializers.DecimalField(max_digits=10, decimal_places=2)
+
 
