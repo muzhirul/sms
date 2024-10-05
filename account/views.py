@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from sms.pagination import CustomPagination
 from rest_framework import generics
-from django.db.models import F, Window, Sum, Count,Case,When,Value, DecimalField
+from django.db.models import F, Window, Sum, Count,Case,When,Value,Subquery, OuterRef, DecimalField
 from .models import *
 from .serializers import *
 from rest_framework import generics, permissions
@@ -160,6 +160,8 @@ class TrialBalanceAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
         from_date = self.request.query_params.get('from_date')
         if from_date:
             from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
@@ -170,40 +172,72 @@ class TrialBalanceAPIView(generics.ListAPIView):
         # Date validation
         if from_date > to_date:
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"From date {from_date} is less than To date {to_date}", data=None)
+        
+        # Subquery for opening balance (before from_date)
+        opening_balance_subquery = AccountLedger.objects.filter(
+                        acc_coa=OuterRef('acc_coa'),
+                        gl_date__lt=from_date,institution=institution_id, branch=branch_id
+                    ).values('acc_coa').annotate(
+                        opening_balance=Sum('debit_amt') - Sum('credit_amt')
+                    ).values('opening_balance')
+        
+        # Subquery for closing balance (up to to_date)
+        closing_balance_subquery = AccountLedger.objects.filter(
+                    acc_coa=OuterRef('acc_coa'),
+                    gl_date__lte=to_date,institution=institution_id, branch=branch_id
+                ).values('acc_coa').annotate(
+                    closing_balance=Sum('debit_amt') - Sum('credit_amt')
+                ).values('closing_balance')
 
         # Calculate amounts
         amounts = (AccountLedger.objects
-                   .filter(gl_date__range=[from_date, to_date])
+                   .filter(gl_date__range=[from_date, to_date],institution=institution_id, branch=branch_id)
                    .values('acc_coa')
                    .annotate(
                        title=F('acc_coa__title'),  # Assuming 'title' is a field in the ChartofAccounts model
-                       amount=Sum('debit_amt') - Sum('credit_amt')
+                       amount=Sum('debit_amt') - Sum('credit_amt'),
+                    opening_balance=Subquery(opening_balance_subquery, output_field=DecimalField()),
+                    closing_balance=Subquery(closing_balance_subquery, output_field=DecimalField())
                    ))
 
-        queryset = (
-            amounts.annotate(
-                debit_amt=Case(
-                    When(amount__gte=Value(0), then=F('amount')),
-                    default=Value(0),
-                    output_field=DecimalField(),
-                ),
-                credit_amt=Case(
-                    When(amount__lt=Value(0), then=-F('amount')),
-                    default=Value(0),
-                    output_field=DecimalField(),
-                )
-            ).values('acc_coa', 'title', 'debit_amt', 'credit_amt')
+        # Annotate the queryset with debit, credit, opening/closing balances
+        queryset = amounts.annotate(
+            debit_amt=Case(
+                When(amount__gte=Value(0), then=F('amount')),
+                default=Value(0),
+                output_field=DecimalField(),
+            ),
+            credit_amt=Case(
+                When(amount__lt=Value(0), then=-F('amount')),
+                default=Value(0),
+                output_field=DecimalField(),
+            ),
+            opening_debit_amt=Case(
+                When(opening_balance__gte=Value(0), then=F('opening_balance')),
+                default=Value(0),
+                output_field=DecimalField(),
+            ),
+            opening_credit_amt=Case(
+                When(opening_balance__lt=Value(0), then=-F('opening_balance')),
+                default=Value(0),
+                output_field=DecimalField(),
+            ),
+            closing_debit_amt=Case(
+                When(closing_balance__gte=Value(0), then=F('closing_balance')),
+                default=Value(0),
+                output_field=DecimalField(),
+            ),
+            closing_credit_amt=Case(
+                When(closing_balance__lt=Value(0), then=-F('closing_balance')),
+                default=Value(0),
+                output_field=DecimalField(),
+            )
+        ).values(
+            'acc_coa', 'title', 'debit_amt', 'credit_amt', 
+            'opening_debit_amt', 'opening_credit_amt',
+            'closing_debit_amt', 'closing_credit_amt'
         )
         
-        # Additional filtering based on institution and branch
-        institution_id = self.request.user.institution
-        branch_id = self.request.user.branch
-        if institution_id and branch_id:
-            queryset = queryset.filter(institution=institution_id, branch=branch_id)
-        elif branch_id:
-            queryset = queryset.filter(branch=branch_id)
-        elif institution_id:
-            queryset = queryset.filter(institution=institution_id)
 
         return queryset
 
