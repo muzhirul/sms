@@ -816,6 +816,20 @@ class FeesTrnsManualEntry(generics.ListAPIView):
 
         return Response(f"std_fees_trns")
 
+class StudentWiseFeesTrnsDetails(generics.RetrieveAPIView):
+    queryset = FeesTransaction.objects.all()
+    serializer_class = FeesTransactionListSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(
+        #     self.request.user.id, 'Fees Entry', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        instance = self.get_object() 
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=FeesTransactionListSerializer(instance).data)
         
         
 

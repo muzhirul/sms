@@ -20,4 +20,5 @@ urlpatterns = [
     # For Fees Transactions
     path('api/student-wise/transaction',StudentWiseFeesTransaction.as_view(),name='student-wise-fees-transaction'),
     path('api/fees-trns/manual', FeesTrnsManualEntry.as_view(), name='fees-transaction-manual-process'),
+    path('api/student-wise-trns/detail/<int:pk>', StudentWiseFeesTrnsDetails.as_view(), name='student-wise-fees-trns-details'),
 ]

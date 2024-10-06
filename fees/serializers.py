@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from academic.serializers import *
-from student.serializers import *
+from setup_app.serializers import *
 
 class FeesTypeCreateSerializer(serializers.ModelSerializer):
 
@@ -144,10 +144,23 @@ class FeesMasterViewSerializer(serializers.ModelSerializer):
 
         return representation
 
+class StudentListViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = ['id','student_no','first_name','last_name']
+
 class FeesTransactionViewSerializer(serializers.ModelSerializer):
     fees_detail = FeesDetailsViewSerializer(read_only=True)
     pay_method = PaymentMethodViewSerializer(read_only=True)
     discount_type = FeesDiscountSortSerializer(read_only=True)
+    class Meta:
+        model = FeesTransaction
+        exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+class FeesTransactionListSerializer(serializers.ModelSerializer):
+    fees_detail = FeesDetailsViewSerializer(read_only=True)
+    student = StudentListViewSerializer(read_only=True)
+    
     class Meta:
         model = FeesTransaction
         exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
