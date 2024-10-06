@@ -168,21 +168,24 @@ class FeesTransaction(models.Model):
     def __str__(self):
         return str(self.id)
     
-    def total_fees(self):
+    def fees_amount(self):
+        return self.fees_detail.amount
+    
+    def fine_amount(self):
         current_date = datetime.now().date()
         if self.fees_detail.due_date < current_date:
             if self.fees_detail.percentage is not None and self.fees_detail.percentage > 0:
-                total_fees = self.fees_detail.amount + (round(self.fees_detail.amount*(self.fees_detail.percentage/100)))
+                total_fine =  (round(self.fees_detail.amount*(self.fees_detail.percentage/100)))
             else:
-                total_fees = self.fees_detail.amount + self.fees_detail.fix_amt
+                total_fine = self.fees_detail.fix_amt
         else:
-            total_fees = self.fees_detail.amount
-        return total_fees
+            total_fine = 0
+        return total_fine
     
     def discount_amount(self):
         if self.discount_type:
             if self.discount_type.percentage is not None and self.discount_type.percentage > 0:
-                discount_amt = round(self.total_fees() * (self.discount_type.percentage/100))
+                discount_amt = round( (self.fees_amount() + self.fine_amount()) * (self.discount_type.percentage/100))
             else:
                 discount_amt = (self.discount_type.amount)
         else:
@@ -191,7 +194,7 @@ class FeesTransaction(models.Model):
         return discount_amt
     
     def net_fess_amt(self):
-        return self.total_fees() - self.discount_amount()
+        return (self.fees_amount() + self.fine_amount()) - self.discount_amount()
 
 
 

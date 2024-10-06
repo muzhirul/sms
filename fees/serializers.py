@@ -166,4 +166,4 @@ class FeesTransactionListSerializer(serializers.ModelSerializer):
         model = FeesTransaction
         # exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
         # fields = ['id','fees_detail','student','payment_id','pay_date','discount_amt','fees_amt','fine_amt','pay_status','is_active','pay_method','discount_type','total_fees','discount_amount','net_fess_amt']
-        fields = ['id','fees_detail','student','payment_id','pay_date','pay_status','is_active','pay_method','discount_type','total_fees','discount_amount','net_fess_amt']
+        fields = ['id','fees_detail','student','payment_id','pay_date','pay_status','is_active','pay_method','discount_type','fees_amount','fine_amount','discount_amount','net_fess_amt']
