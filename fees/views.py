@@ -817,7 +817,7 @@ class FeesTrnsManualEntry(generics.ListAPIView):
         return Response(f"std_fees_trns")
 
 class StudentWiseFeesTrnsDetails(generics.RetrieveAPIView):
-    queryset = FeesTransaction.objects.all()
+    queryset = FeesTransaction.objects.filter(pay_status=False)
     serializer_class = FeesTransactionListSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
 
