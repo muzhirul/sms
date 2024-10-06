@@ -831,7 +831,36 @@ class StudentWiseFeesTrnsDetails(generics.RetrieveAPIView):
         instance = self.get_object() 
         return CustomResponse(code=status.HTTP_200_OK, message="Success", data=FeesTransactionListSerializer(instance).data)
         
-        
+class StudentWiseFeesDiscountAdd(generics.UpdateAPIView):
+    queryset = FeesTransaction.objects.filter(pay_status=False)
+    serializer_class = FeesTransactionAddDiscountSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+
+    def partial_update(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+        # Get discount_type value from user request data
+        discount_type = request.data.get('discount_type')
+        discount = FeesDiscount.objects.get(pk=discount_type)
+        if discount:
+            try:
+                instance.discount_type = discount
+                instance.save()
+                # Customize the response format for successful update
+                return CustomResponse(code=status.HTTP_200_OK, message=f"Fees Discount added successfully", data=FeesTransactionListSerializer(instance).data)
+            except FeesDiscount.DoesNotExist:
+                return CustomResponse(
+                    code=status.HTTP_400_BAD_REQUEST, 
+                    message=f"Fees Discount with ID {discount_type} does not exist", 
+                    data=FeesTransactionListSerializer(instance).data
+                )
+        else:
+            return CustomResponse(
+                code=status.HTTP_400_BAD_REQUEST, 
+                message="Discount type value is missing", 
+                data=FeesTransactionListSerializer(instance).data
+            )
+
 
 
 
