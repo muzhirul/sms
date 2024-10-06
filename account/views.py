@@ -244,10 +244,31 @@ class TrialBalanceAPIView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
+
+        # Calculate totals
+        total_debit_amt = sum([item['debit_amt'] for item in queryset])
+        total_credit_amt = sum([item['credit_amt'] for item in queryset])
+        total_opening_debit_amt = sum([item['opening_debit_amt'] for item in queryset])
+        total_opening_credit_amt = sum([item['opening_credit_amt'] for item in queryset])
+        total_closing_debit_amt = sum([item['closing_debit_amt'] for item in queryset])
+        total_closing_credit_amt = sum([item['closing_credit_amt'] for item in queryset])
+
+        # Prepare the total row
+        total_row = {
+            "acc_coa": None,
+            "title": "Total",
+            "debit_amt": total_debit_amt,
+            "credit_amt": total_credit_amt,
+            "opening_debit_amt": total_opening_debit_amt,
+            "opening_credit_amt": total_opening_credit_amt,
+            "closing_debit_amt": total_closing_debit_amt,
+            "closing_credit_amt": total_closing_credit_amt
+        }
+
         response_data = {
             "code": 200,
             "message": "Success",
-            "data": serializer.data,
+            "data": serializer.data + [total_row],
         }
 
         return Response(response_data)
