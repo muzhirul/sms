@@ -167,6 +167,33 @@ class FeesTransaction(models.Model):
 
     def __str__(self):
         return str(self.id)
+    
+    def total_fees(self):
+        current_date = datetime.now().date()
+        if self.fees_detail.due_date < current_date:
+            if self.fees_detail.percentage is not None and self.fees_detail.percentage > 0:
+                total_fees = self.fees_detail.amount + (round(self.fees_detail.amount*(self.fees_detail.percentage/100)))
+            else:
+                total_fees = self.fees_detail.amount + self.fees_detail.fix_amt
+        else:
+            total_fees = self.fees_detail.amount
+        return total_fees
+    
+    def discount_amount(self):
+        if self.discount_type:
+            if self.discount_type.percentage is not None and self.discount_type.percentage > 0:
+                discount_amt = round(self.total_fees() * (self.discount_type.percentage/100))
+            else:
+                discount_amt = (self.discount_type.amount)
+        else:
+            discount_amt = 0
+        
+        return discount_amt
+    
+    def net_fess_amt(self):
+        return self.total_fees() - self.discount_amount()
+
+
 
 @receiver(pre_save, sender=FeesTransaction)
 def calculate_discount_amt(sender, instance, **kwargs):
