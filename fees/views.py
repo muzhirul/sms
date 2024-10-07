@@ -220,6 +220,58 @@ class FeesTypeDelete(generics.UpdateAPIView):
 '''
 For Fees Discount
 '''
+class FeesDiscountList(generics.ListAPIView):
+    # queryset = Version.objects.filter(status=True).order_by('id')
+    serializer_class = FeesDiscountViewSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = FeesDiscount.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Fees Discount', 'view')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
 
 class FeesDiscountCreateList(generics.ListCreateAPIView):
     # queryset = Version.objects.filter(status=True).order_by('id')
@@ -837,11 +889,13 @@ class StudentWiseFeesDiscountAdd(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
 
     def partial_update(self, request, *args, **kwargs):
-
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        queryset = self.queryset.filter(institution=institution_id, branch=branch_id,status=True)
         instance = self.get_object()
         # Get discount_type value from user request data
         discount_type = request.data.get('discount_type')
-        discount = FeesDiscount.objects.get(pk=discount_type)
+        discount = FeesDiscount.objects.get(pk=discount_type,institution=institution_id,branch=branch_id)
         if discount:
             try:
                 instance.discount_type = discount
