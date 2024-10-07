@@ -268,7 +268,8 @@ class TrialBalanceAPIView(generics.ListAPIView):
         response_data = {
             "code": 200,
             "message": "Success",
-            "data": serializer.data + [total_row],
+            "data": serializer.data,
+            "total": total_row
         }
 
         return Response(response_data)

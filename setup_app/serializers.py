@@ -206,7 +206,7 @@ class SetupViewSerializer(serializers.ModelSerializer):
 class PaymentMethodViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentMethod
-        fields = ['id','name']
+        fields = ['id','name','status']
 
 class ActiveStatusViewSerializer(serializers.ModelSerializer):
     class Meta:
