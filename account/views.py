@@ -110,10 +110,33 @@ class AccLedgerListView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
+        serialized_data = serializer.data
+
+        total_debit_amt = sum([float(item['debit_amt']) for item in serialized_data if item['debit_amt']])
+        total_credit_amt = sum([float(item['credit_amt']) for item in serialized_data if item['credit_amt']])
+
+        if not serialized_data:
+            last_balance = 0
+        else:
+            last_item = serialized_data[-1]
+            last_balance = last_item['balance']
+
+        
         response_data = {
             "code": 200,
             "message": "Success",
             "data": serializer.data,
+            "total": {
+                    "gl_date": None,
+                    "acc_coa": None,
+                    "acc_coa_ref": None,
+                    "narration": None,
+                    "total": None,
+                    "total_debit_amt": total_debit_amt,
+                    "total_credit_amt": total_credit_amt,
+                    "total_balance": last_balance,
+
+                }
         }
 
         return Response(response_data)

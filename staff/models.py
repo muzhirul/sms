@@ -650,6 +650,7 @@ class ProcessStaffSalaryTable(models.Model):
     payable_day = models.IntegerField(blank=True,null=True)
     remarks = models.TextField(blank=True,null=True)
     is_paid = models.BooleanField(default=False)
+    accounting = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
@@ -770,7 +771,7 @@ def fill_staff_info(sender, instance, **kwargs):
             
 @receiver(post_save, sender=ProcessStaffSalaryTable)
 def account_posting(sender, instance, **kwargs):
-    if instance.is_paid and instance.gross > 0:
+    if instance.is_paid and instance.gross > 0 and not instance.accounting:
         print(instance.new_payable_amt)
         # For Debit amt
         acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='EXPENSE',title__iexact='salary',institution=instance.institution,branch=instance.branch).last()
@@ -824,6 +825,7 @@ def account_posting(sender, instance, **kwargs):
             acc_cr_ledger['branch'] = instance.branch
             acc_cr = AccountLedger.objects.create(**acc_cr_ledger)
             print(acc_cr_ledger)
+        instance.accounting = True
 
         print('okay...................')
     
