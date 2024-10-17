@@ -775,7 +775,7 @@ def account_posting(sender, instance, **kwargs):
         print(instance.new_payable_amt)
         # For Debit amt
         acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='EXPENSE',title__iexact='salary',institution=instance.institution,branch=instance.branch).last()
-        acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='cash',institution=instance.institution,branch=instance.branch).last()
+        acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Cash In Hand',institution=instance.institution,branch=instance.branch).last()
         print(acc_coa.code,acc_coa_ref.code)
         from datetime import datetime
         gl_date = datetime.now().strftime('%Y-%m-%d')

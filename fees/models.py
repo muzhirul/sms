@@ -2,6 +2,7 @@ from django.db import models
 from institution.models import Institution, Branch
 from academic.models import *
 from student.models import *
+from account.models import *
 from django_userforeignkey.models.fields import UserForeignKey
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -214,6 +215,66 @@ def calculate_discount_amt(sender, instance, **kwargs):
         instance.discount_amt = discount_amt
     if instance.fees_detail and instance.pay_status==False:
         instance.fees_amt = instance.fees_detail.amount
+
+@receiver(post_save, sender=FeesTransaction)
+def fees_account_posting(sender, instance, **kwargs):
+    if instance.pay_status and instance.net_fess_amt() > 0:
+        print(instance.net_fess_amt())
+        acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Cash In Hand',institution=instance.institution,branch=instance.branch).last()
+        acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='INCOME',title__iexact='Service Income',institution=instance.institution,branch=instance.branch).last()
+        print(acc_coa,acc_coa_ref)
+        from datetime import datetime
+        gl_date = datetime.now().strftime('%Y-%m-%d')
+        acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=gl_date,end_date__gte=gl_date).last()
+        user_info = Authentication.objects.filter(username=instance.student.student_no,institution=instance.institution,branch=instance.branch).last()
+        print(acc_period,user_info)
+        acc_ledger_dbt_count = AccountLedger.objects.filter(status=True,institution=instance.institution,debit_amt=instance.net_fess_amt(),acc_period=acc_period,
+                                                            voucher_type='RECEIVE',acc_coa=acc_coa,acc_coa_ref=acc_coa_ref,
+                                                            branch=instance.branch,user=user_info,ref_source='fees_transaction',ref_no=instance.id).count()
+        print(acc_ledger_dbt_count)
+        if acc_ledger_dbt_count == 0:
+            acc_dbt_ledger = {}
+            acc_dbt_ledger['gl_date'] = gl_date
+            acc_dbt_ledger['voucher_type'] = 'RECEIVE'
+            acc_dbt_ledger['acc_coa'] = acc_coa
+            acc_dbt_ledger['acc_coa_ref'] = acc_coa_ref
+            acc_dbt_ledger['acc_period'] = acc_period
+            acc_dbt_ledger['credit_amt'] = 0
+            acc_dbt_ledger['debit_amt'] = instance.net_fess_amt()
+            acc_dbt_ledger['narration'] = f"Fees Collection from stuent No: {instance.student.student_no}, Name: {instance.student.first_name}"
+            acc_dbt_ledger['ref_source'] = 'fees_transaction'
+            acc_dbt_ledger['ref_no'] = instance.id
+            acc_dbt_ledger['particulars'] = f"Fees Collection"
+            acc_dbt_ledger['user'] = user_info
+            acc_dbt_ledger['institution'] = instance.institution
+            acc_dbt_ledger['branch'] = instance.branch
+            acc_dbt = AccountLedger.objects.create(**acc_dbt_ledger)
+            print(acc_dbt_ledger)
+
+        acc_ledger_cr_count = AccountLedger.objects.filter(status=True,institution=instance.institution,credit_amt=instance.net_fess_amt(),acc_period=acc_period,
+                                                            voucher_type='RECEIVE',acc_coa=acc_coa_ref,acc_coa_ref=acc_coa,
+                                                            branch=instance.branch,user=user_info,ref_source='fees_transaction',ref_no=instance.id).count()
+        
+        if acc_ledger_cr_count == 0:
+            acc_cr_ledger = {}
+            acc_cr_ledger['gl_date'] = gl_date
+            acc_cr_ledger['voucher_type'] = 'RECEIVE'
+            acc_cr_ledger['acc_coa'] = acc_coa_ref
+            acc_cr_ledger['acc_coa_ref'] = acc_coa
+            acc_cr_ledger['acc_period'] = acc_period
+            acc_cr_ledger['credit_amt'] = instance.net_fess_amt()
+            acc_cr_ledger['debit_amt'] = 0
+            acc_cr_ledger['narration'] = f"Fees Collection from stuent No: {instance.student.student_no}, Name: {instance.student.first_name}"
+            acc_cr_ledger['ref_source'] = 'fees_transaction'
+            acc_cr_ledger['ref_no'] = instance.id
+            acc_cr_ledger['particulars'] = f"Fees Collection"
+            acc_cr_ledger['user'] = user_info
+            acc_cr_ledger['institution'] = instance.institution
+            acc_cr_ledger['branch'] = instance.branch
+            acc_cr = AccountLedger.objects.create(**acc_cr_ledger)
+            print(acc_cr_ledger)
+
+        print('okay...................')
 
         
     
