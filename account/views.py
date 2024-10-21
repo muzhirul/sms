@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from sms.pagination import CustomPagination
 from rest_framework import generics
 from django.db.models import F, Window, Sum, Count,Case,When,Value,Subquery, OuterRef, DecimalField
+from django.db.models import RowRange, Value as V
 from .models import *
 from .serializers import *
 from rest_framework import generics, permissions
@@ -70,7 +71,8 @@ class AccLedgerListView(generics.ListAPIView):
                     balance=Window(
                         expression=Sum(F('debit_amt') - F('credit_amt')),
                         partition_by=[F('acc_coa')],
-                        order_by=F('gl_date').asc()
+                        order_by=F('gl_date').asc(),
+                        frame=RowRange(start=None, end=0)
                     )
                 )
         else:
@@ -78,7 +80,8 @@ class AccLedgerListView(generics.ListAPIView):
                     balance=Window(
                         expression=Sum(F('debit_amt') - F('credit_amt')),
                         partition_by=[F('acc_coa')],
-                        order_by=F('gl_date').asc()
+                        order_by=F('gl_date').asc(),
+                        frame=RowRange(start=None, end=0)
                     )
                 )
         from_date = self.request.query_params.get('from_date')
