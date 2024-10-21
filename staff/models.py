@@ -778,6 +778,12 @@ def account_posting(sender, instance, **kwargs):
         acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Cash In Hand',institution=instance.institution,branch=instance.branch).last()
         print(acc_coa.code,acc_coa_ref.code)
         from datetime import datetime
+        last_voucher_no = AccountLedger.objects.filter(institution=instance.institution, branch=instance.branch,voucher_type='PAYMENT').last()
+        if not last_voucher_no or last_voucher_no.voucher_no is None:
+            voucher_no = 'PV-'+str(datetime.now().date().year)+'1'
+        else:
+            new_voucher_no = int(last_voucher_no.voucher_no[7:])+1
+            voucher_no = 'PV-'+ str(datetime.now().date().year)+str(new_voucher_no)
         gl_date = datetime.now().strftime('%Y-%m-%d')
         acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=gl_date,end_date__gte=gl_date).last()
         user_info = Authentication.objects.filter(username=instance.staff_no,institution=instance.institution,branch=instance.branch).last()
@@ -788,6 +794,7 @@ def account_posting(sender, instance, **kwargs):
         if acc_ledger_dbt_count == 0:
             acc_dbt_ledger = {}
             acc_dbt_ledger['gl_date'] = gl_date
+            acc_dbt_ledger['voucher_no'] = voucher_no
             acc_dbt_ledger['voucher_type'] = 'PAYMENT'
             acc_dbt_ledger['acc_coa'] = acc_coa
             acc_dbt_ledger['acc_coa_ref'] = acc_coa_ref
@@ -810,6 +817,7 @@ def account_posting(sender, instance, **kwargs):
         if acc_ledger_cr_count == 0:
             acc_cr_ledger = {}
             acc_cr_ledger['gl_date'] = gl_date
+            acc_cr_ledger['voucher_no'] = voucher_no
             acc_cr_ledger['voucher_type'] = 'PAYMENT'
             acc_cr_ledger['acc_coa'] = acc_coa_ref
             acc_cr_ledger['acc_coa_ref'] = acc_coa
