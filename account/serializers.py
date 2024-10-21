@@ -27,7 +27,7 @@ class AccLedgerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AccountLedger
-        fields = ['gl_date', 'acc_coa', 'acc_coa_ref','narration','particulars', 'debit_amt', 'credit_amt', 'balance']
+        fields = ['gl_date','voucher_no', 'acc_coa', 'acc_coa_ref','narration','particulars', 'debit_amt', 'credit_amt', 'balance']
         # fields = ['gl_date', 'acc_coa', 'acc_coa_ref', 'debit_amt', 'credit_amt']
 
     # Custom method for formatting balance

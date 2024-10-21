@@ -106,6 +106,7 @@ class AccountLedger(models.Model):
         ('RECEIVE','Receive'),
     ]
     gl_date = models.DateField()
+    voucher_no = models.CharField(blank=True,null=True, max_length=50)
     voucher_type = models.CharField(max_length=30,choices=VOUCHER_TYPE)
     acc_coa = models.ForeignKey(ChartofAccounts,on_delete=models.SET_NULL,blank=True,null=True,related_name='acc_coa')
     acc_coa_ref = models.ForeignKey(ChartofAccounts, on_delete=models.SET_NULL, blank=True,null=True,related_name='acc_ref_coa')
