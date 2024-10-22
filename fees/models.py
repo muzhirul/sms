@@ -10,6 +10,7 @@ from django.db.models.signals import pre_save,post_save
 from django.dispatch import receiver
 from datetime import datetime
 from django.db.models import Sum
+from sms.permission import generate_voucher_no
 
 def validate_alpha_chars_only(value):
     if not value.replace(' ', '').isalpha():
@@ -224,6 +225,7 @@ def fees_account_posting(sender, instance, **kwargs):
         acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='INCOME',title__iexact='Service Income',institution=instance.institution,branch=instance.branch).last()
         print(acc_coa,acc_coa_ref)
         from datetime import datetime
+        voucher_no = generate_voucher_no(instance.institution,instance.branch,'RECEIVE')
         gl_date = datetime.now().strftime('%Y-%m-%d')
         acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=gl_date,end_date__gte=gl_date).last()
         user_info = Authentication.objects.filter(username=instance.student.student_no,institution=instance.institution,branch=instance.branch).last()
@@ -236,6 +238,7 @@ def fees_account_posting(sender, instance, **kwargs):
             acc_dbt_ledger = {}
             acc_dbt_ledger['gl_date'] = gl_date
             acc_dbt_ledger['voucher_type'] = 'RECEIVE'
+            acc_dbt_ledger['voucher_no'] = voucher_no
             acc_dbt_ledger['acc_coa'] = acc_coa
             acc_dbt_ledger['acc_coa_ref'] = acc_coa_ref
             acc_dbt_ledger['acc_period'] = acc_period
@@ -259,6 +262,7 @@ def fees_account_posting(sender, instance, **kwargs):
             acc_cr_ledger = {}
             acc_cr_ledger['gl_date'] = gl_date
             acc_cr_ledger['voucher_type'] = 'RECEIVE'
+            acc_cr_ledger['voucher_no'] = voucher_no
             acc_cr_ledger['acc_coa'] = acc_coa_ref
             acc_cr_ledger['acc_coa_ref'] = acc_coa
             acc_cr_ledger['acc_period'] = acc_period

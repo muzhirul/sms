@@ -57,7 +57,8 @@ class StudentAdmin(admin.ModelAdmin):
     save_on_top = True
     list_per_page = 15
 
-    inlines = [GuardianTabularInline,StudentEnrollTabularInline,ProcessStAttendanceDailyAdminTabularInline,StudentLeaveTransactionTabularInline,FeesTransactionAdminTabularInline]
+    # inlines = [GuardianTabularInline,StudentEnrollTabularInline,ProcessStAttendanceDailyAdminTabularInline,StudentLeaveTransactionTabularInline,FeesTransactionAdminTabularInline]
+    inlines = [GuardianTabularInline,StudentEnrollTabularInline,StudentLeaveTransactionTabularInline,FeesTransactionAdminTabularInline]
     
     class Meta:
         model = Student
