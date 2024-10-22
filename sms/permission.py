@@ -1,5 +1,6 @@
 from setup_app.models import *
 from authentication.models import Authentication
+from account.models import AccountLedger
 
 def check_permission(user, menu_name, permission_type='view'):
     user = Authentication.objects.get(id=user)
@@ -20,3 +21,22 @@ def check_permission(user, menu_name, permission_type='view'):
     if menu_permissions:
         return True
     return False
+
+def generate_voucher_no(institution, branch, voucher_type):
+    from datetime import datetime
+    if voucher_type == 'PAYMENT':
+        last_voucher_no = AccountLedger.objects.filter(institution=institution, branch=branch,voucher_type='PAYMENT').last()
+        prefix = 'PV-'
+    elif voucher_type == 'RECEIVE':
+        last_voucher_no = AccountLedger.objects.filter(institution=institution, branch=branch, voucher_type='RECEIVE').last()
+        prefix = 'RV-'
+    if not last_voucher_no or last_voucher_no.voucher_no is None:
+        voucher_no = prefix +str(datetime.now().date().year)+'1'
+    else:
+        new_voucher_no = int(last_voucher_no.voucher_no[7:])+1
+        voucher_no = prefix + str(datetime.now().date().year) + str(new_voucher_no)
+    if voucher_no:
+        return voucher_no
+    else:
+        return None
+    

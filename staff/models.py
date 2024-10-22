@@ -15,6 +15,7 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.db.models import F
 from django.db.models import Q
+from sms.permission import generate_voucher_no
 # Create your models here.
 
 def validate_pdf_file_size(value):
@@ -777,13 +778,8 @@ def account_posting(sender, instance, **kwargs):
         acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='EXPENSE',title__iexact='salary',institution=instance.institution,branch=instance.branch).last()
         acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Cash In Hand',institution=instance.institution,branch=instance.branch).last()
         print(acc_coa.code,acc_coa_ref.code)
+        voucher_no = generate_voucher_no(instance.institution,instance.branch,'PAYMENT')
         from datetime import datetime
-        last_voucher_no = AccountLedger.objects.filter(institution=instance.institution, branch=instance.branch,voucher_type='PAYMENT').last()
-        if not last_voucher_no or last_voucher_no.voucher_no is None:
-            voucher_no = 'PV-'+str(datetime.now().date().year)+'1'
-        else:
-            new_voucher_no = int(last_voucher_no.voucher_no[7:])+1
-            voucher_no = 'PV-'+ str(datetime.now().date().year)+str(new_voucher_no)
         gl_date = datetime.now().strftime('%Y-%m-%d')
         acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=gl_date,end_date__gte=gl_date).last()
         user_info = Authentication.objects.filter(username=instance.staff_no,institution=instance.institution,branch=instance.branch).last()
