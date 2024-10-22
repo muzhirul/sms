@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/fees-trns/manual', FeesTrnsManualEntry.as_view(), name='fees-transaction-manual-process'),
     path('api/student-wise-trns/detail/<int:pk>', StudentWiseFeesTrnsDetails.as_view(), name='student-wise-fees-trns-details'),
     path('api/student-wise-fees-discount-add/<int:pk>', StudentWiseFeesDiscountAdd.as_view(), name='student-wise-fees-discount-add'),
+    path('api/student-wise-fees-collection/<int:pk>', StudentWiseFeesCollection.as_view(), name='student-wise-fees-collection'),
 ]

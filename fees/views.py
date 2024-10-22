@@ -8,7 +8,8 @@ from sms.pagination import CustomPagination
 from rest_framework.response import Response
 from authentication.models import Authentication
 from setup_app.models import *
-from sms.permission import check_permission
+from sms.permission import check_permission,generate_random_payment_id
+from django.utils import timezone
 # Create your views here.
 
 '''
@@ -914,6 +915,44 @@ class StudentWiseFeesDiscountAdd(generics.UpdateAPIView):
                 message="Discount type value is missing", 
                 data=FeesTransactionListSerializer(instance).data
             )
+
+class StudentWiseFeesCollection(generics.UpdateAPIView):
+    queryset = FeesTransaction.objects.filter(status=True,pay_status=False)
+    serializer_class = FessTransactionCollectionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        fees = self.get_object()
+        institution = self.request.user.institution
+        branch = self.request.user.branch
+        request_date = request.data
+        student_no = request_date['student_no']
+        pay_method = request_date['pay_method']
+        pay_method_name = PaymentMethod.objects.get(pk=pay_method)
+        if pay_method_name.name.lower() == 'cash':
+            std_id = Student.objects.filter(student_no=student_no,institution=institution,branch=branch,status=True).last()
+            if std_id:
+                fees_amt = self.queryset.filter(institution=institution,branch=branch,student=std_id,pk=fees.id).last()
+                if fees_amt:
+                    paid_amt = fees_amt.net_fess_amt()
+                    update_date ={
+                        'paid_amt' : paid_amt,
+                        'pay_status': True,
+                        'pay_method': pay_method,
+                        "payment_id":generate_random_payment_id(),
+                        'pay_date': timezone.now()
+
+                    }
+                    fees_serializer = self.get_serializer(fees, data=update_date, partial=True)
+                    fees_serializer.is_valid(raise_exception=True)
+                    instance = fees_serializer.save()
+                    return CustomResponse(code=status.HTTP_200_OK, message="Stdent Payment successfully", data=FessTransactionCollectionSerializer(instance).data)
+                else:
+                    return CustomResponse(code=status.HTTP_200_OK, message="Fees Data not Match", data=None)
+            else:
+                return CustomResponse(code=status.HTTP_200_OK, message="Employees Not Match", data=None)
+        else:
+            return CustomResponse(code=status.HTTP_200_OK, message="Only Cash Allowed", data=None)
 
 
 

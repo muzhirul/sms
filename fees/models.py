@@ -149,11 +149,12 @@ class FeesTransaction(models.Model):
     fees_detail = models.ForeignKey(FeesDetails, on_delete=models.SET_NULL, blank=True,null=True)
     payment_id = models.CharField(max_length=100,blank=True,null=True)
     pay_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL,blank=True,null=True, verbose_name='Payment Method')
-    pay_date = models.DateField(blank=True,null=True, verbose_name='Payment Date')
+    pay_date = models.DateTimeField(blank=True,null=True, verbose_name='Payment Date')
     discount_type = models.ForeignKey(FeesDiscount, on_delete=models.SET_NULL,blank=True,null=True)
     discount_amt = models.DecimalField(blank=True, null=True,verbose_name='Discount Amount',max_digits=8,decimal_places=2)
     fine_amt = models.DecimalField(blank=True, null=True,verbose_name='Fine Amount',max_digits=8,decimal_places=2)
     fees_amt = models.DecimalField(blank=True, null=True,verbose_name='Fees Amount',max_digits=8,decimal_places=2)
+    paid_amt = models.DecimalField(blank=True, null=True,verbose_name='Paid Amount',max_digits=8,decimal_places=2)
     pay_status = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
@@ -220,20 +221,16 @@ def calculate_discount_amt(sender, instance, **kwargs):
 @receiver(post_save, sender=FeesTransaction)
 def fees_account_posting(sender, instance, **kwargs):
     if instance.pay_status and instance.net_fess_amt() > 0:
-        print(instance.net_fess_amt())
         acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Cash In Hand',institution=instance.institution,branch=instance.branch).last()
         acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='INCOME',title__iexact='Service Income',institution=instance.institution,branch=instance.branch).last()
-        print(acc_coa,acc_coa_ref)
         from datetime import datetime
         voucher_no = generate_voucher_no(instance.institution,instance.branch,'RECEIVE')
         gl_date = datetime.now().strftime('%Y-%m-%d')
         acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=gl_date,end_date__gte=gl_date).last()
         user_info = Authentication.objects.filter(username=instance.student.student_no,institution=instance.institution,branch=instance.branch).last()
-        print(acc_period,user_info)
         acc_ledger_dbt_count = AccountLedger.objects.filter(status=True,institution=instance.institution,debit_amt=instance.net_fess_amt(),acc_period=acc_period,
                                                             voucher_type='RECEIVE',acc_coa=acc_coa,acc_coa_ref=acc_coa_ref,
                                                             branch=instance.branch,user=user_info,ref_source='fees_transaction',ref_no=instance.id).count()
-        print(acc_ledger_dbt_count)
         if acc_ledger_dbt_count == 0:
             acc_dbt_ledger = {}
             acc_dbt_ledger['gl_date'] = gl_date
@@ -252,7 +249,6 @@ def fees_account_posting(sender, instance, **kwargs):
             acc_dbt_ledger['institution'] = instance.institution
             acc_dbt_ledger['branch'] = instance.branch
             acc_dbt = AccountLedger.objects.create(**acc_dbt_ledger)
-            print(acc_dbt_ledger)
 
         acc_ledger_cr_count = AccountLedger.objects.filter(status=True,institution=instance.institution,credit_amt=instance.net_fess_amt(),acc_period=acc_period,
                                                             voucher_type='RECEIVE',acc_coa=acc_coa_ref,acc_coa_ref=acc_coa,
@@ -276,9 +272,7 @@ def fees_account_posting(sender, instance, **kwargs):
             acc_cr_ledger['institution'] = instance.institution
             acc_cr_ledger['branch'] = instance.branch
             acc_cr = AccountLedger.objects.create(**acc_cr_ledger)
-            print(acc_cr_ledger)
 
-        print('okay...................')
 
         
     

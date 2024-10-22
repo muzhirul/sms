@@ -47,7 +47,8 @@ class StudentAdmin(admin.ModelAdmin):
                                         ('photo','photo_thumbnail','admission_date','blood_group'),
                                         ('birth_reg_scert_no','birth_cert_file'),]}),
         # ("Basic Information",{'fields':[('code','first_name','last_name','gender'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','admission_date','blood_group','Institution','status','is_online'),]}),
-        ("Address",{'fields':[('present_address','permanent_address'),]})        
+        ("Address",{'fields':[('present_address','permanent_address'),]}),  
+        ("Institution Info",{'fields':[('institution','branch'),]})  
     ]
     list_display = ['student_no','first_name','last_name','dob','admission_date','blood_group','status','photo_thumbnail','std_status']
     search_fields = ['code','first_name','last_name','dob','admission_date','blood_group']

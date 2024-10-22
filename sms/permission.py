@@ -40,3 +40,8 @@ def generate_voucher_no(institution, branch, voucher_type):
     else:
         return None
     
+def generate_random_payment_id():
+    import random, string
+    characters = string.ascii_letters + string.digits  # a-z, A-Z, 0-9
+    return ''.join(random.choice(characters) for _ in range(13))
+    

@@ -172,3 +172,8 @@ class FeesTransactionAddDiscountSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeesTransaction
         fields = ['id','discount_type']
+
+class FessTransactionCollectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeesTransaction
+        fields = ['id','payment_id','pay_method','paid_amt','pay_date','pay_status']
