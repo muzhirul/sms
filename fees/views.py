@@ -928,6 +928,8 @@ class StudentWiseFeesCollection(generics.UpdateAPIView):
         request_date = request.data
         student_no = request_date['student_no']
         pay_method = request_date['pay_method']
+        if not pay_method:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Please provide pay method", data=None)
         pay_method_name = PaymentMethod.objects.get(pk=pay_method)
         if pay_method_name.name.lower() == 'cash':
             std_id = Student.objects.filter(student_no=student_no,institution=institution,branch=branch,status=True).last()
@@ -946,13 +948,13 @@ class StudentWiseFeesCollection(generics.UpdateAPIView):
                     fees_serializer = self.get_serializer(fees, data=update_date, partial=True)
                     fees_serializer.is_valid(raise_exception=True)
                     instance = fees_serializer.save()
-                    return CustomResponse(code=status.HTTP_200_OK, message="Stdent Payment successfully", data=FessTransactionCollectionSerializer(instance).data)
+                    return CustomResponse(code=status.HTTP_200_OK, message="Student Payment successfully", data=FessTransactionCollectionSerializer(instance).data)
                 else:
-                    return CustomResponse(code=status.HTTP_200_OK, message="Fees Data not Match", data=None)
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Fees Data not Match", data=None)
             else:
-                return CustomResponse(code=status.HTTP_200_OK, message="Employees Not Match", data=None)
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Employees Not Match", data=None)
         else:
-            return CustomResponse(code=status.HTTP_200_OK, message="Only Cash Allowed", data=None)
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Only Cash Allowed", data=None)
 
 
 
