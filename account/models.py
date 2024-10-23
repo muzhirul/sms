@@ -104,6 +104,7 @@ class AccountLedger(models.Model):
     VOUCHER_TYPE = [
         ('PAYMENT','Payment'),
         ('RECEIVE','Receive'),
+        ('JOURNAL','Journal'),
     ]
     gl_date = models.DateField()
     voucher_no = models.CharField(blank=True,null=True, max_length=50)
@@ -133,3 +134,30 @@ class AccountLedger(models.Model):
     def __str__(self):
         return f"{self.gl_date.strftime('%Y-%m-%d')} - COA ID: {self.acc_coa_id}"
 
+class AccountVoucherMaster(models.Model):
+    VOUCHER_TYPE = [
+        ('PAYMENT','Payment'),
+        ('RECEIVE','Receive'),
+        ('JOURNAL','Journal'),
+    ]
+    voucher_no = models.CharField(blank=True,null=True, max_length=50)
+    voucher_type = models.CharField(max_length=30,choices=VOUCHER_TYPE)
+    gl_date = models.DateField(auto_now_add=True)
+    acc_coa = models.ForeignKey(ChartofAccounts,on_delete=models.SET_NULL,blank=True,null=True,related_name='acc_vou_coa')
+    total_debit_amt = models.DecimalField(blank=True, null=True,max_digits=10,decimal_places=2,verbose_name='Total Debit Amount')
+    total_credit_amt = models.DecimalField(blank=True, null=True,max_digits=10,decimal_places=2,verbose_name='Total Credit Amount')
+    confirm = models.BooleanField(default=False)
+    remarks = models.TextField(blank=True,null=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='acc_vou_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='acc_vou_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'acc_voucher_mst'
+
+    def __str__(self):
+        return f"{self.gl_date} - Voucher No: {self.voucher_no}"
