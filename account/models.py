@@ -161,3 +161,27 @@ class AccountVoucherMaster(models.Model):
 
     def __str__(self):
         return f"{self.gl_date} - Voucher No: {self.voucher_no}"
+    
+class AccountVoucherDetails(models.Model):
+    line_no = models.IntegerField()
+    acc_voucher_mst = models.ForeignKey(AccountVoucherMaster, on_delete=models.SET_NULL,blank=True,null=True,related_name='acc_voucher_mst')
+    acc_coa = models.ForeignKey(ChartofAccounts, on_delete=models.SET_NULL, blank=True,null=True)
+    acc_bank = models.ForeignKey(AccountBanks, on_delete=models.SET_NULL, blank=True,null=True)
+    debit_amt = models.DecimalField(blank=True, null=True,max_digits=10,decimal_places=2, verbose_name='Debit Amount')
+    credit_amt = models.DecimalField(blank=True, null=True,max_digits=10,decimal_places=2,verbose_name='Credit Amount')
+    particulars = models.TextField(blank=True,null=True)
+    narration = models.TextField(blank=True,null=True)
+    remarks = models.TextField(blank=True,null=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='acc_vou_dtl_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='acc_vou_dtl_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'acc_voucher_dtl'
+
+    def __str__(self):
+        return f"{self.acc_voucher_mst.voucher_no}"

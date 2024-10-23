@@ -42,12 +42,19 @@ class AccountLedgerAdmin(admin.ModelAdmin):
     class Meta:
         model = AccountLedger
 
+class AccountVoucherDetailsTabularInline(admin.TabularInline):
+    model = AccountVoucherDetails
+    fields = ['acc_coa','acc_bank','particulars','debit_amt','credit_amt']
+    extra = 0
+
 class AccountVoucherMasterAdmin(admin.ModelAdmin):
     list_display = ['voucher_type','gl_date','voucher_no','acc_coa','total_debit_amt','total_credit_amt']
     search_fields = ['voucher_type','gl_date','voucher_no','acc_coa','total_debit_amt','total_credit_amt']
 
     class Meta:
         model = AccountVoucherMaster
+
+    inlines = [AccountVoucherDetailsTabularInline]
 
 
 admin.site.register(ChartofAccounts, ChartofAccountsAdmin)
