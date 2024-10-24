@@ -24,11 +24,10 @@ def check_permission(user, menu_name, permission_type='view'):
 
 def generate_voucher_no(institution, branch, voucher_type):
     from datetime import datetime
+    last_voucher_no = AccountLedger.objects.filter(institution=institution, branch=branch).last()
     if voucher_type == 'PAYMENT':
-        last_voucher_no = AccountLedger.objects.filter(institution=institution, branch=branch,voucher_type='PAYMENT').last()
         prefix = 'PV-'
     elif voucher_type == 'RECEIVE':
-        last_voucher_no = AccountLedger.objects.filter(institution=institution, branch=branch, voucher_type='RECEIVE').last()
         prefix = 'RV-'
     if not last_voucher_no or last_voucher_no.voucher_no is None:
         voucher_no = prefix +str(datetime.now().date().year)+'1'
