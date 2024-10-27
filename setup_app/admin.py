@@ -157,6 +157,12 @@ class ActiveStatusAdmin(admin.ModelAdmin):
     class Meta:
         model = ActiveStatus  
 
+class SystemCounterAdmin(admin.ModelAdmin):
+    list_display = ['code','name']
+
+    class Meta:
+        model = SystemCounter
+
 
 admin.site.register(Setup, SetupAdmin)
 admin.site.register(Gender, GenderAdmin)
@@ -181,3 +187,4 @@ admin.site.register(AttendanceType, AttendanceTypeAdmin)
 admin.site.register(HolidayType, HolidayTypeAdmin)
 admin.site.register(PaymentMethod, PaymentMethodAdmin)
 admin.site.register(ActiveStatus, ActiveStatusAdmin)
+admin.site.register(SystemCounter, SystemCounterAdmin)

@@ -400,3 +400,27 @@ class ActiveStatus(models.Model):
 
     def __str__(self):
         return str(self.name)
+    
+class SystemCounter(models.Model):
+    code = models.CharField(max_length=100, verbose_name='Counter Code')
+    name = models.CharField(max_length=100, verbose_name='Counter Name')
+    counter_width = models.IntegerField(blank=True, null=True)
+    fiscal_year_as_prefix = models.BooleanField(default=False)
+    prefix = models.CharField(max_length=20,blank=True,null=True)
+    separator = models.CharField(max_length=2,blank=True,null=True)
+    step = models.IntegerField(default=1)
+    next_number = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sys_counter_creator', editable=False)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='sys_counter_update_by', editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'setup_sys_counter'
+
+    def __str__(self):
+        return str(self.name)

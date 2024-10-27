@@ -15,7 +15,7 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.db.models import F
 from django.db.models import Q
-from sms.permission import generate_voucher_no
+from sms.permission import generate_code
 # Create your models here.
 
 def validate_pdf_file_size(value):
@@ -777,8 +777,7 @@ def account_posting(sender, instance, **kwargs):
         # For Debit amt
         acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='EXPENSE',title__iexact='salary',institution=instance.institution,branch=instance.branch).last()
         acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Cash In Hand',institution=instance.institution,branch=instance.branch).last()
-        print(acc_coa.code,acc_coa_ref.code)
-        voucher_no = generate_voucher_no(instance.institution,instance.branch,'PAYMENT')
+        voucher_no = generate_code(instance.institution,instance.branch,'PAYMENT')
         from datetime import datetime
         gl_date = datetime.now().strftime('%Y-%m-%d')
         acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=gl_date,end_date__gte=gl_date).last()
@@ -786,7 +785,6 @@ def account_posting(sender, instance, **kwargs):
         acc_ledger_dbt_count = AccountLedger.objects.filter(status=True,institution=instance.institution,debit_amt=instance.gross,acc_period=acc_period,
                                                             voucher_type='PAYMENT',acc_coa=acc_coa,acc_coa_ref=acc_coa_ref,
                                                             branch=instance.branch,user=user_info,ref_source='staff_proc_sal_tbl',ref_no=instance.id).count()
-        print(acc_ledger_dbt_count)
         if acc_ledger_dbt_count == 0:
             acc_dbt_ledger = {}
             acc_dbt_ledger['gl_date'] = gl_date
@@ -805,7 +803,6 @@ def account_posting(sender, instance, **kwargs):
             acc_dbt_ledger['institution'] = instance.institution
             acc_dbt_ledger['branch'] = instance.branch
             acc_dbt = AccountLedger.objects.create(**acc_dbt_ledger)
-            print(acc_dbt_ledger)
 
         acc_ledger_cr_count = AccountLedger.objects.filter(status=True,institution=instance.institution,credit_amt=instance.gross,acc_period=acc_period,
                                                             voucher_type='PAYMENT',acc_coa=acc_coa_ref,acc_coa_ref=acc_coa,
@@ -828,8 +825,6 @@ def account_posting(sender, instance, **kwargs):
             acc_cr_ledger['institution'] = instance.institution
             acc_cr_ledger['branch'] = instance.branch
             acc_cr = AccountLedger.objects.create(**acc_cr_ledger)
-            print(acc_cr_ledger)
         instance.accounting = True
 
-        print('okay...................')
     

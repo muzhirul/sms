@@ -1,6 +1,7 @@
 from setup_app.models import *
 from authentication.models import Authentication
 from account.models import AccountLedger
+from setup_app.models import SystemCounter
 
 def check_permission(user, menu_name, permission_type='view'):
     user = Authentication.objects.get(id=user)
@@ -43,4 +44,40 @@ def generate_random_payment_id():
     import random, string
     characters = string.ascii_letters + string.digits  # a-z, A-Z, 0-9
     return ''.join(random.choice(characters) for _ in range(13))
+
+def generate_code(institution, branch, c_type):
+    from datetime import datetime
+    if c_type=='PAYMENT' or c_type=='RECEIVE' or c_type=='JOURNAL':
+        n_type = 'Voucher'
+    else:
+        n_type = c_type
+    counter = SystemCounter.objects.get(institution=institution, branch=branch, name__iexact=n_type)
+    if counter.fiscal_year_as_prefix:
+        prefix = str(datetime.now().year)
+    else:
+        if c_type =='PAYMENT':
+            prefix = 'PV'
+        elif c_type=='RECEIVE':
+            prefix = 'RV'
+        else:
+            prefix = counter.prefix or ""
+    next_number = counter.next_number
+    separator = counter.separator or ""
+
+    if counter.counter_width:
+        total_code_width = counter.counter_width
+        fixed_width = len(prefix) + len(counter.separator or "")
+        number_width = total_code_width - fixed_width
+        number_str = str(next_number).zfill(number_width)
+    else:
+        number_str = str(next_number)
+    
+    final_code = f"{prefix}{separator}{number_str}"
+
+    new_next_number = counter.next_number + counter.step
+
+    counter.next_number = new_next_number
+    counter.save()
+
+    return final_code
     
