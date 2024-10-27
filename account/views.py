@@ -335,14 +335,55 @@ class AccountGenLedgerListView(generics.ListAPIView):
 
         return Response(response_data)
 
-class AccountVoucherCreateAPIView(generics.CreateAPIView):
-    serializer_class = AccountVoucherMasterSerializer
+class AccountVoucherCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = AccountVoucherMasterViewSerializer
     # Requires a valid JWT token for access
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = CustomPagination
 
+    def get_queryset(self):
+        queryset = AccountVoucherMaster.objects.filter(status=True).order_by('-gl_date','-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-gl_date','-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('-gl_date','-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('-gl_date','-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer_class = AccountVoucherMasterSerializer
+        serializer = serializer_class(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
             institution_data = serializer.validated_data.get('institution')
@@ -359,5 +400,72 @@ class AccountVoucherCreateAPIView(generics.CreateAPIView):
         except Exception as e:
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
+class AccountVoucherMasterAPIView(generics.ListAPIView):
+    serializer_class = ChartOfAccountSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
 
+    def get_queryset(self):
+        # queryset = ChartofAccounts.objects.filter(parent_id__isnull=True,status=True).order_by('id')
+        queryset = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',parent__title__iexact='Current Asset')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('code')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('code')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('code')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = {
+            "code": 200,
+            "message": "Success",
+            "data": serializer.data,
+        }
 
+        return Response(response_data)
+
+class AccountVoucherDetailAPIView(generics.ListAPIView):
+    serializer_class = ChartOfAccountSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        # queryset = ChartofAccounts.objects.filter(parent_id__isnull=True,status=True).order_by('id')
+        queryset = ChartofAccounts.objects.filter(status=True,coa_type='EXPENSE',parent__title__iexact='Expense')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('code')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('code')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('code')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = {
+            "code": 200,
+            "message": "Success",
+            "data": serializer.data,
+        }
+
+        return Response(response_data)
