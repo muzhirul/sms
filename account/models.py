@@ -3,6 +3,10 @@ from institution.models import Institution, Branch
 from django_userforeignkey.models.fields import UserForeignKey
 from django.core.exceptions import ValidationError
 from authentication.models import Authentication
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
+from sms.permission import generate_code
+from django.db.models import Sum
 
 # Create your models here.
 class ChartofAccounts(models.Model):
@@ -140,10 +144,9 @@ class AccountVoucherMaster(models.Model):
         ('RECEIVE','Receive'),
         ('JOURNAL','Journal'),
     ]
-    voucher_no = models.CharField(blank=True,null=True, max_length=50)
+    voucher_no = models.CharField(blank=True,null=True, max_length=50,editable=False)
     voucher_type = models.CharField(max_length=30,choices=VOUCHER_TYPE)
     gl_date = models.DateField(auto_now_add=True)
-    acc_coa = models.ForeignKey(ChartofAccounts,on_delete=models.SET_NULL,blank=True,null=True,related_name='acc_vou_coa')
     total_debit_amt = models.DecimalField(blank=True, null=True,max_digits=10,decimal_places=2,verbose_name='Total Debit Amount')
     total_credit_amt = models.DecimalField(blank=True, null=True,max_digits=10,decimal_places=2,verbose_name='Total Credit Amount')
     confirm = models.BooleanField(default=False)
@@ -162,9 +165,17 @@ class AccountVoucherMaster(models.Model):
     def __str__(self):
         return f"{self.gl_date} - Voucher No: {self.voucher_no}"
     
+@receiver(post_save, sender=AccountVoucherMaster)
+def voucher_no_posting(sender, instance, **kwargs):
+    if instance.voucher_type and not instance.voucher_no:
+        new_voucher_no = generate_code(instance.institution,instance.branch,instance.voucher_type)
+        instance.voucher_no = new_voucher_no
+        instance.save()
+
+    
 class AccountVoucherDetails(models.Model):
     line_no = models.IntegerField()
-    acc_voucher_mst = models.ForeignKey(AccountVoucherMaster, on_delete=models.SET_NULL,blank=True,null=True,related_name='acc_voucher_mst')
+    acc_voucher_mst = models.ForeignKey(AccountVoucherMaster, on_delete=models.SET_NULL,blank=True,null=True,related_name='acc_voucher_detail')
     acc_coa = models.ForeignKey(ChartofAccounts, on_delete=models.SET_NULL, blank=True,null=True)
     acc_bank = models.ForeignKey(AccountBanks, on_delete=models.SET_NULL, blank=True,null=True)
     debit_amt = models.DecimalField(blank=True, null=True,max_digits=10,decimal_places=2, verbose_name='Debit Amount')
@@ -185,3 +196,18 @@ class AccountVoucherDetails(models.Model):
 
     def __str__(self):
         return f"{self.acc_voucher_mst.voucher_no}"
+    
+@receiver(post_save, sender=AccountVoucherDetails)
+def update_total_amounts(sender, instance, **kwargs):
+    # Retrieve the related AccountVoucherMaster instance
+    voucher_master = instance.acc_voucher_mst
+
+    if voucher_master:
+        # Calculate the total debit and credit amounts from AccountVoucherDetails
+        total_debit = AccountVoucherDetails.objects.filter(acc_voucher_mst=voucher_master).aggregate(Sum('debit_amt'))['debit_amt__sum'] or 0
+        total_credit = AccountVoucherDetails.objects.filter(acc_voucher_mst=voucher_master).aggregate(Sum('credit_amt'))['credit_amt__sum'] or 0
+
+        # Update the totals in AccountVoucherMaster
+        voucher_master.total_debit_amt = total_debit
+        voucher_master.total_credit_amt = total_credit
+        voucher_master.save()

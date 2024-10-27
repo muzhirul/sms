@@ -9,6 +9,7 @@ from rest_framework import generics, permissions
 from datetime import datetime
 from sms.utils import CustomResponse
 from rest_framework import status
+from sms.permission import check_permission
     
 
 class ChartofAccountList(generics.ListAPIView):
@@ -333,6 +334,30 @@ class AccountGenLedgerListView(generics.ListAPIView):
         }
 
         return Response(response_data)
+
+class AccountVoucherCreateAPIView(generics.CreateAPIView):
+    serializer_class = AccountVoucherMasterSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            institution_data = serializer.validated_data.get('institution')
+            branch_data = serializer.validated_data.get('branch')
+            institution = institution_data if institution_data is not None else self.request.user.institution
+            branch = branch_data if branch_data is not None else self.request.user.branch
+            instance = serializer.save(institution=institution, branch=branch)
+
+            return CustomResponse(
+                code=status.HTTP_200_OK,
+                message="Voucher created successfully",
+                data=AccountVoucherMasterViewSerializer(instance).data
+            )
+        except Exception as e:
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
 
 
