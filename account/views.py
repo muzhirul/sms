@@ -299,3 +299,40 @@ class TrialBalanceAPIView(generics.ListAPIView):
         }
 
         return Response(response_data)
+    
+class AccountGenLedgerListView(generics.ListAPIView):
+    serializer_class = AccLedgerViewSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = AccountLedger.objects.filter(status=True).order_by('-gl_date')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-gl_date')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('-gl_date')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('-gl_date')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = {
+            "code": 200,
+            "message": "Success",
+            "data": serializer.data,
+        }
+
+        return Response(response_data)
+
+
+

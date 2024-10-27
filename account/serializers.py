@@ -20,6 +20,14 @@ class CostofAccountListSerializer(serializers.ModelSerializer):
         model = ChartofAccounts
         fields = ['id','coa_type','code','title']
 
+class AccLedgerViewSerializer(serializers.ModelSerializer):
+    acc_coa = CostofAccountListSerializer(read_only=True)
+    acc_coa_ref = CostofAccountListSerializer(read_only=True)
+
+    class Meta:
+        model = AccountLedger
+        fields = ['gl_date','voucher_no', 'acc_coa', 'acc_coa_ref','narration','particulars', 'debit_amt', 'credit_amt'] 
+
 class AccLedgerSerializer(serializers.ModelSerializer):
     acc_coa = CostofAccountListSerializer(read_only=True)
     acc_coa_ref = CostofAccountListSerializer(read_only=True)
