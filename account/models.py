@@ -211,3 +211,48 @@ def update_total_amounts(sender, instance, **kwargs):
         voucher_master.total_debit_amt = total_debit
         voucher_master.total_credit_amt = total_credit
         voucher_master.save()
+
+
+@receiver(post_save, sender=AccountVoucherMaster)
+def general_ledger_posting(sender, instance, **kwargs):
+    if instance.confirm:
+        acc_ledger_count = AccountLedger.objects.filter(status=True,institution=instance.institution,branch=instance.branch,voucher_no=instance.voucher_no).count()
+        if acc_ledger_count == 0:
+            acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=instance.gl_date,end_date__gte=instance.gl_date).last()
+            for voucher_detail in AccountVoucherDetails.objects.filter(status=True,acc_voucher_mst=instance.id,institution=instance.institution,branch=instance.branch):
+                acc_ledger = {}
+                if voucher_detail.debit_amt > 0:
+                    credit_coa = AccountVoucherDetails.objects.filter(status=True,acc_voucher_mst=instance.id,
+                                                                      institution=voucher_detail.institution,
+                                                                      branch=voucher_detail.branch,
+                                                                      credit_amt__gt=0).first()
+                    acc_ledger['acc_coa_ref'] = credit_coa.acc_coa
+                    print('*****',credit_coa.acc_coa)
+                    debit_coa = voucher_detail.acc_coa
+                if voucher_detail.credit_amt > 0:
+                    debit_coa = AccountVoucherDetails.objects.filter(status=True,acc_voucher_mst=instance.id,
+                                                                      institution=instance.institution,
+                                                                      branch=instance.branch,
+                                                                      debit_amt__gt=0).last()
+                    acc_ledger['acc_coa_ref'] = debit_coa.acc_coa
+                    print('+++++',debit_coa.acc_coa)
+                    credit_coa = voucher_detail.acc_coa
+                # print(voucher_detail.debit_amt,voucher_detail.credit_amt)
+                
+                acc_ledger['gl_date'] = instance.gl_date
+                acc_ledger['voucher_no'] = instance.voucher_no
+                acc_ledger['voucher_type'] = instance.voucher_type
+                acc_ledger['acc_coa'] = voucher_detail.acc_coa
+                acc_ledger['acc_period'] = acc_period
+                acc_ledger['credit_amt'] = voucher_detail.credit_amt
+                acc_ledger['debit_amt'] = voucher_detail.debit_amt
+                acc_ledger['ref_source'] = 'acc_voucher_dtl'
+                acc_ledger['ref_no'] = voucher_detail.id
+                acc_ledger['particulars'] = instance.remarks
+                acc_ledger['institution'] = voucher_detail.institution
+                acc_ledger['branch'] = voucher_detail.branch
+                # print(acc_ledger)
+                acc_dbt = AccountLedger.objects.create(**acc_ledger)
+            # print(debit_coa,credit_coa)
+        else:
+            print('Voucher No Already exists')

@@ -431,20 +431,21 @@ class AccountVoucherDetaillupdate(generics.RetrieveUpdateAPIView):
         serializer = serializer_class(instance, data=request.data, partial=partial)
         try:
             if serializer.is_valid():
-                institution_data = serializer.validated_data.get('institution')
-                branch_data = serializer.validated_data.get('branch')
-                institution = institution_data if institution_data is not None else self.request.user.institution
-                branch = branch_data if branch_data is not None else self.request.user.branch
-                instance = serializer.save()
-                return CustomResponse(code=status.HTTP_200_OK, message="Voucher updated successfully", data=AccountVoucherMasterViewSerializer(instance).data)
+                if not instance.confirm:
+                    institution_data = serializer.validated_data.get('institution')
+                    branch_data = serializer.validated_data.get('branch')
+                    institution = institution_data if institution_data is not None else self.request.user.institution
+                    branch = branch_data if branch_data is not None else self.request.user.branch
+                    instance = serializer.save()
+                    return CustomResponse(code=status.HTTP_200_OK, message="Voucher updated successfully", data=AccountVoucherMasterViewSerializer(instance).data)
+                else:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="You can not update Voucher...", data=serializer.errors)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
-
-
 
 class AccountVoucherMasterAPIView(generics.ListAPIView):
     serializer_class = ChartOfAccountSerializer
