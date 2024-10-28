@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/all-voucher', AccountVoucherCreateAPIView.as_view(), name='account-voucher-create'),
     path('api/voucher/detail/<int:pk>', AccountVoucherDetaillupdate.as_view(), name='account-voucher-detail'),
     path('api/account-voucher/delete/<int:pk>', AccountVoucherDelete.as_view(), name='account-voucher-delete'),
+    path('api/account-voucher/confirm/<int:pk>', AccountVoucherConfirm.as_view(), name='account-voucher-confirm'),
     path('api/voucher-master/list', AccountVoucherMasterAPIView.as_view(), name='account-voucher-master'),
     path('api/voucher-details/list', AccountVoucherDetailAPIView.as_view(), name='account-voucher-details')
 ]

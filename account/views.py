@@ -475,6 +475,27 @@ class AccountVoucherDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"Voucher Delete successfully", data=None)
 
+class AccountVoucherConfirm(generics.UpdateAPIView):
+    queryset = AccountVoucherMaster.objects.filter(status=True)
+    serializer_class = AccountVoucherMasterSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        # permission_check = check_permission(self.request.user.id, 'Class Routine', 'delete')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+        instance = self.get_object()
+
+        if instance.confirm:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Voucher already Confirmed", data=None)
+        else:
+            instance.confirm = True
+            instance.save()
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Voucher Confirm successfully", data=None)
+
 
 class AccountVoucherMasterAPIView(generics.ListAPIView):
     serializer_class = ChartOfAccountSerializer
