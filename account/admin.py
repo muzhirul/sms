@@ -44,7 +44,7 @@ class AccountLedgerAdmin(admin.ModelAdmin):
 
 class AccountVoucherDetailsTabularInline(admin.TabularInline):
     model = AccountVoucherDetails
-    fields = ['acc_coa','acc_bank','particulars','debit_amt','credit_amt','institution','branch']
+    fields = ['acc_coa','acc_bank','particulars','debit_amt','credit_amt','status','institution','branch']
     extra = 0
 
 class AccountVoucherMasterAdmin(admin.ModelAdmin):

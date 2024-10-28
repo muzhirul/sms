@@ -57,6 +57,7 @@ class TrialBalanceSerializer(serializers.Serializer):
 
 
 class AccountVoucherDetailSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
     class Meta:
         model = AccountVoucherDetails
         exclude = ['created_by','updated_by','created_at','updated_at','status']
@@ -65,13 +66,31 @@ class AccountVoucherDetailViewSerializer(serializers.ModelSerializer):
     acc_coa = CostofAccountListSerializer(read_only=True)
     class Meta:
         model = AccountVoucherDetails
-        exclude = ['created_by','updated_by','created_at','updated_at','status']
+        exclude = ['created_by','updated_by','created_at','updated_at','status','acc_voucher_mst','institution','branch']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
 
 class AccountVoucherMasterViewSerializer(serializers.ModelSerializer):
     acc_voucher_detail = AccountVoucherDetailViewSerializer(many=True, required=False, read_only=True)
     class Meta:
         model = AccountVoucherMaster
         exclude = ['created_by','updated_by','created_at','updated_at','status','branch','institution']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Filter out None values from the social_media list 
+        representation['acc_voucher_detail'] = [item for item in representation['acc_voucher_detail'] if item is not None]
+
+        if not instance.status:
+            # If status is False, exclude the social_media field
+            representation.pop('acc_voucher_detail', None)
+
+        return representation
 
 class AccountVoucherMasterSerializer(serializers.ModelSerializer):
     acc_voucher_detail = AccountVoucherDetailSerializer(many=True)
@@ -106,5 +125,38 @@ class AccountVoucherMasterSerializer(serializers.ModelSerializer):
             AccountVoucherDetails.objects.create(acc_voucher_mst=voucher, **detail_data,institution=voucher.institution,branch=voucher.branch)
         
         return voucher
+    
+    def update(self, instance, validated_data):
+        acc_voucher_details = validated_data.pop('acc_voucher_detail')
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        keep_choices = []
+        for acc_voucher_detail in acc_voucher_details:
+            print(acc_voucher_detail)
+            if "id" in acc_voucher_detail.keys():
+                if AccountVoucherDetails.objects.filter(id=acc_voucher_detail["id"]).exists():
+                    c = AccountVoucherDetails.objects.get(id=acc_voucher_detail["id"])
+                    c.line_no = acc_voucher_detail.get('line_no', c.line_no)
+                    c.acc_coa = acc_voucher_detail.get('acc_coa', c.acc_coa)
+                    c.acc_bank = acc_voucher_detail.get('acc_bank', c.acc_bank)
+                    c.debit_amt = acc_voucher_detail.get('debit_amt', c.debit_amt)
+                    c.credit_amt = acc_voucher_detail.get('credit_amt', c.credit_amt)
+                    c.particulars = acc_voucher_detail.get('particulars', c.particulars)
+                    c.status = True
+                    c.save()
+                    keep_choices.append(c.id)
+                else:
+                    continue
+            else:
+                c = AccountVoucherDetails.objects.create(**acc_voucher_detail, acc_voucher_mst=instance,institution=instance.institution,branch=instance.branch)
+                keep_choices.append(c.id)
+
+            for voucher in AccountVoucherDetails.objects.filter(acc_voucher_mst=instance):
+                if voucher.id not in keep_choices:
+                    voucher.status = False
+                    voucher.save()
+
+        return instance
 
 

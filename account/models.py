@@ -204,8 +204,8 @@ def update_total_amounts(sender, instance, **kwargs):
 
     if voucher_master:
         # Calculate the total debit and credit amounts from AccountVoucherDetails
-        total_debit = AccountVoucherDetails.objects.filter(acc_voucher_mst=voucher_master).aggregate(Sum('debit_amt'))['debit_amt__sum'] or 0
-        total_credit = AccountVoucherDetails.objects.filter(acc_voucher_mst=voucher_master).aggregate(Sum('credit_amt'))['credit_amt__sum'] or 0
+        total_debit = AccountVoucherDetails.objects.filter(acc_voucher_mst=voucher_master,status=True).aggregate(Sum('debit_amt'))['debit_amt__sum'] or 0
+        total_credit = AccountVoucherDetails.objects.filter(acc_voucher_mst=voucher_master,status=True).aggregate(Sum('credit_amt'))['credit_amt__sum'] or 0
 
         # Update the totals in AccountVoucherMaster
         voucher_master.total_debit_amt = total_debit
