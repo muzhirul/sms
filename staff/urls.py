@@ -35,6 +35,8 @@ urlpatterns = [
     path('api/raw/attendance/entry', StaffAttendanceEntry.as_view(), name='staff-attendance-entry'),
     path('api/raw/attendance/list', staffRawAttendanceList.as_view(), name='staff-raw-attendance-list'),
     path('api/raw/attendance', staffSpecificRawAttendance.as_view(), name='staff-specific-attendance'),
+    # Staff Self Attendance Entry
+    path('api/self-attendance', StaffSelfAttendanceEntry.as_view(), name='staff-self-attendance-entry'),
     # Staff Leaave Transaction
     path('api/leave/balance/list', StaffLeaveList.as_view(), name='staff-leave-list'),
     path('api/leave-trns/create', staffLeaveTransactionCreate.as_view(), name='staff-leave-transaction-create'), 
@@ -58,4 +60,5 @@ urlpatterns = [
     path('api/daily/attn-list',StaffDailyAttnList.as_view(), name='staff-daily-attn-list'),
     # Staff payroll process
     path('api/payroll/process', StaffPayrollProcess.as_view(), name='staff-payroll-process'),
+    
 ]

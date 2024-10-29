@@ -17,6 +17,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 import requests
 from datetime import timedelta
+from django.utils import timezone
 # Create your views here.
 
 class StaffDepartmentList(generics.ListAPIView):
@@ -2180,3 +2181,51 @@ class StaffPayrollProcess(generics.ListAPIView):
                 print(payroll_proc_data)
 
         return CustomResponse(code=status.HTTP_200_OK, message=f"Process Done....", data=None)
+
+class StaffSelfAttendanceEntry(generics.CreateAPIView):
+    serializer_class = AttendanceDailyCreateRawSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = AttendanceDailyRaw.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+
+    def create(self,request,*args, **kwargs):
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        user_id = self.request.user.id
+        attn_type = self.request.data.get('attn_type')
+        staff = Staff.objects.get(status=True,institution=institution_id,branch=branch_id,staff_id=self.request.user.username,user=user_id)
+        try:
+            raw_atten = {}
+            raw_atten['attn_type'] = attn_type
+            raw_atten['staff_code'] = self.request.user.username
+            raw_atten['staff'] = staff.id
+            raw_atten['attn_date'] = datetime.now().date()
+            raw_atten['trnsc_time'] = timezone.now()
+            raw_atten['src_type'] = 'MANUAL'
+            raw_atten['institution'] = institution_id.id
+            raw_atten['branch'] = branch_id.id
+            serializer = self.get_serializer(data=raw_atten)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Staff {attn_type} Attendance successfully", data=serializer.data)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+        

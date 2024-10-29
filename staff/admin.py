@@ -115,6 +115,12 @@ class ProcessStaffSalaryTableAdmin(admin.ModelAdmin):
     class Meta:
         model = ProcessStaffSalaryTable
 
+class AttendanceDailyRawAdmin(admin.ModelAdmin):
+    list_display = ['staff','staff_code','attn_date','trnsc_time','username','src_type','attn_type']
+
+    class Meta:
+        model = AttendanceDailyRaw
+
 
 admin.site.register(Staff,StaffAdmin)
 admin.site.register(Designation,DesignationAdmin)
@@ -126,3 +132,4 @@ admin.site.register(StaffLeaveAppHistory)
 admin.site.register(ProcessStaffAttendanceMst,ProcessStaffAttendanceMstAdmin)
 admin.site.register(StaffStatusTransaction,StaffStatusTransactionAdmin)
 admin.site.register(ProcessStaffSalaryTable,ProcessStaffSalaryTableAdmin)
+admin.site.register(AttendanceDailyRaw,AttendanceDailyRawAdmin)
