@@ -227,18 +227,12 @@ def general_ledger_posting(sender, instance, **kwargs):
                                                                       branch=voucher_detail.branch,
                                                                       credit_amt__gt=0).first()
                     acc_ledger['acc_coa_ref'] = credit_coa.acc_coa
-                    print('*****',credit_coa.acc_coa)
-                    debit_coa = voucher_detail.acc_coa
                 if voucher_detail.credit_amt > 0:
                     debit_coa = AccountVoucherDetails.objects.filter(status=True,acc_voucher_mst=instance.id,
                                                                       institution=instance.institution,
                                                                       branch=instance.branch,
                                                                       debit_amt__gt=0).last()
                     acc_ledger['acc_coa_ref'] = debit_coa.acc_coa
-                    print('+++++',debit_coa.acc_coa)
-                    credit_coa = voucher_detail.acc_coa
-                # print(voucher_detail.debit_amt,voucher_detail.credit_amt)
-                
                 acc_ledger['gl_date'] = instance.gl_date
                 acc_ledger['voucher_no'] = instance.voucher_no
                 acc_ledger['voucher_type'] = instance.voucher_type
@@ -251,8 +245,6 @@ def general_ledger_posting(sender, instance, **kwargs):
                 acc_ledger['particulars'] = instance.remarks
                 acc_ledger['institution'] = voucher_detail.institution
                 acc_ledger['branch'] = voucher_detail.branch
-                # print(acc_ledger)
                 acc_dbt = AccountLedger.objects.create(**acc_ledger)
-            # print(debit_coa,credit_coa)
         else:
             print('Voucher No Already exists')
