@@ -2211,6 +2211,9 @@ class StaffSelfAttendanceEntry(generics.CreateAPIView):
         user_id = self.request.user.id
         attn_type = self.request.data.get('attn_type')
         staff = Staff.objects.get(status=True,institution=institution_id,branch=branch_id,staff_id=self.request.user.username,user=user_id)
+        sys_attn_type = AttendanceDailyRaw.objects.filter(attn_date=datetime.now().date(),status=True,institution=institution_id,branch=branch_id,staff=staff).order_by('id').last()
+        if (sys_attn_type.attn_type==attn_type):
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Already {attn_type}. Please try another attendance type.", data=None)
         try:
             raw_atten = {}
             raw_atten['attn_type'] = attn_type
