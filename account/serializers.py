@@ -13,7 +13,7 @@ class CostofAccountSerializer(serializers.ModelSerializer):
 class ChartOfAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChartofAccounts
-        fields = ['id', 'title', 'code']
+        fields = ['id', 'title', 'code','parent']
 
 class ChartOfAccountCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,6 +27,21 @@ class ChartOfAccountViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChartofAccounts
         exclude = ['created_by', 'updated_by','status','institution','branch']
+
+class ChartOfAccountSortSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChartofAccounts
+        fields = ['id', 'title', 'code']
+
+    def get_title(self, obj):
+        title_parts = []
+        current = obj
+        while current is not None:
+            title_parts.insert(0, current.title)
+            current = current.parent
+        return " > ".join(title_parts)
 
 class CostofAccountListSerializer(serializers.ModelSerializer):
     class Meta:
