@@ -687,3 +687,83 @@ class AccountBankCreateList(generics.ListCreateAPIView):
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+class AccountBankDetail(generics.RetrieveUpdateAPIView):
+    queryset = AccountBanks.objects.all()
+    serializer_class = AccountBanksCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        # permission_check = check_permission(self.request.user.id, 'Holiday', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        print('**************')
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=AccountBanksViewSerializer(instance).data)
+
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        # permission_check = check_permission(self.request.user.id, 'Holiday', 'update')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                bank_name = serializer.validated_data.get('bank_name')
+                branch_name = serializer.validated_data.get('branch_name')
+                account_no = serializer.validated_data.get('account_no')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                if (bank_name==instance.bank_name and branch_name==instance.branch_name and account_no==instance.account_no):
+                    instance = serializer.save()
+                    return CustomResponse(code=status.HTTP_200_OK, message="Bank Information Update successfully", data=AccountBanksViewSerializer(instance).data)
+                else:
+                    bank_count = AccountBanks.objects.filter(bank_name__iexact=bank_name,account_no__iexact=account_no,branch_name__iexact=branch_name,
+                                                                institution=institution,branch=branch,status=True).count()
+                    if(bank_count==0):
+                        # Perform any custom update logic here if needed
+                        instance = serializer.save()
+                        # Customize the response data
+                        return CustomResponse(code=status.HTTP_200_OK, message="Bank Information Update successfully", data=AccountBanksViewSerializer(instance).data)
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Bank Information already exits", data=serializer.errors)
+                    # Customize the response format for successful update
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+    
+class AccountBankDelete(generics.UpdateAPIView):
+    queryset = AccountBanks.objects.all()
+    serializer_class = AccountBanksCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        # permission_check = check_permission(self.request.user.id, 'Holiday', 'delete')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+        
+        instance = self.get_object()
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Bank Information {instance.account_no} already Deleted", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Bank Information {instance.account_no} Delete successfully", data=None)
+
+
