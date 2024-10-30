@@ -70,6 +70,9 @@ class AccountPeriod(models.Model):
     class Meta:
         db_table = 'acc_period'
         verbose_name = 'Account Period'
+        constraints = [
+            UniqueConstraint(fields=['start_date','end_date','status'], name='account_preiod_unique_constraint')
+        ] 
 
     def __str__(self):
         return self.title
@@ -105,6 +108,9 @@ class AccountBanks(models.Model):
     class Meta:
         db_table = 'acc_banks'
         verbose_name = 'Account Bank'
+        constraints = [
+            UniqueConstraint(fields=['bank_name','branch_name','account_no','status','institution','branch'], name='account_bank_unique_constraint')
+        ] 
 
     
     def __str__(self):
@@ -140,6 +146,7 @@ class AccountLedger(models.Model):
     class Meta:
         db_table = 'acc_ledger'
         verbose_name = 'Account Ledger'
+        
 
     def __str__(self):
         return f"{self.gl_date.strftime('%Y-%m-%d')} - COA ID: {self.acc_coa_id}"
@@ -167,6 +174,9 @@ class AccountVoucherMaster(models.Model):
 
     class Meta:
         db_table = 'acc_voucher_mst'
+        constraints = [
+            UniqueConstraint(fields=['voucher_no','status','institution','branch'], name='account_ledger_unique_constraint')
+        ] 
 
     def __str__(self):
         return f"{self.gl_date} - Voucher No: {self.voucher_no}"
