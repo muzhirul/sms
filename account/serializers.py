@@ -169,3 +169,8 @@ class AccountBanksViewSerializer(serializers.ModelSerializer):
         model = AccountBanks
         exclude = ['created_by', 'updated_by','status','institution','branch']
 
+class AccountBanksSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccountBanks
+        fields = ['id', 'code','bank_name','branch_name','account_no']
+
