@@ -7,6 +7,7 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from sms.permission import generate_code
 from django.db.models import Sum
+from django.db.models import UniqueConstraint
 
 # Create your models here.
 class ChartofAccounts(models.Model):
@@ -20,7 +21,7 @@ class ChartofAccounts(models.Model):
     ]
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='sub_coa')
     coa_type = models.CharField(max_length=10,verbose_name='COA Type')
-    code = models.BigIntegerField(unique=True)
+    code = models.BigIntegerField()
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True,null=True)
     keyword = models.CharField(max_length=255,blank=True,null=True,editable=False)
@@ -40,6 +41,9 @@ class ChartofAccounts(models.Model):
     class Meta:
         db_table = 'acc_coa'
         verbose_name = 'Chart Of Accounts'
+        constraints = [
+            UniqueConstraint(fields=['code','status','institution','branch'], name='unique_code_constraint')
+        ] 
 
     def save(self, *args, **kwargs):
         self.coa_type = self.coa_type.upper()

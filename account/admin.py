@@ -7,7 +7,7 @@ class ChartofAccountsAdmin(admin.ModelAdmin):
     search_fields = ['parent', 'coa_type', 'title', 'keyword', 'income_stat_type', 'direct_posting','carry_forward']
     list_filter = ['parent']
 
-    # save_as = True
+    save_as = True
     save_on_top = True
     list_per_page = 15
 
