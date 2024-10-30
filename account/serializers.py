@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework_recursive.fields import RecursiveField
 from .models import *
+from hrms.serializers import AccountBankViewSerializer
 
 class CostofAccountSerializer(serializers.ModelSerializer):
     sub_coa = RecursiveField(many=True,required=False)
@@ -178,12 +179,14 @@ class AccountBanksCreateSerializer(serializers.ModelSerializer):
 class AccountBanksViewSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')
+    bank = AccountBankViewSerializer(read_only=True)
     class Meta:
         model = AccountBanks
         exclude = ['created_by', 'updated_by','status','institution','branch']
 
 class AccountBanksSerializer(serializers.ModelSerializer):
+    bank = AccountBankViewSerializer(read_only=True)
     class Meta:
         model = AccountBanks
-        fields = ['id', 'code','bank_name','branch_name','account_no']
+        fields = ['id', 'code','bank','branch_name','account_no']
 

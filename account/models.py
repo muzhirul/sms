@@ -1,5 +1,6 @@
 from django.db import models
 from institution.models import Institution, Branch
+from hrms.models import AccountBank
 from django_userforeignkey.models.fields import UserForeignKey
 from django.core.exceptions import ValidationError
 from authentication.models import Authentication
@@ -93,7 +94,7 @@ class AccountPeriod(models.Model):
 
 class AccountBanks(models.Model):
     code = models.CharField(max_length=50,blank=True, null=True, verbose_name='Bank Code')
-    bank_name = models.CharField(max_length=255)
+    bank = models.ForeignKey(AccountBank, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Bank Name')
     branch_name = models.CharField(max_length=255, blank=True, null=True)
     account_no = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
@@ -109,7 +110,7 @@ class AccountBanks(models.Model):
         db_table = 'acc_banks'
         verbose_name = 'Account Bank'
         constraints = [
-            UniqueConstraint(fields=['bank_name','branch_name','account_no','status','institution','branch'], name='account_bank_unique_constraint')
+            UniqueConstraint(fields=['bank','branch_name','account_no','status','institution','branch'], name='account_bank_unique_constraint')
         ] 
 
     

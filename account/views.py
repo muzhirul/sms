@@ -791,13 +791,13 @@ class AccountBankCreateList(generics.ListCreateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
-                bank_name = serializer.validated_data.get('bank_name')
+                bank_name = serializer.validated_data.get('bank')
                 branch_name = serializer.validated_data.get('branch_name')
                 account_no = serializer.validated_data.get('account_no')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                bank_count = AccountBanks.objects.filter(bank_name=bank_name,branch_name=branch_name,account_no=account_no,institution=institution, branch=branch, status=True).count()
+                bank_count = AccountBanks.objects.filter(bank=bank_name,branch_name=branch_name,account_no=account_no,institution=institution, branch=branch, status=True).count()
                 if (bank_count == 0):
                     instance = serializer.save(institution=institution, branch=branch)
                     # Customize the response data
@@ -840,17 +840,17 @@ class AccountBankDetail(generics.RetrieveUpdateAPIView):
             if serializer.is_valid():
                 institution_data = serializer.validated_data.get('institution')
                 branch_data = serializer.validated_data.get('branch')
-                bank_name = serializer.validated_data.get('bank_name')
+                bank_name = serializer.validated_data.get('bank')
                 branch_name = serializer.validated_data.get('branch_name')
                 account_no = serializer.validated_data.get('account_no')
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                if (bank_name==instance.bank_name and branch_name==instance.branch_name and account_no==instance.account_no):
+                if (bank_name==instance.bank and branch_name==instance.branch_name and account_no==instance.account_no):
                     instance = serializer.save()
                     return CustomResponse(code=status.HTTP_200_OK, message="Bank Information Update successfully", data=AccountBanksViewSerializer(instance).data)
                 else:
-                    bank_count = AccountBanks.objects.filter(bank_name__iexact=bank_name,account_no__iexact=account_no,branch_name__iexact=branch_name,
+                    bank_count = AccountBanks.objects.filter(bank=bank_name,account_no__iexact=account_no,branch_name__iexact=branch_name,
                                                                 institution=institution,branch=branch,status=True).count()
                     if(bank_count==0):
                         # Perform any custom update logic here if needed

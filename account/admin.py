@@ -25,8 +25,8 @@ class AccountPeriodAdmin(admin.ModelAdmin):
         model = AccountPeriod
 
 class AccountBanksAdmin(admin.ModelAdmin):
-    list_display = ['bank_name','branch_name','account_no','status']
-    search_fields = ['bank_name','branch_name','account_no','status']
+    list_display = ['bank','branch_name','account_no','status']
+    search_fields = ['bank','branch_name','account_no','status']
     list_filter = ['status']
 
     save_on_top = True
