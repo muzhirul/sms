@@ -14,6 +14,19 @@ class ChartOfAccountSerializer(serializers.ModelSerializer):
         model = ChartofAccounts
         fields = ['id', 'title', 'code']
 
+class ChartOfAccountCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChartofAccounts
+        exclude = ['created_by', 'updated_by','status','institution','branch']
+
+class ChartOfAccountViewSerializer(serializers.ModelSerializer):
+    parent = ChartOfAccountSerializer(read_only=True)
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+    class Meta:
+        model = ChartofAccounts
+        exclude = ['created_by', 'updated_by','status','institution','branch']
+
 class CostofAccountListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChartofAccounts
