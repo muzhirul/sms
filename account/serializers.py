@@ -14,7 +14,6 @@ class ChartOfAccountSerializer(serializers.ModelSerializer):
         model = ChartofAccounts
         fields = ['id', 'title', 'code']
 
-
 class CostofAccountListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChartofAccounts
@@ -54,7 +53,6 @@ class TrialBalanceSerializer(serializers.Serializer):
     opening_credit_amt = serializers.DecimalField(max_digits=12, decimal_places=2)
     closing_debit_amt = serializers.DecimalField(max_digits=12, decimal_places=2)
     closing_credit_amt = serializers.DecimalField(max_digits=12, decimal_places=2)
-
 
 class AccountVoucherDetailSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
@@ -159,4 +157,15 @@ class AccountVoucherMasterSerializer(serializers.ModelSerializer):
 
         return instance
 
+class AccountBanksCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccountBanks
+        exclude = ['created_by', 'updated_by', 'created_at', 'updated_at','status']
+
+class AccountBanksViewSerializer(serializers.ModelSerializer):
+    created_username = serializers.ReadOnlyField(source='created_by.username')
+    updated_username = serializers.ReadOnlyField(source='created_by.username')
+    class Meta:
+        model = AccountBanks
+        exclude = ['created_by', 'updated_by','status','institution','branch']
 

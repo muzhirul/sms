@@ -85,9 +85,11 @@ class AccountPeriod(models.Model):
         super().save(*args,**kwargs)
 
 class AccountBanks(models.Model):
+    code = models.CharField(max_length=50,blank=True, null=True, verbose_name='Bank Code')
     bank_name = models.CharField(max_length=255)
     branch_name = models.CharField(max_length=255, blank=True, null=True)
     account_no = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)

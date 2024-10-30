@@ -14,4 +14,6 @@ urlpatterns = [
     path('api/voucher-master/list', AccountVoucherMasterAPIView.as_view(), name='account-voucher-master'),
     path('api/voucher-details/list', AccountVoucherDetailAPIView.as_view(), name='account-voucher-details'),
     path('api/voucher-all/list', AccountVoucherAllAPIView.as_view(), name='account-voucher-all'),
+    # For Account Bank
+    path('api/bank/create', AccountBankCreateList.as_view(), name='account-bank-create-list'),
 ]
