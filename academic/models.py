@@ -343,6 +343,9 @@ class ClassRoutineMst(models.Model):
     class Meta:
         db_table = 'ac_class_routine_mst'
         verbose_name = 'Class Routine'
+        constraints = [
+            UniqueConstraint(fields=['class_name','section','group','session','version','status','institution','branch'], name='unique_class_routine_mst_constraint')
+        ]
     
     def __str__(self):
         return str(self.id)
@@ -365,8 +368,13 @@ class ClassRoutiineDtl(models.Model):
     
     class Meta:
         db_table = 'ac_class_routine_dtl'
+        constraints = [
+            UniqueConstraint(fields=['day','teacher','status','institution','branch'], name='unique_class_routine_dtl_constraint'),
+            UniqueConstraint(fields=['day','class_period','class_room','status','institution','branch'], name='unique_class_routine_for_time_constraint'),
+        ]
     
     def __str__(self):
         return str(self.id)
+    
 
 
