@@ -3,6 +3,8 @@ from .views import *
 
 urlpatterns = [
     path('api/coa/create', ChartOfAccountCreateList.as_view() ,name="chart-of-accounts-create-list"),
+    path('api/coa/detail/<int:pk>', ChartOfAccountRetriveUpdate.as_view(), name="chart-of-accounts-detail-update"),
+    path('api/coa/delete/<int:pk>', ChartOfAccountDelete.as_view(), name="chart-of-accounts-delete"),
     path('api/chart-of-accounts/list',ChartofAccountList.as_view(), name='chart_of_accounts_list'),
     path('api/all/coa/list', ChartOfAccountList.as_view() ,name="chart-of-accounts-list"),
     path('api/ledger', AccLedgerListView.as_view(), name='acc_ledger_list'),

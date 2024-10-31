@@ -88,6 +88,72 @@ class ChartOfAccountCreateList(generics.ListCreateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
+class ChartOfAccountRetriveUpdate(generics.RetrieveUpdateAPIView):
+    queryset = ChartofAccounts.objects.filter(status=True)
+    serializer_class = ChartOfAccountCreateSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        # permission_check = check_permission(self.request.user.id, 'Class Routine', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        try:
+            instance = self.get_object()
+            # Customize the response format for retrieving a single instance
+            return CustomResponse(code=status.HTTP_200_OK, message="Success", data=ChartOfAccountViewSerializer(instance).data)
+        except:
+            return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
+
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        # permission_check = check_permission(self.request.user.id, 'Class Routine', 'update')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer_class = ChartOfAccountCreateSerializer
+        serializer = serializer_class(instance, data=request.data, partial=partial)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                instance = serializer.save()
+                return CustomResponse(code=status.HTTP_200_OK, message="COA updated successfully", data=ChartOfAccountViewSerializer(instance).data)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
+class ChartOfAccountDelete(generics.UpdateAPIView):
+    queryset = ChartofAccounts.objects.filter(status=True)
+    serializer_class = ChartOfAccountCreateSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        # permission_check = check_permission(self.request.user.id, 'Class Routine', 'delete')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+        instance = self.get_object()
+        
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"COA already Deleted", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"COA Delete successfully", data=None)
+
 class ChartofAccountList(generics.ListAPIView):
     serializer_class = CostofAccountSerializer
     # Requires a valid JWT token for access
