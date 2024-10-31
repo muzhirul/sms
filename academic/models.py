@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from staff.models import Staff
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
+from django.db.models import UniqueConstraint
+from django.db import models, IntegrityError
 
 def generate_unique_code():
     return str(uuid.uuid4().hex[:10])  # Adjust the length as needed
@@ -286,9 +288,18 @@ class ClassTeacher(models.Model):
     class Meta:
         db_table = 'ac_class_teacher'
         verbose_name = 'Assign Class Teacher'
+        constraints = [
+            UniqueConstraint(fields=['session','teacher','status','institution','branch'], name='unique_teacher_constraint')
+        ] 
     
     def __str__(self):
         return str(self.id)
+    
+    def save(self, *args, **kwargs):
+        try:
+            super().save(*args, **kwargs)
+        except IntegrityError:
+            raise ValidationError({"message": "This teacher already assign for this session"})
 
 class ClassRoutine(models.Model):
     teacher = models.ForeignKey(Staff, on_delete=models.CASCADE, verbose_name='Teacher Name')

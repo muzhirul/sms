@@ -2721,7 +2721,7 @@ class ClassTeacherCreateList(generics.ListCreateAPIView):
                 branch = branch_data if branch_data is not None else self.request.user.branch
                 class_count = ClassTeacher.objects.filter(class_name=class_name,group=group, section=section, session=session, version=version, institution=institution, branch=branch, status=True).count()
                 if (class_count==0):
-                    class_teacher_count = ClassTeacher.objects.filter(teacher=teacher,group=group,class_name=class_name, section=section, session=session, version=version, institution=institution, branch=branch, status=True).count()
+                    class_teacher_count = ClassTeacher.objects.filter(teacher=teacher, session=session, institution=institution, branch=branch, status=True).count()
                     if (class_teacher_count == 0):
                         instance = serializer.save(institution=institution, branch=branch)
                         # Customize the response data
