@@ -10,4 +10,12 @@ class WarehouseAdmin(admin.ModelAdmin):
     class Meta:
         model = Warehouse
 
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ['name','keyword','description','is_active','status']
+    search_fields = ['name','keyword','description','is_active','status']
+
+    class Meta:
+        model = Brand
+
 admin.site.register(Warehouse, WarehouseAdmin)
+admin.site.register(Brand, BrandAdmin)
