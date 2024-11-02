@@ -17,5 +17,13 @@ class BrandAdmin(admin.ModelAdmin):
     class Meta:
         model = Brand
 
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ['name','keyword','description','is_active','status']
+    search_fields = ['name','keyword','description','is_active','status']
+
+    class Meta:
+        model = Category
+
 admin.site.register(Warehouse, WarehouseAdmin)
 admin.site.register(Brand, BrandAdmin)
+admin.site.register(Category, CategoryAdmin)
