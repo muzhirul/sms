@@ -5,7 +5,7 @@ import uuid
 from django.contrib.auth.models import User
 from setup_app.models import Days, FloorType, SubjectType
 from staff.models import Staff
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from datetime import datetime, timedelta
 from staff.models import Staff
@@ -47,6 +47,7 @@ class Version(models.Model):
 class Session(models.Model):
     code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Session Code', unique=True, default=generate_unique_code)
     session = models.CharField(max_length=100,blank=True,null=True,verbose_name='Session')
+    as_default = models.BooleanField(default=False)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
@@ -61,6 +62,13 @@ class Session(models.Model):
     
     def __str__(self):
         return str(self.session)
+    
+@receiver(post_save, sender=Session)
+def set_as_default(sender, instance, **kwargs):
+    if instance.as_default:
+        sender.objects.filter(institution=instance.institution, branch=instance.branch,status=True).exclude(id=instance.id).update(as_default=False)
+
+
 
 class Section(models.Model):
     code = models.CharField(max_length=20,blank=True,null=True,verbose_name='Section Code', unique=True, default=generate_unique_code)
