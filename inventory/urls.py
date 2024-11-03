@@ -17,5 +17,10 @@ urlpatterns = [
     path('api/category', CategoryCreateList.as_view(), name='category-create-list'),
     path('api/category/detail/<int:pk>', CategoryDetail.as_view(), name='category-detail'),
     path('api/category/delete/<int:pk>', CategoryDelete.as_view(), name='category-delete'),
+    # For Model
+    path('api/model/list', ModelList.as_view(), name='model-list'),
+    path('api/model', ModelCreateList.as_view(), name='model-create-list'),
+    path('api/model/detail/<int:pk>', ModelDetail.as_view(), name='model-detail'),
+    path('api/model/delete/<int:pk>', ModelDelete.as_view(), name='model-delete'),
 
 ]

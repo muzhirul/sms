@@ -96,3 +96,33 @@ class Category(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+class Model(models.Model):
+    name = models.CharField(max_length=255,verbose_name='model Name')
+    keyword = models.CharField(max_length=255,verbose_name='Keyword', blank=True, null=True,editable=False)
+    description = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='model_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='model_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'inv_model'
+        verbose_name = 'Model'
+        constraints = [
+            UniqueConstraint(fields=['name','keyword','status','institution','branch'], name='model_unique_constraint')
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.keyword = self.name.upper().replace(' ','_').replace('-', '_')
+        super(Model,self).save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.name)
+
+
