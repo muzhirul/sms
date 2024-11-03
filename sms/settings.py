@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'fees',
     'communicate',
     'account',
-    'inventory'
+    'inventory',
+    'purchase',
 ]
 
 MIDDLEWARE = [
