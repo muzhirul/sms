@@ -140,14 +140,14 @@ class Item(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Brand')
     purchase_item = models.BooleanField(default=True)
     purchase_uom = models.CharField(max_length=10,blank=True, null=True)
-    def_pur_unit_price = models.IntegerField(default=0, verbose_name='Regular Purchase Price')
+    def_pur_unit_price = models.DecimalField(blank=True, null=True,verbose_name='Regular Purchase Price',max_digits=10,decimal_places=2)
     min_pur_qty = models.IntegerField(default=1,verbose_name='Min Purchase Qty')
     default_uom = models.CharField(max_length=10, blank=True, null=True)
     default_warehouse = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, blank=True, null=True)
     sales_item = models.BooleanField(default=False)
     sales_uom = models.CharField(max_length=10, blank=True, null=True)
     min_sales_qty = models.IntegerField(default=1, verbose_name='Min Sales Qty')
-    def_sales_price = models.IntegerField(default=0, verbose_name='Default Sales Price')
+    def_sales_price = models.DecimalField(blank=True, null=True,verbose_name='Default Sales Price',max_digits=10,decimal_places=2)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
@@ -161,7 +161,8 @@ class Item(models.Model):
         db_table = 'inv_item'
         verbose_name = 'Item'
         constraints = [
-            UniqueConstraint(fields=['name','keyword','status','institution','branch'], name='item_unique_constraint')
+            UniqueConstraint(fields=['name','keyword','status','institution','branch'], name='item_unique_constraint'),
+            UniqueConstraint(fields=['code','status','institution','branch'], name='item_code_unique_constraint')
         ]
 
     def save(self, *args, **kwargs):

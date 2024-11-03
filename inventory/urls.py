@@ -22,5 +22,10 @@ urlpatterns = [
     path('api/model', ModelCreateList.as_view(), name='model-create-list'),
     path('api/model/detail/<int:pk>', ModelDetail.as_view(), name='model-detail'),
     path('api/model/delete/<int:pk>', ModelDelete.as_view(), name='model-delete'),
+    # For Item 
+    path('api/item/list', ItemList.as_view(), name='item-list'),
+    path('api/item', ItemCreateList.as_view(), name='item-create-list'),
+    path('api/item/detail/<int:pk>', ItemDetail.as_view(), name='item-detail'),
+    path('api/item/delete/<int:pk>', ItemDelete.as_view(), name='item-delete'),
 
 ]
