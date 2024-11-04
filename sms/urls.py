@@ -33,4 +33,5 @@ urlpatterns = [
     path('communicate/',include('communicate.urls')),
     path('account/',include('account.urls')),
     path('inventory/',include('inventory.urls')),
+    path('purchase/',include('purchase.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
