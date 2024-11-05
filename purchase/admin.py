@@ -18,12 +18,29 @@ class SupplierAdmin(admin.ModelAdmin):
         ("Contact Information",{'fields':[('thana','district','division'),
                                           ('country','address')]}),
         ("Other Information",{'fields':[('institution','branch','is_active','status'),
-                                        ]})
-
-        
+                                        ]})     
     ]
 
     class Meta:
         model = Supplier
 
+class PurchaseOrderDetailsTabularInline(admin.TabularInline):
+    model = PurchaseOrderDetails
+    fields = ['line','item','order_qty','approve_qty','receive_qty','uom','unit_price','dis_pct','dis_amt','total_price','net_total_amt','remarks']
+    extra = 1
+
+class PurchaseOrderMasterAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ("Purchase Order",{'fields':[('order_date','supplier','warehouse'),
+                                     ('pay_method','remarks','is_active','status')]})
+    ]
+    list_display = ['code','order_date','supplier','warehouse','pay_method','total_ord_qty','total_ord_amt','is_active','status']
+    search_fields = ['code','order_date','supplier','warehouse','pay_method','total_ord_qty','total_ord_amt','is_active','status']
+
+    inlines = [PurchaseOrderDetailsTabularInline]
+
+    class Meta:
+        model = PurchaseOrderMaster
+
 admin.site.register(Supplier,SupplierAdmin)
+admin.site.register(PurchaseOrderMaster, PurchaseOrderMasterAdmin)
