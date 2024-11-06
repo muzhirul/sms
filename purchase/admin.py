@@ -27,12 +27,13 @@ class SupplierAdmin(admin.ModelAdmin):
 class PurchaseOrderDetailsTabularInline(admin.TabularInline):
     model = PurchaseOrderDetails
     fields = ['line','item','order_qty','approve_qty','receive_qty','uom','unit_price','dis_pct','dis_amt','total_price','net_total_amt','remarks']
-    extra = 1
+    extra = 0
 
 class PurchaseOrderMasterAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Purchase Order",{'fields':[('order_date','supplier','warehouse'),
-                                     ('pay_method','remarks','is_active','status')]})
+                                     ('pay_method','remarks','is_active','status'),
+                                     ('institution','branch')]})
     ]
     list_display = ['code','order_date','supplier','warehouse','pay_method','total_ord_qty','total_ord_amt','is_active','status']
     search_fields = ['code','order_date','supplier','warehouse','pay_method','total_ord_qty','total_ord_amt','is_active','status']
