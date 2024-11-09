@@ -127,3 +127,103 @@ class PurchaseOrderMasterCreateSerializer(serializers.ModelSerializer):
         return instance
 
 
+'''For GRN '''    
+
+class GoodsReceiptNotesDetailsCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    class Meta:
+        model = GoodsReceiptNotesDetails
+        exclude = ['created_by', 'updated_by', 'created_at', 'updated_at','status','institution','branch']
+        read_only_fields = ('goods_receipt_note',)
+
+class GoodsReceiptNotesDetailsViewSerializer(serializers.ModelSerializer):
+    item = ItemShortSerializer(read_only=True)
+    class Meta:
+        model = GoodsReceiptNotesDetails
+        exclude = ['created_by', 'updated_by', 'created_at', 'updated_at','institution','branch','status','goods_receipt_note']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+        
+class GoodSReceiptNoteMasterViewSerializer(serializers.ModelSerializer):
+    supplier = SupplierListSerializer(read_only=True)
+    warehouse = WarehouseListSerializer(read_only=True)
+    pay_method = PaymentMethodViewSerializer(read_only=True)
+    grn_details = GoodsReceiptNotesDetailsViewSerializer(many=True)
+    class Meta:
+        model = GoodSReceiptNoteMaster
+        exclude = ['created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Filter out None values from the social_media list 
+        representation['grn_details'] = [item for item in representation['grn_details'] if item is not None]
+
+        if not instance.status:
+            # If status is False, exclude the social_media field
+            representation.pop('grn_details', None)
+
+        return representation
+
+class GoodSReceiptNoteMasterCreateSerializer(serializers.ModelSerializer):
+    grn_details = GoodsReceiptNotesDetailsCreateSerializer(many=True)
+    class Meta:
+        model = GoodSReceiptNoteMaster
+        exclude = ['status','code','total_rec_qty','total_dis_amt','total_rec_amt','total_net_amt','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
+
+    def create(self, validated_data):
+        grn_details = validated_data.pop('grn_details')
+        order = GoodSReceiptNoteMaster.objects.create(**validated_data)
+
+        for grn_detail in grn_details:
+            GoodsReceiptNotesDetails.objects.create(goods_receipt_note=order, **grn_detail, institution=order.institution,branch=order.branch)
+
+        return order
+    
+    def update(self, instance, validated_data):
+        grn_details = validated_data.pop('grn_details')
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        keep_choices = []
+        # Fields to update in order details
+        fields_to_update = [
+            'line_no', 'item', 'rcv_qty', 'rcv_uom', 'rcv_rate', 'rcv_amt', 'net_total_amt',
+            'remarks', 'is_active'
+        ]
+
+        for grn_detail in grn_details:
+            if "id" in grn_detail:
+                try:
+                    o = GoodsReceiptNotesDetails.objects.get(id=grn_detail["id"])
+                    for field in fields_to_update:
+                        setattr(o, field, grn_detail.get(field, getattr(o, field)))
+                    o.status = True
+                    o.save()
+                    keep_choices.append(o.id)
+                except GoodsReceiptNotesDetails.DoesNotExist:
+                    continue
+            else:
+                print(grn_detail,'****************')
+                o = GoodsReceiptNotesDetails.objects.create(
+                    **grn_detail,
+                    goods_receipt_note=instance,
+                    institution=instance.institution,
+                    branch=instance.branch
+                )
+                keep_choices.append(o.id)
+
+        # Deactivate any remaining order details not in keep_choices
+        GoodsReceiptNotesDetails.objects.filter(goods_receipt_note=instance).exclude(id__in=keep_choices).update(status=False)
+
+        return instance
+
+class GoodSReceiptNoteMasterDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoodSReceiptNoteMaster
+        fields = ['status']
+

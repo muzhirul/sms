@@ -6,6 +6,7 @@ from inventory.models import Warehouse
 from inventory.models import Item
 from django_userforeignkey.models.fields import UserForeignKey
 from django.db.models import UniqueConstraint
+from django.db.models import Sum
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from sms.permission import generate_code
@@ -129,3 +130,94 @@ class PurchaseOrderDetails(models.Model):
 
     def __str__(self):
         return str(self.item)
+
+class GoodSReceiptNoteMaster(models.Model):
+    TYPE = [
+        ('LOCAL','Local'),
+    ]
+    code = models.CharField(max_length=50, blank=True, null=True, verbose_name='GRN Number')
+    grn_date = models.DateField(verbose_name='GRN Date')
+    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, blank=True, null=True)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Receiving Warehouse')
+    pay_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, blank=True, null=True)
+    purchase_type = models.CharField(max_length=20, choices=TYPE)
+    total_rec_qty = models.IntegerField(blank=True, null=True, verbose_name='Total Receive Quantity')
+    total_dis_amt = models.DecimalField(blank=True, null=True,verbose_name='Total Discount Amount',max_digits=10,decimal_places=2)
+    total_rec_amt = models.DecimalField(blank=True, null=True,verbose_name='Total Receive Amount',max_digits=10,decimal_places=2)
+    total_net_amt = models.DecimalField(blank=True, null=True,verbose_name='Total Net Amount',max_digits=10,decimal_places=2)
+    remarks = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='goods_rece_notes_mst_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='goods_rece_notes_mst_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'pur_goods_receive_notes_mst'
+        verbose_name = 'Goods Receive Notes'
+        constraints = [
+            UniqueConstraint(fields=['code','status','institution','branch'], name='goods_receive_notes_mst_unique_constraint')
+        ]
+
+    def __str__(self):
+        return str(self.code)
+    
+@receiver(post_save, sender=GoodSReceiptNoteMaster)
+def grn_no_posting(sender, instance, **kwargs):
+    if not instance.code:
+        new_grn_no = generate_code(instance.institution,instance.branch,'Goods Receipt Note')
+        instance.code = new_grn_no
+        instance.save()
+
+class GoodsReceiptNotesDetails(models.Model):
+    goods_receipt_note = models.ForeignKey(GoodSReceiptNoteMaster, on_delete=models.CASCADE, related_name='grn_details')
+    line_no = models.IntegerField()
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    item_name = models.CharField(max_length=255, blank=True, null=True)
+    rcv_qty = models.IntegerField()
+    rcv_uom = models.CharField(max_length=20, blank=True, null=True)
+    rcv_rate = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2)
+    rcv_amt = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2)
+    net_total_amt = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2)
+    remarks = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='goods_rece_notes_dtl_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='goods_rece_notes_dtl_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'pur_goods_receive_notes_dtl'
+
+    def __str__(self):
+        return str(self.item)
+    
+@receiver(pre_save, sender=GoodsReceiptNotesDetails)
+def update_item_name(sender, instance, **kwargs):
+    if instance.item:
+        item_name = Item.objects.get(pk=instance.item.id)
+        instance.item_name = item_name.name
+
+    
+@receiver(post_save, sender=GoodsReceiptNotesDetails)
+def update_grn_total_amounts(sender, instance, **kwargs):
+    # Retrieve the related AccountVoucherMaster instance
+    grn_mst = instance.goods_receipt_note
+    if grn_mst:
+        # Calculate the total debit and credit amounts from GoodsReceiptNotesDetails
+        total_rcv_qty = GoodsReceiptNotesDetails.objects.filter(goods_receipt_note=grn_mst,status=True,institution=grn_mst.institution,branch=grn_mst.branch).aggregate(Sum('rcv_qty'))['rcv_qty__sum'] or 0
+        total_rcv_amt = GoodsReceiptNotesDetails.objects.filter(goods_receipt_note=grn_mst,status=True,institution=grn_mst.institution,branch=grn_mst.branch).aggregate(Sum('rcv_amt'))['rcv_amt__sum'] or 0
+        total_net_amt = GoodsReceiptNotesDetails.objects.filter(goods_receipt_note=grn_mst,status=True,institution=grn_mst.institution,branch=grn_mst.branch).aggregate(Sum('net_total_amt'))['net_total_amt__sum'] or 0
+
+        # Update the totals in GoodsReceiptNotesDetails
+        grn_mst.total_rec_qty = total_rcv_qty
+        grn_mst.total_rec_amt = total_rcv_amt
+        grn_mst.total_net_amt = total_net_amt
+        grn_mst.save()
+        

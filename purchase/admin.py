@@ -43,5 +43,26 @@ class PurchaseOrderMasterAdmin(admin.ModelAdmin):
     class Meta:
         model = PurchaseOrderMaster
 
+class GoodsReceiptNotesDetailsTabularInline(admin.TabularInline):
+    model = GoodsReceiptNotesDetails
+    fields = ['line_no','item','rcv_qty','rcv_uom','rcv_rate','rcv_amt','net_total_amt','remarks','institution','branch']
+    extra = 0
+
+
+class GoodSReceiptNoteMasterAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ("Purchase Order",{'fields':[('grn_date','supplier','warehouse','purchase_type'),
+                                     ('pay_method','remarks','is_active','status'),
+                                     ('institution','branch')]})
+    ]
+    list_display = ['code','grn_date','supplier','warehouse','pay_method','total_rec_qty','total_rec_amt','total_net_amt','is_active','status']
+    search_fields = ['code','grn_date','supplier','warehouse','pay_method','total_rec_qty','total_rec_amt','is_active','status']
+
+    inlines = [GoodsReceiptNotesDetailsTabularInline]
+
+    class Meta:
+        model = GoodSReceiptNoteMaster
+
 admin.site.register(Supplier,SupplierAdmin)
 admin.site.register(PurchaseOrderMaster, PurchaseOrderMasterAdmin)
+admin.site.register(GoodSReceiptNoteMaster, GoodSReceiptNoteMasterAdmin)

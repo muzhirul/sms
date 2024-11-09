@@ -183,4 +183,9 @@ class ItemListSerializer(serializers.ModelSerializer):
         else:
             # If status is False, return an empty dictionary
             return None
+        
+class ItemShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ['id','code','name','def_pur_unit_price']
 
