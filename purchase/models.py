@@ -195,6 +195,15 @@ class GoodsReceiptNotesDetails(models.Model):
     class Meta:
         db_table = 'pur_goods_receive_notes_dtl'
 
+    def save(self, *args, **kwargs):
+        if self.rcv_qty is not None and self.rcv_rate is not None:
+            self.rcv_amt = self.rcv_qty * self.rcv_rate
+            self.net_total_amt = self.rcv_qty * self.rcv_rate
+        else:
+            self.rcv_amt = None
+            self.net_total_amt = None
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return str(self.item)
     

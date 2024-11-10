@@ -208,7 +208,6 @@ class GoodSReceiptNoteMasterCreateSerializer(serializers.ModelSerializer):
                 except GoodsReceiptNotesDetails.DoesNotExist:
                     continue
             else:
-                print(grn_detail,'****************')
                 o = GoodsReceiptNotesDetails.objects.create(
                     **grn_detail,
                     goods_receipt_note=instance,
