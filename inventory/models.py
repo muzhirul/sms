@@ -172,3 +172,33 @@ class Item(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+class StockMaster(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='stock_item')
+    item_name = models.CharField(blank=True, null=True, max_length=255)
+    uom = models.CharField(max_length=10)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='stock_warehose')
+    quantity = models.IntegerField(default=0)
+    book_quantity = models.IntegerField(default=0)
+    sefty_alter_qty = models.IntegerField(default=0)
+    unit_cost_value = models.DecimalField(blank=True, null=True,verbose_name='Unit Cost Value',max_digits=10,decimal_places=2)
+    weighted_unit_cost_value = models.DecimalField(blank=True, null=True,verbose_name='Weighted Unit Cost Value',max_digits=10,decimal_places=2)
+    last_receive_date = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='stock_mst_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='stock_mst_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'inv_stock_master'
+        verbose_name = 'Stock Master'
+        constraints = [
+            UniqueConstraint(fields=['item','warehouse','status','institution','branch'], name='stock_mast_constraint'),
+        ]
+    
+    def __str__(self):
+        return str(self.item)
