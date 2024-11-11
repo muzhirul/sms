@@ -2,11 +2,12 @@ from django.db import models
 from institution.models import Institution, Branch
 from hrms.models import AccountBank
 from setup_app.models import *
-from inventory.models import Warehouse
 from inventory.models import Item
+from inventory.models import Warehouse 
+from inventory.models import StockMaster
 from django_userforeignkey.models.fields import UserForeignKey
 from django.db.models import UniqueConstraint
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from sms.permission import generate_code
@@ -146,6 +147,8 @@ class GoodSReceiptNoteMaster(models.Model):
     total_rec_amt = models.DecimalField(blank=True, null=True,verbose_name='Total Receive Amount',max_digits=10,decimal_places=2)
     total_net_amt = models.DecimalField(blank=True, null=True,verbose_name='Total Net Amount',max_digits=10,decimal_places=2)
     remarks = models.TextField(blank=True, null=True)
+    confirm_with_pay = models.BooleanField(default=False)
+    confirm_without_pay = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
@@ -162,6 +165,25 @@ class GoodSReceiptNoteMaster(models.Model):
             UniqueConstraint(fields=['code','status','institution','branch'], name='goods_receive_notes_mst_unique_constraint')
         ]
 
+    def clean(self):
+        # Ensure only one of the two fields is True
+        if self.pk:
+            # Get the current instance from the database to check previous values
+            current_instance = GoodSReceiptNoteMaster.objects.get(pk=self.pk)
+            if current_instance.confirm_with_pay and not self.confirm_with_pay:
+                raise ValidationError("Cannot set 'confirm with pay' to False once it is True.")
+            if current_instance.confirm_without_pay and not self.confirm_without_pay:
+                raise ValidationError("Cannot set 'confirm without pay' to False once it is True.")
+
+        # Ensure only one of the fields is True
+        if self.confirm_with_pay and self.confirm_without_pay:
+            raise ValidationError("Only one of 'confirm with pay' or 'confirm without pay' can be True at a time.")
+
+    def save(self, *args, **kwargs):
+        # Call the clean method to enforce validation before saving
+        self.clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return str(self.code)
     
@@ -171,6 +193,7 @@ def grn_no_posting(sender, instance, **kwargs):
         new_grn_no = generate_code(instance.institution,instance.branch,'Goods Receipt Note')
         instance.code = new_grn_no
         instance.save()
+        
 
 class GoodsReceiptNotesDetails(models.Model):
     goods_receipt_note = models.ForeignKey(GoodSReceiptNoteMaster, on_delete=models.CASCADE, related_name='grn_details')
@@ -212,6 +235,26 @@ def update_item_name(sender, instance, **kwargs):
     if instance.item:
         item_name = Item.objects.get(pk=instance.item.id)
         instance.item_name = item_name.name
+    
+@receiver(post_save, sender=GoodSReceiptNoteMaster)
+def update_confirm_status(sender, instance, **kwargs):
+    if instance.confirm_with_pay or instance.confirm_without_pay:
+        for grn_detail in GoodsReceiptNotesDetails.objects.filter(goods_receipt_note=instance.id, status=True,institution=instance.institution, branch=instance.branch):
+            print(grn_detail.rcv_qty,grn_detail.rcv_uom)
+            if StockMaster.objects.filter(status=True,institution=instance.institution, branch=instance.branch,item=grn_detail.item, warehouse=instance.warehouse).exists():
+                StockMaster.objects.filter(status=True,item=grn_detail.item, warehouse=instance.warehouse,
+                                           institution=instance.institution, branch=instance.branch).update(quantity=F('quantity')+grn_detail.rcv_qty)
+            else:
+                StockMaster.objects.get_or_create(
+                    status=True,
+                    institution=instance.institution,
+                    branch=instance.branch,
+                    item=grn_detail.item,
+                    uom=grn_detail.rcv_uom,
+                    warehouse=instance.warehouse,
+                    defaults={'quantity': grn_detail.rcv_qty}
+                )
+                
 
     
 @receiver(post_save, sender=GoodsReceiptNotesDetails)

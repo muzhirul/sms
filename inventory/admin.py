@@ -38,8 +38,17 @@ class ItemAdmin(admin.ModelAdmin):
     class Meta:
         model = Item
 
+class StockMasterAdmin(admin.ModelAdmin):
+    list_display = ['item','uom','warehouse','quantity','book_quantity','sefty_alter_qty','unit_cost_value','weighted_unit_cost_value','last_receive_date','is_active','status']
+    search_fields = ['item','uom','warehouse','quantity','book_quantity','sefty_alter_qty','unit_cost_value','weighted_unit_cost_value','last_receive_date','is_active','status']
+    list_filter = ['item','uom','warehouse']
+
+    class Meta:
+        model = StockMaster
+
 admin.site.register(Warehouse, WarehouseAdmin)
 admin.site.register(Brand, BrandAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Model, ModelAdmin)
 admin.site.register(Item, ItemAdmin)
+admin.site.register(StockMaster, StockMasterAdmin)

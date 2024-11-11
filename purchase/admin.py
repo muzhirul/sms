@@ -53,7 +53,7 @@ class GoodSReceiptNoteMasterAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Purchase Order",{'fields':[('grn_date','supplier','warehouse','purchase_type'),
                                      ('pay_method','remarks','is_active','status'),
-                                     ('institution','branch')]})
+                                     ('institution','branch','confirm_without_pay','confirm_with_pay')]})
     ]
     list_display = ['code','grn_date','supplier','warehouse','pay_method','total_rec_qty','total_rec_amt','total_net_amt','is_active','status']
     search_fields = ['code','grn_date','supplier','warehouse','pay_method','total_rec_qty','total_rec_amt','is_active','status']
