@@ -4,7 +4,7 @@ from .models import *
 # Register your models here.
 
 class SupplierAdmin(admin.ModelAdmin):
-    list_display = ['name','short_name','address','owner_name','phone_number','email']
+    list_display = ['name','short_name','address','owner_name','phone_number','email','opening_amt','current_amt']
     search_fields = ['name','short_name','address','owner_name','phone_number','email']
     fieldsets = [
         ("Basic Information",{'fields':[('code','name','short_name'),

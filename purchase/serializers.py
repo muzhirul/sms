@@ -226,3 +226,8 @@ class GoodSReceiptNoteMasterDeleteSerializer(serializers.ModelSerializer):
         model = GoodSReceiptNoteMaster
         fields = ['status']
 
+class GoodSReceiptNoteMasterConfirmSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoodSReceiptNoteMaster
+        fields = ['confirm_without_pay','confirm_with_pay']
+

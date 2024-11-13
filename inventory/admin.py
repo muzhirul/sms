@@ -46,9 +46,14 @@ class StockMasterAdmin(admin.ModelAdmin):
     class Meta:
         model = StockMaster
 
+class StockTransactionAdmin(admin.ModelAdmin):
+    class Meta:
+        model = StockTransaction
+
 admin.site.register(Warehouse, WarehouseAdmin)
 admin.site.register(Brand, BrandAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Model, ModelAdmin)
 admin.site.register(Item, ItemAdmin)
 admin.site.register(StockMaster, StockMasterAdmin)
+admin.site.register(StockTransaction, StockTransactionAdmin)

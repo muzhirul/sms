@@ -444,3 +444,42 @@ class GoodsReceiveNoteDelete(generics.UpdateAPIView):
         # Customize the response format for successful update
         return CustomResponse(code=status.HTTP_200_OK, message=f"GRN No. {instance.code} Delete successfully", data=None)
 
+class GoodsReceiveNoteConfirm(generics.UpdateAPIView):
+    queryset = GoodSReceiptNoteMaster.objects.filter(status=True)
+    serializer_class = GoodSReceiptNoteMasterConfirmSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+
+        # Get the data from the request body
+        confirm_without_pay = request.data.get("confirm_without_pay")
+        confirm_with_pay = request.data.get("confirm_with_pay")
+
+        # Validation logic
+        if instance.confirm_without_pay or instance.confirm_with_pay:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Goods Receive Note is already confirmed.", data=None)
+        
+        if confirm_without_pay and confirm_with_pay:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Cannot set both confirm without pay and confirm with pay.", data=None)
+        
+        # Prevent setting the value to False once it is True
+        if instance.confirm_without_pay and confirm_without_pay is False:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Cannot change confirm without pay to False once set to True.", data=None)
+        if instance.confirm_with_pay and confirm_with_pay is False:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Cannot change confirm with pay to False once set to True.", data=None)
+        
+        # Update the instance
+        try:
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Voucher Confirm successfully", data=None)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+
+

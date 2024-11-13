@@ -2,9 +2,7 @@ from django.db import models
 from institution.models import Institution, Branch
 from hrms.models import AccountBank
 from setup_app.models import *
-from inventory.models import Item
-from inventory.models import Warehouse 
-from inventory.models import StockMaster
+from inventory.models import *
 from django_userforeignkey.models.fields import UserForeignKey
 from django.db.models import UniqueConstraint
 from django.db.models import Sum, F
@@ -29,8 +27,8 @@ class Supplier(models.Model):
     owner_phone_number = models.CharField(max_length=20, verbose_name='Phone Number', blank=True, null=True)
     phone_number = models.CharField(max_length=20, verbose_name='Phone Number')
     email = models.EmailField(blank=True, null=True, verbose_name='Email')
-    opening_amt = models.DecimalField(blank=True, null=True,verbose_name='Opening Balance',max_digits=10,decimal_places=2)
-    current_amt = models.DecimalField(blank=True, null=True,verbose_name='Current Balance',max_digits=10,decimal_places=2)
+    opening_amt = models.DecimalField(default=0,verbose_name='Opening Balance',max_digits=10,decimal_places=2)
+    current_amt = models.DecimalField(default=0,verbose_name='Current Balance',max_digits=10,decimal_places=2)
     con_person = models.CharField(max_length=255, blank=True, null=True, verbose_name='Contact Person Name')
     con_number = models.CharField(max_length=20, blank=True, null=True, verbose_name='Phone Number')
     con_email = models.EmailField(max_length=255, blank=True, null=True, verbose_name='Email')
@@ -174,6 +172,8 @@ class GoodSReceiptNoteMaster(models.Model):
                 raise ValidationError("Cannot set 'confirm with pay' to False once it is True.")
             if current_instance.confirm_without_pay and not self.confirm_without_pay:
                 raise ValidationError("Cannot set 'confirm without pay' to False once it is True.")
+            if current_instance.confirm_with_pay or current_instance.confirm_without_pay:
+                raise ValidationError("Updates are not allowed for this record as 'confirm with pay' or 'confirm without pay' is already Done.")
 
         # Ensure only one of the fields is True
         if self.confirm_with_pay and self.confirm_without_pay:
@@ -235,12 +235,17 @@ def update_item_name(sender, instance, **kwargs):
     if instance.item:
         item_name = Item.objects.get(pk=instance.item.id)
         instance.item_name = item_name.name
-    
+ 
+
 @receiver(post_save, sender=GoodSReceiptNoteMaster)
 def update_confirm_status(sender, instance, **kwargs):
+    if instance.confirm_without_pay:
+        try:
+            Supplier.objects.filter(status=True, pk=instance.supplier.id,institution=instance.institution, branch=instance.branch).update(current_amt=F('current_amt')+instance.total_net_amt)
+        except:
+            print('Supplier Not Found..',instance.supplier)
     if instance.confirm_with_pay or instance.confirm_without_pay:
         for grn_detail in GoodsReceiptNotesDetails.objects.filter(goods_receipt_note=instance.id, status=True,institution=instance.institution, branch=instance.branch):
-            print(grn_detail.rcv_qty,grn_detail.rcv_uom)
             if StockMaster.objects.filter(status=True,institution=instance.institution, branch=instance.branch,item=grn_detail.item, warehouse=instance.warehouse).exists():
                 StockMaster.objects.filter(status=True,item=grn_detail.item, warehouse=instance.warehouse,
                                            institution=instance.institution, branch=instance.branch).update(quantity=F('quantity')+grn_detail.rcv_qty)
@@ -253,6 +258,26 @@ def update_confirm_status(sender, instance, **kwargs):
                     uom=grn_detail.rcv_uom,
                     warehouse=instance.warehouse,
                     defaults={'quantity': grn_detail.rcv_qty}
+                )
+            from inventory.models import StockTransaction
+            if StockTransaction.objects.filter(status=True,institution=instance.institution, branch=instance.branch,item=grn_detail.item,grn_detail=grn_detail):
+                print('This is already inserted...........')
+            else:
+                StockTransaction.objects.get_or_create(
+                    status = True,
+                    institution=instance.institution,
+                    branch=instance.branch,
+                    item=grn_detail.item,
+                    uom=grn_detail.rcv_uom,
+                    warehouse=grn_detail.goods_receipt_note.warehouse,
+                    trns_date=grn_detail.updated_at,
+                    type='purchase invoice',
+                    invoice_no = grn_detail.goods_receipt_note.code,
+                    grn_detail = grn_detail,
+                    supplier = grn_detail.goods_receipt_note.supplier,
+                    trns_type = 'PURCHASE',
+                    quantity = grn_detail.rcv_qty,
+                    amount = grn_detail.net_total_amt
                 )
                 
 

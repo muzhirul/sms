@@ -189,3 +189,10 @@ class ItemShortSerializer(serializers.ModelSerializer):
         model = Item
         fields = ['id','code','name','def_pur_unit_price']
 
+class StockMasterViewSerializer(serializers.ModelSerializer):
+    item = ItemShortSerializer(read_only=True)
+    warehouse = WarehouseListSerializer(read_only=True)
+    class Meta:
+        model = StockMaster
+        fields = ['id','item','uom','warehouse','quantity','book_quantity','sefty_alter_qty','unit_cost_value','status']
+

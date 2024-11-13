@@ -27,5 +27,7 @@ urlpatterns = [
     path('api/item', ItemCreateList.as_view(), name='item-create-list'),
     path('api/item/detail/<int:pk>', ItemDetail.as_view(), name='item-detail'),
     path('api/item/delete/<int:pk>', ItemDelete.as_view(), name='item-delete'),
+    # For Stock
+    path('api/stock-masteer/list', StockMasterList.as_view(), name='stock-list'),
 
 ]

@@ -14,5 +14,6 @@ urlpatterns = [
     path('api/goods-receive/create', GoodsReceiveNoteCreate.as_view(), name='goods-receive-note-create'),
     path('api/goods-receive/detail/<int:pk>', GoodsReceiveNoteDetail.as_view(), name='goods-receive-note-detail'),
     path('api/goods-receive/delete/<int:pk>', GoodsReceiveNoteDelete.as_view(), name='goods-receive-note-delete'),
+    path('api/grn/confirm/<int:pk>', GoodsReceiveNoteConfirm.as_view(), name='goods-receive-note-confirm'),
 
 ]
