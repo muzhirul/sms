@@ -31,7 +31,8 @@ class ProcessStAttendanceDailyAdminTabularInline(admin.TabularInline):
 
 class FeesTransactionAdminTabularInline(admin.TabularInline):
     model = FeesTransaction
-    fields = ['fees_detail','payment_id','pay_method','pay_date','discount_type','discount_amt','fine_amt','fees_amt','pay_status','status']
+    fields = ['fees_detail','payment_id','pay_method','pay_date','discount_type','discount_amt','fine_amt','fees_amt',
+              'pay_status','status','shift','student_code','version','session','class_name','group','section','roll']
     extra = 0
 
 class StudentLeaveTransactionTabularInline(admin.TabularInline):

@@ -146,6 +146,14 @@ def calculate_total_amt(sender, instance, **kwargs):
 
 class FeesTransaction(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True,related_name='fees_trns')
+    shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
+    student_code = models.CharField(max_length=20, blank=True,null=True)
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='version', blank=True, null=True)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session', blank=True, null=True)
+    class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name', blank=True, null=True)
+    group = models.ForeignKey(ClassGroup,on_delete=models.SET_NULL, blank=True,null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section', blank=True, null=True)
+    roll = models.CharField(max_length=15,verbose_name='Class Roll',blank=True,null=True)
     fees_detail = models.ForeignKey(FeesDetails, on_delete=models.SET_NULL, blank=True,null=True)
     payment_id = models.CharField(max_length=100,blank=True,null=True)
     pay_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL,blank=True,null=True, verbose_name='Payment Method')
@@ -199,6 +207,18 @@ class FeesTransaction(models.Model):
     def net_fess_amt(self):
         return (self.fees_amount() + self.fine_amount()) - self.discount_amount()
 
+@receiver(pre_save, sender=FeesTransaction)
+def update_student_info(sender, instance, **kwargs):
+    if instance.student and instance.pay_status==False and instance.class_name is None:
+        enroll= StudentEnroll.objects.filter(status=True,is_active=True,institution=instance.institution,branch=instance.branch,student=instance.student).order_by('id').last()
+        instance.roll = enroll.roll
+        instance.version = enroll.version
+        instance.session = enroll.session
+        instance.section = enroll.section
+        instance.group = enroll.group
+        instance.class_name = enroll.class_name
+        instance.shift = instance.student.shift
+        instance.student_code = instance.student.student_no
 
 
 @receiver(pre_save, sender=FeesTransaction)

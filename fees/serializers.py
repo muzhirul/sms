@@ -143,6 +143,51 @@ class FeesMasterViewSerializer(serializers.ModelSerializer):
             representation.pop('fees_detail', None)
 
         return representation
+    
+class FeesDetailsListSerializer(serializers.ModelSerializer):
+    fees_type = FeesTypeListSerializer(read_only=True)
+
+    class Meta:
+        model = FeesDetails
+        fields = ['id', 'fees_type']
+
+    def to_representation(self, instance):
+        # Ensure only active instances are processed
+        if not instance.status:
+            return None
+
+        # Flatten the fees_type data
+        fees_type_data = super().to_representation(instance).get('fees_type', {})
+        return {
+            "id": fees_type_data.get("id"),
+            "name": fees_type_data.get("name"),
+            "code": fees_type_data.get("code"),
+        }
+
+    
+class FeesMasterListSerializer(serializers.ModelSerializer):
+    version = VersionSerializer2(read_only=True)
+    section = SectionSerializer2(read_only=True)
+    class_name = ClassSerializer2(read_only=True)
+    session = SessionSerializer2(read_only=True)
+    group = ClassGroupListSerializer(read_only=True)
+    fees_detail = FeesDetailsListSerializer(many=True)
+
+    class Meta:
+        model = FeesMaster
+        exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Filter out None values from the social_media list 
+        representation['fees_detail'] = [item for item in representation['fees_detail'] if item is not None]
+
+        if not instance.status:
+            # If status is False, exclude the social_media field
+            representation.pop('fees_detail', None)
+
+        return representation
 
 class StudentListViewSerializer(serializers.ModelSerializer):
     class Meta:
