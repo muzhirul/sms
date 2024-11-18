@@ -588,6 +588,62 @@ class FeesEntryList(generics.ListAPIView):
 
         return Response(response_data)
 
+class FeesWiseStudentSearch(generics.CreateAPIView):
+
+    serializer_class = FeesTransactionViewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+     
+    def get_queryset(self):
+        version=self.request.data['version']
+        session=self.request.data['session']
+        class_name=self.request.data['class_name']
+        section=self.request.data['section']
+        group=self.request.data['group']
+        fees_detail=self.request.data['fees_detail']
+        if group:
+            queryset = FeesTransaction.objects.filter(version=version,session=session,class_name=class_name,fees_detail=fees_detail,
+                                                      section=section,group=group,status=True).order_by('roll')
+        else:
+            queryset = FeesTransaction.objects.filter(status=True,version=version,session=session,class_name=class_name,fees_detail=fees_detail,
+                                                      section=section).order_by('roll')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('roll')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('roll')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('roll')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def create(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
 '''
 For Fees detail breakdown
 '''
