@@ -163,4 +163,8 @@ class SalarySetupMstCreateSerializer(serializers.ModelSerializer):
 
         return instance
 
+class SalarySetupMstListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalarySetupMst
+        fields = ['id','name']
 

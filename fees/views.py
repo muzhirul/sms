@@ -595,11 +595,23 @@ class FeesWiseStudentSearch(generics.CreateAPIView):
     pagination_class = CustomPagination
      
     def get_queryset(self):
-        version=self.request.data['version']
-        session=self.request.data['session']
-        class_name=self.request.data['class_name']
-        section=self.request.data['section']
-        group=self.request.data['group']
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        
+        staff_info = Staff.objects.get(user=self.request.user.id,institution=institution_id, branch=branch_id)
+        class_teacher = ClassTeacher.objects.filter(status=True,teacher=staff_info,institution=institution_id, branch=branch_id).last()
+        if class_teacher:
+            version = class_teacher.version
+            session = class_teacher.session
+            class_name = class_teacher.class_name
+            section = class_teacher.section
+            group = class_teacher.group
+        else:
+            version=self.request.data['version']
+            session=self.request.data['session']
+            class_name=self.request.data['class_name']
+            section=self.request.data['section']
+            group=self.request.data['group']
         fees_detail=self.request.data['fees_detail']
         if group:
             queryset = FeesTransaction.objects.filter(version=version,session=session,class_name=class_name,fees_detail=fees_detail,
@@ -608,8 +620,6 @@ class FeesWiseStudentSearch(generics.CreateAPIView):
             queryset = FeesTransaction.objects.filter(status=True,version=version,session=session,class_name=class_name,fees_detail=fees_detail,
                                                       section=section).order_by('roll')
         try:
-            institution_id = self.request.user.institution
-            branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
                 queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('roll')
