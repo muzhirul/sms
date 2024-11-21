@@ -122,6 +122,7 @@ class AccountLedger(models.Model):
         ('PAYMENT','Payment'),
         ('RECEIVE','Receive'),
         ('JOURNAL','Journal'),
+        ('PURCHASE','Purchase'),
     ]
     gl_date = models.DateField()
     voucher_no = models.CharField(blank=True,null=True, max_length=50)

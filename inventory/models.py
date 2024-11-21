@@ -220,7 +220,7 @@ class StockTransaction(models.Model):
     grn_detail = models.ForeignKey(GoodsReceiptNotesDetails, on_delete=models.CASCADE, verbose_name='GRN Details')
     uom = models.CharField(max_length=10, blank=True, null=True, verbose_name='UoM')
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, verbose_name='Supplier')
-    from_warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE,blank=True, null=True, related_name='stock_trns_from')
+    from_warehouse = models.ForeignKey(Warehouse, on_delete=models.SET_NULL,blank=True, null=True, related_name='stock_trns_from')
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='stock_trns_warhouse')
     trns_date = models.DateTimeField(blank=True, null=True)
     trns_type = models.CharField(max_length=25,verbose_name='Transaction Type')

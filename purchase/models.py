@@ -3,6 +3,7 @@ from institution.models import Institution, Branch
 from hrms.models import AccountBank
 from setup_app.models import *
 from inventory.models import *
+from account.models import ChartofAccounts, AccountPeriod, AccountLedger
 from django_userforeignkey.models.fields import UserForeignKey
 from django.db.models import UniqueConstraint
 from django.db.models import Sum, F
@@ -193,6 +194,66 @@ def grn_no_posting(sender, instance, **kwargs):
         new_grn_no = generate_code(instance.institution,instance.branch,'Goods Receipt Note')
         instance.code = new_grn_no
         instance.save()
+
+
+@receiver(post_save, sender=GoodSReceiptNoteMaster)
+def grn_acc_posting(sender, instance, **kwargs):
+    if instance.confirm_without_pay or instance.confirm_with_pay and instance.total_net_amt > 0:
+        if instance.confirm_without_pay:
+            acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Inventory Accounts',institution=instance.institution,branch=instance.branch).last()
+            acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='LIABILITIE',title__iexact='Accounts Payable',institution=instance.institution,branch=instance.branch).last()
+        elif instance.confirm_with_pay:
+            acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Inventory Accounts',institution=instance.institution,branch=instance.branch).last()
+            acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Cash In Hand',institution=instance.institution,branch=instance.branch).last()
+        from datetime import datetime
+        # voucher_no = generate_code(instance.institution,instance.branch,'RECEIVE')
+        gl_date = datetime.now().strftime('%Y-%m-%d')
+        acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=gl_date,end_date__gte=gl_date).last()
+        # user_info = Authentication.objects.filter(username=instance.student.student_no,institution=instance.institution,branch=instance.branch).last()
+        acc_ledger_dbt_count = AccountLedger.objects.filter(status=True,institution=instance.institution,debit_amt=instance.total_net_amt,acc_period=acc_period,
+                                                            voucher_type='PURCHASE',acc_coa=acc_coa,acc_coa_ref=acc_coa_ref,
+                                                            branch=instance.branch,ref_source='pur_goods_receive_notes_mst',ref_no=instance.id).count()
+        if acc_ledger_dbt_count == 0:
+            acc_dbt_ledger = {}
+            acc_dbt_ledger['gl_date'] = gl_date
+            acc_dbt_ledger['voucher_type'] = 'PURCHASE'
+            acc_dbt_ledger['voucher_no'] = instance.code
+            acc_dbt_ledger['acc_coa'] = acc_coa
+            acc_dbt_ledger['acc_coa_ref'] = acc_coa_ref
+            acc_dbt_ledger['acc_period'] = acc_period
+            acc_dbt_ledger['credit_amt'] = 0
+            acc_dbt_ledger['debit_amt'] = instance.total_net_amt
+            acc_dbt_ledger['narration'] = f"Increase inventory as Asset"
+            acc_dbt_ledger['ref_source'] = 'pur_goods_receive_notes_mst'
+            acc_dbt_ledger['ref_no'] = instance.id
+            acc_dbt_ledger['particulars'] = f"Increase inventory as Asset"
+            # acc_dbt_ledger['user'] = user_info
+            acc_dbt_ledger['institution'] = instance.institution
+            acc_dbt_ledger['branch'] = instance.branch
+            acc_dbt = AccountLedger.objects.create(**acc_dbt_ledger)
+
+        acc_ledger_cr_count = AccountLedger.objects.filter(status=True,institution=instance.institution,credit_amt=instance.total_net_amt,acc_period=acc_period,
+                                                            voucher_type='PURCHASE',acc_coa=acc_coa_ref,acc_coa_ref=acc_coa,
+                                                            branch=instance.branch,ref_source='pur_goods_receive_notes_mst',ref_no=instance.id).count()
+        
+        if acc_ledger_cr_count == 0:
+            acc_cr_ledger = {}
+            acc_cr_ledger['gl_date'] = gl_date
+            acc_cr_ledger['voucher_type'] = 'PURCHASE'
+            acc_cr_ledger['voucher_no'] = instance.code
+            acc_cr_ledger['acc_coa'] = acc_coa_ref
+            acc_cr_ledger['acc_coa_ref'] = acc_coa
+            acc_cr_ledger['acc_period'] = acc_period
+            acc_cr_ledger['credit_amt'] = instance.total_net_amt
+            acc_cr_ledger['debit_amt'] = 0
+            acc_cr_ledger['narration'] = f"Increase liability for purchase"
+            acc_cr_ledger['ref_source'] = 'pur_goods_receive_notes_mst'
+            acc_cr_ledger['ref_no'] = instance.id
+            acc_cr_ledger['particulars'] = f"Increase liability for purchase"
+            # acc_cr_ledger['user'] = user_info
+            acc_cr_ledger['institution'] = instance.institution
+            acc_cr_ledger['branch'] = instance.branch
+            acc_cr = AccountLedger.objects.create(**acc_cr_ledger)
         
 
 class GoodsReceiptNotesDetails(models.Model):
