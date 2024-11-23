@@ -146,6 +146,7 @@ def calculate_total_amt(sender, instance, **kwargs):
 
 class FeesTransaction(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True,related_name='fees_trns')
+    student_enroll = models.ForeignKey(StudentEnroll, on_delete=models.SET_NULL, blank=True, null=True)
     shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
     student_code = models.CharField(max_length=20, blank=True,null=True)
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='version', blank=True, null=True)
@@ -175,6 +176,9 @@ class FeesTransaction(models.Model):
 
     class Meta:
         db_table = 'fees_transaction'
+        constraints = [
+            UniqueConstraint(fields=['student','student_enroll','fees_detail','status','institution','branch'], name='unique_fees_trns_constraint')
+        ] 
 
     def __str__(self):
         return str(self.id)
@@ -211,6 +215,7 @@ class FeesTransaction(models.Model):
 def update_student_info(sender, instance, **kwargs):
     if instance.student and instance.pay_status==False and instance.class_name is None:
         enroll= StudentEnroll.objects.filter(status=True,is_active=True,institution=instance.institution,branch=instance.branch,student=instance.student).order_by('id').last()
+        instance.student_enroll = enroll
         instance.roll = enroll.roll
         instance.version = enroll.version
         instance.session = enroll.session

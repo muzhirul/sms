@@ -973,7 +973,10 @@ class FeesTrnsManualEntry(generics.ListAPIView):
                 # print(fees_list)
                 trns_count = FeesTransaction.objects.filter(status=True,student=enroll.student,fees_detail=fees_list,institution=enroll.institution,branch=enroll.branch).count()
                 if (trns_count==0):
-                    t = FeesTransaction.objects.create(**std_fees_trns)
+                    try:
+                        t = FeesTransaction.objects.create(**std_fees_trns)
+                    except:
+                        print('Something Wrong....')
                 else:
                     print('Nothing to insert')
 
