@@ -7,6 +7,8 @@ from rest_framework import status
 from sms.pagination import CustomPagination
 from rest_framework.response import Response
 from sms.permission import check_permission
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 # Create your views here.
 
@@ -481,5 +483,31 @@ class GoodsReceiveNoteConfirm(generics.UpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
 
+class GoodSReceiptNoteMasterSearchAPI(generics.ListAPIView):
+    queryset = GoodSReceiptNoteMaster.objects.filter(status=True)
+    serializer_class = GoodSReceiptNoteMasterViewSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        queryset = GoodSReceiptNoteMaster.objects.filter(status=True).order_by('-code')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+
+    # Enable search and filtering
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+
+    # Fields to allow searching
+    search_fields = ['code', 'supplier__name', 'warehouse__name', 'pay_method__name']
 
