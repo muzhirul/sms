@@ -13,6 +13,8 @@ from staff.serializers import StaffTeacherWithSubjectSerializer
 from datetime import datetime
 from academic.models import ClassTeacher
 import traceback
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 # Create your views here.
 class StudentShortList(generics.ListAPIView):
@@ -174,7 +176,7 @@ class StudentList(generics.ListCreateAPIView):
                         student.student_no = new_username
                         student.save()
                 except:
-                    pass
+                    print('User not created...')
                 # Create the guardian and associate with the student
                 guardians = []
                 for guardian_data in guardians_data:
@@ -234,12 +236,44 @@ class StudentList(generics.ListCreateAPIView):
                         enroll = enroll_serializer.save(roll=class_roll,institution=institution,branch=branch)
                         enrolls.append(enroll)
                     response_data['enroll'] = StudentEnrollSerialize(enrolls, many=True).data
+            return Response(response_data, status=status.HTTP_201_CREATED)
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
             
-        return Response(response_data, status=status.HTTP_201_CREATED)
-       
+        
+
+class StudentSearch(generics.ListAPIView):
+    serializer_class = StudentViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+    
+    def get_queryset(self):
+        queryset = Student.objects.filter(status=True).order_by('id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('id')
+            else:
+                queryset
+        except Exception as e:
+            print(f"Error while filtering by institution/branch: {e}")
+
+        return queryset
+    
+    # Enable search and filtering
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+
+    # Fields to allow searching
+    search_fields = ['student_no', 'first_name', 'last_name', 'gender__name',
+                     'mobile_no','birth_reg_scert_no','blood_group__name','shift__name','std_status__name',
+                     'enroll__version__version','enroll__session__session','enroll__class_name__name','enroll__group__name','enroll__section__section','enroll__roll']
+ 
 class StudentDetail(generics.RetrieveUpdateAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer

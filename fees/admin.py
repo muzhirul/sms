@@ -4,8 +4,8 @@ from .models import *
 # Register your models here.
 
 class FeesTypeAdmin(admin.ModelAdmin):
-    list_display = ['name','code','is_active']
-    prepopulated_fields = {'code': ('name',)}
+    list_display = ['name','code','category','is_active']
+    prepopulated_fields = {'code': ('name','category')}
     class Meta:
         model = FeesType
 

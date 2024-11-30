@@ -51,7 +51,7 @@ class StudentAdmin(admin.ModelAdmin):
         ("Address",{'fields':[('present_address','permanent_address'),]}),  
         ("Institution Info",{'fields':[('institution','branch'),]})  
     ]
-    list_display = ['student_no','first_name','last_name','dob','admission_date','blood_group','status','photo_thumbnail','std_status']
+    list_display = ['student_no','first_name','last_name','dob','admission_date','mobile_no','blood_group','status','photo_thumbnail','std_status']
     search_fields = ['code','first_name','last_name','dob','admission_date','blood_group']
     list_filter = ['blood_group']
 

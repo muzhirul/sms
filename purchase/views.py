@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from sms.permission import check_permission
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
 
 # Create your views here.
 
@@ -489,25 +490,35 @@ class GoodSReceiptNoteMasterSearchAPI(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = GoodSReceiptNoteMaster.objects.filter(status=True).order_by('-code')
+        queryset = super().get_queryset()
+        search_value = self.request.query_params.get('search', None)
+        queryset = queryset.order_by('-code')
+        if search_value.lower() == 'entered':
+            queryset = queryset.filter(confirm_with_pay=False, confirm_without_pay=False)
+        elif search_value.lower() == 'confirmed':
+            queryset = queryset.filter(Q(confirm_with_pay=True) | Q(confirm_without_pay=True))
+            
         try:
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch
             if institution_id and branch_id:
-                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-id')
+                queryset = queryset.filter(institution=institution_id, branch=branch_id)
             elif branch_id:
-                queryset = queryset.filter(branch=branch_id, status=True).order_by('-id')
+                queryset = queryset.filter(branch=branch_id)
             elif institution_id:
-                queryset = queryset.filter(institution=institution_id, status=True).order_by('-id')
+                queryset = queryset.filter(institution=institution_id)
             else:
                 queryset
-        except:
-            pass
+        except Exception as e:
+            print(f"Error while filtering by institution/branch: {e}")
+        
+        print("Final Queryset:", queryset) 
         return queryset
 
+    
     # Enable search and filtering
     filter_backends = [SearchFilter, DjangoFilterBackend]
 
     # Fields to allow searching
-    search_fields = ['code', 'supplier__name', 'warehouse__name', 'pay_method__name']
+    search_fields = ['code', 'supplier__name', 'warehouse__name', 'pay_method__name','grn_details__item_name']
 

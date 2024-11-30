@@ -18,6 +18,8 @@ from django.db.models import Q
 import requests
 from datetime import timedelta
 from django.utils import timezone
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 # Create your views here.
 
 class StaffDepartmentList(generics.ListAPIView):
@@ -761,6 +763,40 @@ class staffListView(generics.ListAPIView):
             }
 
         return Response(response_data)
+
+class staffSearchView(generics.ListAPIView):
+    serializer_class = staffSerializer2
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+    
+    def get_queryset(self):
+        queryset = Staff.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id,status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id,status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id,status=True).order_by('-id')
+            else:
+                queryset            
+        except:
+            pass
+        return queryset
+    
+    # Enable search and filtering
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+
+    # Fields to allow searching
+    search_fields = ['staff_id', 'first_name', 'last_name', 'gender__name',
+                     'mobile_no','emergency_number','blood_group__name','shift__name','staff_status__name','nid','religion__name',
+                     'role__name','designation__name','department__name']
+
+
+
 
 class staffDetailView(generics.RetrieveUpdateAPIView):
     queryset = Staff.objects.all()
@@ -2182,7 +2218,7 @@ class StaffPayrollProcess(generics.ListAPIView):
 
         return CustomResponse(code=status.HTTP_200_OK, message=f"Process Done....", data=None)
 
-class StaffSelfAttendanceEntry(generics.CreateAPIView):
+class StaffSelfAttendanceEntry(generics.ListCreateAPIView):
     serializer_class = AttendanceDailyCreateRawSerializer
     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
     pagination_class = CustomPagination
@@ -2204,6 +2240,25 @@ class StaffSelfAttendanceEntry(generics.CreateAPIView):
         except:
             pass
         return queryset
+    
+    def list(self, request, *args, **kwargs):
+        institution_id = self.request.user.institution
+        branch_id = self.request.user.branch
+        user_id = self.request.user.id
+        try:
+            staff = Staff.objects.get(status=True, institution=institution_id, branch=branch_id,staff_id=self.request.user.username)
+
+            last_attn_type = AttendanceDailyRaw.objects.filter(attn_date=datetime.now().date(),status=True,institution=institution_id,branch=branch_id,staff=staff).order_by('id').last()
+            
+            if last_attn_type:
+                attn_type = "OUT" if last_attn_type.attn_type == "IN" else "IN"
+            else:
+                attn_type = "IN"
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Attendance Type determined successfully...",data={"attn_type":attn_type})
+        except staff.DoesNotExist:
+            return CustomResponse(code=status.HTTP_404_NOT_FOUND, message=f"Staff Not Found..", data=None)
+        except Exception as e:
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred while determining the attendance type...", data=str(e))
 
     def create(self,request,*args, **kwargs):
         institution_id = self.request.user.institution
@@ -2212,7 +2267,7 @@ class StaffSelfAttendanceEntry(generics.CreateAPIView):
         attn_type = self.request.data.get('attn_type')
         staff = Staff.objects.get(status=True,institution=institution_id,branch=branch_id,staff_id=self.request.user.username,user=user_id)
         sys_attn_type = AttendanceDailyRaw.objects.filter(attn_date=datetime.now().date(),status=True,institution=institution_id,branch=branch_id,staff=staff).order_by('id').last()
-        if (sys_attn_type.attn_type==attn_type):
+        if sys_attn_type and (sys_attn_type.attn_type==attn_type):
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Already {attn_type}. Please try another attendance type.", data=None)
         try:
             raw_atten = {}
@@ -2229,6 +2284,5 @@ class StaffSelfAttendanceEntry(generics.CreateAPIView):
             self.perform_create(serializer)
             return CustomResponse(code=status.HTTP_200_OK, message=f"Staff {attn_type} Attendance successfully", data=serializer.data)
         except Exception as e:
-            # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
         

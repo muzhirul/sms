@@ -15,6 +15,7 @@ urlpatterns = [
     # staff API
     path('api/create', staffCreateView.as_view(), name='staff-create'),
     path('api/list', staffListView.as_view(), name='staff-List'),
+    path('api/search/', staffSearchView.as_view(), name='staff-search'),
     path('api/less-dtl/list', staffLessDtlListView.as_view(), name='staff-List'),
     path('api/teacher/list', staffTeacherListView.as_view(), name='teacher-List'),
     path('api/detail/<int:pk>', staffDetailView.as_view(), name='staff-detail'),

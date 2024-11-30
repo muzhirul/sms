@@ -21,9 +21,16 @@ def validate_alpha_chars_only(value):
 
 # Create your models here.
 class FeesType(models.Model):
+    FEES_CATEGORY = [
+        ('admission','Admission'),
+        ('exam',"Exam"),
+        ('monthly',"Monthly"),
+        ('others',"Others"),
+    ]
     name = models.CharField(max_length=100, verbose_name='Fees Type Name',validators=[validate_alpha_chars_only])
     code = models.SlugField(max_length=255)
     description = models.TextField(blank=True,null=True)
+    category = models.CharField(max_length=20, blank=True, null=True, choices=FEES_CATEGORY)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)

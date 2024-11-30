@@ -8,6 +8,7 @@ import datetime
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from setup_app.models import *
+from django.core.validators import RegexValidator
 # For generate student number
 def generate_student_no():
     last_stuent_no = Student.objects.all().order_by('student_no').last()
@@ -47,7 +48,15 @@ class Student(models.Model):
     gender = models.ForeignKey(Gender,on_delete=models.SET_NULL,blank=True,null=True,related_name='student_gender')
     dob = models.DateField(null=True, blank=True, verbose_name='Date of Birth')
     photo = models.ImageField(upload_to='student_photo/',blank=True, null=True, verbose_name='Photo')
-    mobile_no = models.CharField(max_length=11,blank=True,null=True,verbose_name='Mobile No')
+    mobile_no = models.CharField(max_length=14,blank=True,null=True,verbose_name='Mobile No', validators=[
+        RegexValidator(
+            # regex=r'^(?:\+88|01)[3-9]\d{8}$',
+            # regex=r'^\+880[1-9][0-9]{8}$|^01[3-9][0-9]{8}$',
+            regex = r'^(?:\+8801[3-9][0-9]{8}|01[3-9][0-9]{8})$',
+            message="Invalid Bangladeshi mobile number format.",
+            code='invalid_mobile_number'
+        )
+    ],help_text="Enter a valid Bangladeshi mobile number (e.g., +8801712XXXXXX or 01712XXXXXX).")
     religion = models.ForeignKey(Religion,on_delete=models.SET_NULL,blank=True,null=True,related_name='student_religion')
     email = models.EmailField(max_length=255,blank=True,null=True, verbose_name='Email Address')
     admission_date = models.DateField(blank=True, null=True,verbose_name='Admission Date')
@@ -97,7 +106,15 @@ class Guardian(models.Model):
     occupation = models.ForeignKey(Occupation,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='guardian_occupation')
     nid = models.CharField(max_length=20, null=True,blank=True, verbose_name='NID')
     photo = models.ImageField(upload_to='guardian_photo/',blank=True,null=True)
-    mobile_no = models.CharField(max_length=11,blank=True,null=True,verbose_name='Mobile No')
+    mobile_no = models.CharField(max_length=14,blank=True,null=True,verbose_name='Mobile No', validators=[
+        RegexValidator(
+            # regex=r'^(?:\+88|01)[3-9]\d{8}$',
+            # regex=r'^\+880[1-9][0-9]{8}$|^01[3-9][0-9]{8}$',
+            regex = r'^(?:\+8801[3-9][0-9]{8}|01[3-9][0-9]{8})$',
+            message="Invalid Bangladeshi mobile number format.",
+            code='invalid_mobile_number'
+        )
+    ],help_text="Enter a valid Bangladeshi mobile number (e.g., +8801712XXXXXX or 01712XXXXXX).")
     is_guardian = models.BooleanField(default=False)
     user = models.OneToOneField(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
     status = models.BooleanField(default=True)
