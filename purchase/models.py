@@ -359,3 +359,138 @@ def update_grn_total_amounts(sender, instance, **kwargs):
         grn_mst.total_net_amt = total_net_amt
         grn_mst.save()
         
+class SupplierPaymentMst(models.Model):
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    code = models.CharField(max_length=50, blank=True, null=True, verbose_name='Payment Number')
+    grn_code = models.ForeignKey(GoodSReceiptNoteMaster, on_delete=models.SET_NULL, blank=True, null=True,verbose_name='GRN Code')
+    pay_date = models.DateTimeField()
+    total_pay_amt = models.DecimalField(blank=True, null=True,verbose_name='Total Payment Amount',max_digits=10,decimal_places=2)
+    remarks = models.TextField(blank=True, null=True)
+    confirm = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sup_pay_mst_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='sup_pay_mst_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'pur_supplier_payment_mst'
+        verbose_name = 'Supplier Payment'
+
+    def __str__(self):
+        return str(self.code)
+    
+    def clean(self):
+        if self.pk:
+            current_instance = SupplierPaymentMst.objects.get(pk=self.pk)
+            if current_instance.confirm:
+                raise ValidationError("Updates are not allowed for this record as 'confirm' is already Done.")
+            
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+@receiver(post_save, sender=SupplierPaymentMst)
+def grn_no_posting(sender, instance, **kwargs):
+    if not instance.code:
+        new_sp_no = generate_code(instance.institution,instance.branch,'Supplier Payment')
+        instance.code = new_sp_no
+        instance.save()
+
+@receiver(post_save, sender=SupplierPaymentMst)
+def update_sp_confirm_status(sender, instance, **kwargs):
+    if instance.confirm:
+        try:
+            Supplier.objects.filter(status=True, pk=instance.supplier.id,institution=instance.institution, branch=instance.branch).update(current_amt=F('current_amt')-instance.total_pay_amt)
+        except:
+            print('Supplier Not Found..',instance.supplier)
+
+class SupplierPaymentDtl(models.Model):
+    supplier_payment = models.ForeignKey(SupplierPaymentMst, on_delete=models.CASCADE)
+    line_no = models.IntegerField()
+    pay_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE)
+    pay_amt = models.DecimalField(verbose_name='Payment Amount',max_digits=10,decimal_places=2)
+    reference = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='sup_pay_dtl_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL,related_name='sup_pay_dtl_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'pur_supplier_payment_dtl'
+
+    def __str__(self):
+        return str(self.supplier_payment)
+
+@receiver(post_save, sender=SupplierPaymentDtl)
+def update_payment_total_amt(sender, instance, **kwargs):
+    sp_mst = instance.supplier_payment
+    if sp_mst:
+        total_pay_amt = SupplierPaymentDtl.objects.filter(supplier_payment=sp_mst,status=True,institution=sp_mst.institution,branch=sp_mst.branch).aggregate(Sum('pay_amt'))['pay_amt__sum'] or 0
+
+        sp_mst.total_pay_amt = total_pay_amt
+        sp_mst.save()
+
+@receiver(post_save, sender=SupplierPaymentMst)
+def grn_sp_acc_posting(sender, instance, **kwargs):
+    if instance.confirm and instance.total_pay_amt > 0:
+        if instance.confirm:
+            acc_coa_ref = ChartofAccounts.objects.filter(status=True,coa_type='ASSET',title__iexact='Cash In Hand',institution=instance.institution,branch=instance.branch).last()
+            acc_coa = ChartofAccounts.objects.filter(status=True,coa_type='LIABILITIE',title__iexact='Accounts Payable',institution=instance.institution,branch=instance.branch).last()
+        from datetime import datetime
+        # voucher_no = generate_code(instance.institution,instance.branch,'RECEIVE')
+        gl_date = datetime.now().strftime('%Y-%m-%d')
+        acc_period = AccountPeriod.objects.filter(status=True,start_date__lte=gl_date,end_date__gte=gl_date).last()
+        # user_info = Authentication.objects.filter(username=instance.student.student_no,institution=instance.institution,branch=instance.branch).last()
+        acc_ledger_dbt_count = AccountLedger.objects.filter(status=True,institution=instance.institution,debit_amt=instance.total_pay_amt,acc_period=acc_period,
+                                                            voucher_type='SUPPLIER PAYMENT',acc_coa=acc_coa,acc_coa_ref=acc_coa_ref,
+                                                            branch=instance.branch,ref_source='pur_supplier_payment_mst',ref_no=instance.id).count()
+        if acc_ledger_dbt_count == 0:
+            acc_dbt_ledger = {}
+            acc_dbt_ledger['gl_date'] = gl_date
+            acc_dbt_ledger['voucher_type'] = 'SUPPLIER PAYMENT'
+            acc_dbt_ledger['voucher_no'] = instance.code
+            acc_dbt_ledger['acc_coa'] = acc_coa
+            acc_dbt_ledger['acc_coa_ref'] = acc_coa_ref
+            acc_dbt_ledger['acc_period'] = acc_period
+            acc_dbt_ledger['credit_amt'] = 0
+            acc_dbt_ledger['debit_amt'] = instance.total_pay_amt
+            acc_dbt_ledger['narration'] = f"Payment"
+            acc_dbt_ledger['ref_source'] = 'pur_supplier_payment_mst'
+            acc_dbt_ledger['ref_no'] = instance.id
+            acc_dbt_ledger['particulars'] = f"Payment"
+            # acc_dbt_ledger['user'] = user_info
+            acc_dbt_ledger['institution'] = instance.institution
+            acc_dbt_ledger['branch'] = instance.branch
+            acc_dbt = AccountLedger.objects.create(**acc_dbt_ledger)
+
+        acc_ledger_cr_count = AccountLedger.objects.filter(status=True,institution=instance.institution,credit_amt=instance.total_pay_amt,acc_period=acc_period,
+                                                            voucher_type='SUPPLIER PAYMENT',acc_coa=acc_coa_ref,acc_coa_ref=acc_coa,
+                                                            branch=instance.branch,ref_source='pur_supplier_payment_mst',ref_no=instance.id).count()
+        
+        if acc_ledger_cr_count == 0:
+            acc_cr_ledger = {}
+            acc_cr_ledger['gl_date'] = gl_date
+            acc_cr_ledger['voucher_type'] = 'SUPPLIER PAYMENT'
+            acc_cr_ledger['voucher_no'] = instance.code
+            acc_cr_ledger['acc_coa'] = acc_coa_ref
+            acc_cr_ledger['acc_coa_ref'] = acc_coa
+            acc_cr_ledger['acc_period'] = acc_period
+            acc_cr_ledger['credit_amt'] = instance.total_pay_amt
+            acc_cr_ledger['debit_amt'] = 0
+            acc_cr_ledger['narration'] = f"Payment"
+            acc_cr_ledger['ref_source'] = 'pur_supplier_payment_mst'
+            acc_cr_ledger['ref_no'] = instance.id
+            acc_cr_ledger['particulars'] = f"Payment"
+            # acc_cr_ledger['user'] = user_info
+            acc_cr_ledger['institution'] = instance.institution
+            acc_cr_ledger['branch'] = instance.branch
+            acc_cr = AccountLedger.objects.create(**acc_cr_ledger)
+ 
