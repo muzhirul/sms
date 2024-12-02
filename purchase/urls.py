@@ -16,5 +16,12 @@ urlpatterns = [
     path('api/goods-receive/delete/<int:pk>', GoodsReceiveNoteDelete.as_view(), name='goods-receive-note-delete'),
     path('api/grn/confirm/<int:pk>', GoodsReceiveNoteConfirm.as_view(), name='goods-receive-note-confirm'),
     path('api/goods-receipt-notes/', GoodSReceiptNoteMasterSearchAPI.as_view(), name='goods-receipt-notes-search'),
+    # For Supplier Payment
+    path('api/supplier-payment/list', SupplierPaymentList.as_view(), name='supplier-payment-list'),
+    path('api/supplier-payment/create', SupplierPaymenCreate.as_view(), name='supplier-payment-create'),
+    path('api/supplier-payment/detail/<int:pk>', SupplierPaymenDetail.as_view(), name='supplier-payment-detail'),
+    path('api/supplier-payment/delete/<int:pk>', SupplierPaymenDelete.as_view(), name='supplier-payment-delete'),
+    path('api/sp/confirm/<int:pk>', SupplierPaymentConfirm.as_view(), name='supplier-payment-confirm'),
+
 
 ]

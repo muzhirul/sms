@@ -64,7 +64,7 @@ class GoodSReceiptNoteMasterAdmin(admin.ModelAdmin):
 
 class SupplierPaymentDtlTabularInline(admin.TabularInline):
     model = SupplierPaymentDtl
-    fields = ['line_no','pay_method','reference','pay_amt','description','institution','branch']
+    fields = ['line_no','pay_method','reference','pay_amt','description','institution','branch','status']
     extra = 0
 
 

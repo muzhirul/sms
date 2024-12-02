@@ -127,7 +127,12 @@ class PurchaseOrderMasterCreateSerializer(serializers.ModelSerializer):
         return instance
 
 
-'''For GRN '''    
+'''For GRN '''  
+class GoodSReceiptNoteMasterListViewSerializer(serializers.ModelSerializer):
+    supplier = SupplierListSerializer(read_only=True)
+    class Meta:
+        model = GoodSReceiptNoteMaster
+        fields = ['id','code', 'grn_date', 'supplier', 'total_net_amt']
 
 class GoodsReceiptNotesDetailsCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
@@ -230,4 +235,107 @@ class GoodSReceiptNoteMasterConfirmSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoodSReceiptNoteMaster
         fields = ['confirm_without_pay','confirm_with_pay']
+
+'''For Supplier Payment'''
+
+class SupplierPaymentDtlCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    class Meta:
+        model = SupplierPaymentDtl
+        exclude = ['created_by', 'updated_by', 'created_at', 'updated_at','status','institution','branch']
+        read_only_fields = ('supplier_payment',)
+
+class SupplierPaymentMstCreateSerializer(serializers.ModelSerializer):
+    pay_details = SupplierPaymentDtlCreateSerializer(many=True)
+    class Meta:
+        model = SupplierPaymentMst
+        exclude = ['status','code','total_pay_amt','created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
+
+    def create(self, validated_data):
+        pay_details = validated_data.pop('pay_details')
+        sp = SupplierPaymentMst.objects.create(**validated_data)
+
+        for pay_detail in pay_details:
+            SupplierPaymentDtl.objects.create(supplier_payment=sp, **pay_detail, institution=sp.institution,branch=sp.branch)
+
+        return sp
+    
+    def update(self, instance, validated_data):
+        pay_details = validated_data.pop('pay_details')
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        keep_choices = []
+        # Fields to update in sp details
+        fields_to_update = [
+            'line_no', 'pay_method', 'pay_amt', 'reference', 'description'
+        ]
+
+        for pay_detail in pay_details:
+            if "id" in pay_detail:
+                try:
+                    sp = SupplierPaymentDtl.objects.get(id=pay_detail["id"])
+                    for field in fields_to_update:
+                        setattr(sp, field, pay_detail.get(field, getattr(sp, field)))
+                    sp.status = True
+                    sp.save()
+                    keep_choices.append(sp.id)
+                except SupplierPaymentDtl.DoesNotExist:
+                    continue
+            else:
+                sp = SupplierPaymentDtl.objects.create(
+                    **pay_detail,
+                    supplier_payment=instance,
+                    institution=instance.institution,
+                    branch=instance.branch
+                )
+                keep_choices.append(sp.id)
+
+        # Deactivate any remaining sp details not in keep_choices
+        SupplierPaymentDtl.objects.filter(supplier_payment=instance).exclude(id__in=keep_choices).update(status=False)
+
+        return instance
+
+class SupplierPaymentMstConfirmSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SupplierPaymentMst
+        fields = ['confirm']
+
+class SupplierPaymentMstDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SupplierPaymentMst
+        fields = ['status']
+
+class SupplierPaymentDtlViewSerializer(serializers.ModelSerializer):
+    pay_method = PaymentMethodViewSerializer(read_only=True)
+    class Meta:
+        model = SupplierPaymentDtl
+        exclude = ['created_by', 'updated_by', 'created_at', 'updated_at','institution','branch','status','supplier_payment']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+        
+class SupplierPaymentMstViewSerializer(serializers.ModelSerializer):
+    supplier = SupplierListSerializer(read_only=True)
+    pay_details = SupplierPaymentDtlViewSerializer(many=True)
+    grn_code = GoodSReceiptNoteMasterListViewSerializer(many=False)
+    class Meta:
+        model = SupplierPaymentMst
+        exclude = ['created_by', 'updated_by', 'created_at', 'updated_at','institution','branch']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Filter out None values from the social_media list 
+        representation['pay_details'] = [item for item in representation['pay_details'] if item is not None]
+
+        if not instance.status:
+            # If status is False, exclude the social_media field
+            representation.pop('pay_details', None)
+
+        return representation
+
 

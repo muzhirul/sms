@@ -362,7 +362,7 @@ def update_grn_total_amounts(sender, instance, **kwargs):
 class SupplierPaymentMst(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     code = models.CharField(max_length=50, blank=True, null=True, verbose_name='Payment Number')
-    grn_code = models.ForeignKey(GoodSReceiptNoteMaster, on_delete=models.SET_NULL, blank=True, null=True,verbose_name='GRN Code')
+    grn_code = models.ForeignKey(GoodSReceiptNoteMaster, on_delete=models.SET_NULL, blank=True, null=True,verbose_name='GRN Code', related_name='grn_code')
     pay_date = models.DateTimeField()
     total_pay_amt = models.DecimalField(blank=True, null=True,verbose_name='Total Payment Amount',max_digits=10,decimal_places=2)
     remarks = models.TextField(blank=True, null=True)
@@ -409,7 +409,7 @@ def update_sp_confirm_status(sender, instance, **kwargs):
             print('Supplier Not Found..',instance.supplier)
 
 class SupplierPaymentDtl(models.Model):
-    supplier_payment = models.ForeignKey(SupplierPaymentMst, on_delete=models.CASCADE)
+    supplier_payment = models.ForeignKey(SupplierPaymentMst, on_delete=models.CASCADE, related_name='pay_details')
     line_no = models.IntegerField()
     pay_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE)
     pay_amt = models.DecimalField(verbose_name='Payment Amount',max_digits=10,decimal_places=2)

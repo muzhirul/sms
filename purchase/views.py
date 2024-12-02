@@ -522,3 +522,214 @@ class GoodSReceiptNoteMasterSearchAPI(generics.ListAPIView):
     # Fields to allow searching
     search_fields = ['code', 'supplier__name', 'warehouse__name', 'pay_method__name','grn_details__item_name']
 
+'''For Supplier Payment'''
+
+class SupplierPaymentList(generics.ListAPIView):
+    serializer_class = SupplierPaymentMstViewSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = SupplierPaymentMst.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+
+class SupplierPaymenCreate(generics.ListCreateAPIView):
+    # queryset = Version.objects.filter(status=True).order_by('id')
+    serializer_class = SupplierPaymentMstViewSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = SupplierPaymentMst.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            if institution_id and branch_id:
+                queryset = queryset.filter(institution=institution_id, branch=branch_id, status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(branch=branch_id, status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(institution=institution_id, status=True).order_by('-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        # permission_check = check_permission(self.request.user.id, 'Fees Type', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
+    
+    def create(self, request, *args, **kwargs):
+        '''Check user has permission to Create start'''
+        # permission_check = check_permission(self.request.user.id, 'Fees Type', 'create')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Create End'''
+        serializer_class = SupplierPaymentMstCreateSerializer
+        serializer = serializer_class(data=request.data)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                instance = serializer.save(institution=institution, branch=branch)
+                    # Customize the response data
+                return CustomResponse(code=status.HTTP_200_OK, message="Supplier Payment created successfully", data=SupplierPaymentMstViewSerializer(instance).data)
+            # If the serializer is not valid, return an error response
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
+
+class SupplierPaymenDetail(generics.RetrieveUpdateAPIView):
+    queryset = SupplierPaymentMst.objects.filter(status=True)
+    serializer_class = SupplierPaymentMstCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def retrieve(self, request, *args, **kwargs):
+        '''Check user has permission to retrive start'''
+        # permission_check = check_permission(self.request.user.id, 'Fees Type', 'view')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        
+        instance = self.get_object()
+        # Customize the response format for retrieving a single instance
+        return CustomResponse(code=status.HTTP_200_OK, message="Success", data=SupplierPaymentMstViewSerializer(instance).data)
+
+    def update(self, request, *args, **kwargs):
+        '''Check user has permission to update start'''
+        # permission_check = check_permission(self.request.user.id, 'Fees Type', 'update')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to retrive End'''
+        
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        try:
+            if serializer.is_valid():
+                institution_data = serializer.validated_data.get('institution')
+                branch_data = serializer.validated_data.get('branch')
+                # If data is provided, use it; otherwise, use the values from the request user
+                institution = institution_data if institution_data is not None else self.request.user.institution
+                branch = branch_data if branch_data is not None else self.request.user.branch
+                instance = serializer.save()
+                # Customize the response data
+                return CustomResponse(code=status.HTTP_200_OK, message="Supplier Payment Update successfully", data=SupplierPaymentMstViewSerializer(instance).data)
+            else:
+                # Handle validation errors
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
+        except Exception as e:
+            # Handle other exceptions
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
+
+class SupplierPaymenDelete(generics.UpdateAPIView):
+    queryset = SupplierPaymentMst.objects.filter(status=True)
+    serializer_class = SupplierPaymentMstDeleteSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        # permission_check = check_permission(self.request.user.id, 'Fees Type', 'delete')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+
+        instance = self.get_object()
+        if not instance.status:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Supplier Payment. {instance.code} already Deleted", data=None)
+        if instance.confirm:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Supplier Payment already confirmed!!", data=None)
+        # Update the "status" field to False
+        instance.status = False
+        instance.save()
+        for sp_dtl in SupplierPaymentDtl.objects.filter(status=True,supplier_payment=instance):
+            sp_dtl.status = False
+            sp_dtl.save()
+        # Customize the response format for successful update
+        return CustomResponse(code=status.HTTP_200_OK, message=f"Supplier Payment. {instance.code} Delete successfully", data=None)
+
+class SupplierPaymentConfirm(generics.UpdateAPIView):
+    queryset = SupplierPaymentMst.objects.filter(status=True)
+    serializer_class = SupplierPaymentMstConfirmSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+
+        if instance.confirm:
+            return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Supplier Payment already Confirmed", data=None)
+        else:
+            instance.confirm = True
+            instance.save()
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Supplier Payment Confirm successfully", data=None)
+
+
+
