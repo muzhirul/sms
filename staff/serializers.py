@@ -513,3 +513,13 @@ class ProcessStaffSalaryTableCreateSerializer(serializers.ModelSerializer):
         model = ProcessStaffSalaryTable
         fields = ['from_date','to_date','staff']
 
+class ProcessStaffSalaryTableViewSerializer(serializers.ModelSerializer):
+    staff = StaffTeacherViewSerializer(read_only=True)
+    department = DepartmentListSerializer(read_only=True)
+    designation = DesignationListSerializer(read_only=True)
+    class Meta:
+        model = ProcessStaffSalaryTable
+        # exclude = ['updated_at','created_at','status','is_active','created_by','updated_by','institution','branch','accounting']
+        fields = ['id','staff','department','designation','from_date','to_date','bank_acc_no','gross','payable_day',
+                  'prl_ele_basic','prl_ele_house_rent','prl_ele_medical','prl_ele_conveyance','prl_ele_others_a','new_payable_amt','is_hold']
+

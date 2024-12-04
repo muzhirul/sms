@@ -21,7 +21,7 @@ class GuardianTabularInline(admin.TabularInline):
 
 class StudentEnrollTabularInline(admin.TabularInline):
     model = StudentEnroll
-    fields = ['version','session','class_name','group','section','roll','start_date','end_date','remarks','is_active','status','institution','branch']
+    fields = ['version','session','class_name','group','section','roll','start_date','end_date','remarks','is_active','status','institution','branch','admission_paid']
     extra = 0
 
 class ProcessStAttendanceDailyAdminTabularInline(admin.TabularInline):

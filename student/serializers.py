@@ -4,7 +4,7 @@ from setup_app.serializers import *
 from staff.serializers import StaffShiftListSerializer2,StaffTeacherSerializer
 from setup_app.serializers import BloodGroupSerializer, GenderSerializer, ReligionSerializer, OccupationSerializer, RelationSerializer
 from academic.serializers import VersionSerializer2, SessionSerializer2, ClassSerializer2,SectionSerializer2,ClassGroupViewSerializer
-from fees.serializers import FeesTransactionViewSerializer
+from fees.serializers import FeesTransactionListSerializer
 
 class StudentEnrollViewSerializer(serializers.ModelSerializer):
     version = VersionSerializer2(read_only=True)
@@ -113,7 +113,7 @@ class StudentViewSerializer(serializers.ModelSerializer):
     enroll = StudentEnrollViewSerializer(many=True, required=False, read_only=True)
     std_atten_daily = ProcessStAttendanceDailyViewDailySerializer(many=True, required=False, read_only=True)
     std_leave_trns = StudentLeaveTransactionListSerializer(many=True, required=False, read_only=True)
-    fees_trns = FeesTransactionViewSerializer(many=True, required=False, read_only=True)
+    fees_trns = FeesTransactionListSerializer(many=True, required=False, read_only=True)
     gender = GenderSerializer(read_only=True)
     religion = ReligionSerializer(read_only=True)
     blood_group = BloodGroupSerializer(read_only=True)

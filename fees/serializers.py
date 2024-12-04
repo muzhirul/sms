@@ -19,7 +19,7 @@ class FeesTypeViewSerializer(serializers.ModelSerializer):
 class FeesTypeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeesType
-        fields = ['id','name','code']
+        fields = ['id','name','code','category']
 
 class FeesDiscountCreateSerializer(serializers.ModelSerializer):
 

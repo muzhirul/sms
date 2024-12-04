@@ -191,18 +191,22 @@ class FeesTransaction(models.Model):
         return str(self.id)
     
     def fees_amount(self):
-        return self.fees_detail.amount
+        if self.fees_detail:
+            return self.fees_detail.amount
+        return 0
     
     def fine_amount(self):
         current_date = datetime.now().date()
-        if self.fees_detail.due_date < current_date:
-            if self.fees_detail.percentage is not None and self.fees_detail.percentage > 0:
-                total_fine =  (round(self.fees_detail.amount*(self.fees_detail.percentage/100)))
-            else:
-                total_fine = self.fees_detail.fix_amt
-        else:
-            total_fine = 0
-        return total_fine
+        total_fine = 0
+
+        # Check if fees_detail is not None
+        if self.fees_detail and self.fees_detail.due_date:
+            if self.fees_detail.due_date < current_date:
+                if self.fees_detail.percentage is not None and self.fees_detail.percentage > 0:
+                    total_fine = round(self.fees_detail.amount * (self.fees_detail.percentage / 100))
+                elif self.fees_detail.fix_amt is not None and self.fees_detail.fix_amt > 0:
+                    total_fine = self.fees_detail.fix_amt
+        return total_fine if total_fine is not None else 0
     
     def discount_amount(self):
         if self.discount_type:
@@ -305,8 +309,12 @@ def fees_account_posting(sender, instance, **kwargs):
             acc_cr_ledger['branch'] = instance.branch
             acc_cr = AccountLedger.objects.create(**acc_cr_ledger)
 
-
-        
+@receiver(post_save, sender=FeesTransaction)
+def paid_status_update(sender, instance, **kwargs):
+    if instance.pay_status and instance.fees_detail.fees_type.category=='admission':
+        StudentEnroll.objects.filter(status=True, is_active=True, version=instance.version, session=instance.session,
+                                     class_name=instance.class_name, group=instance.group,
+                                     section=instance.section, student=instance.student).update(admission_paid='Paid')
     
 class FeesTransactionDetails(models.Model):
     fee_trns = models.ForeignKey(FeesTransaction,on_delete=models.CASCADE,verbose_name='Fees Transaction')

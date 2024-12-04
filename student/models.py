@@ -140,6 +140,7 @@ class StudentEnroll(models.Model):
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     remarks = models.CharField(max_length=255,blank=True, null=True)
+    admission_paid = models.CharField(max_length=10,default='Unpaid')
     is_active = models.BooleanField(default=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
@@ -154,6 +155,27 @@ class StudentEnroll(models.Model):
         
     def __str__(self):
         return str(self.roll)
+
+@receiver(post_save, sender=StudentEnroll)
+def insert_fees_trns(sender, instance, **kwargs):
+    from fees.models import FeesMaster,FeesDetails, FeesTransaction
+    fees_mst = FeesMaster.objects.filter(status=True,version=instance.version,session=instance.session,
+                                         class_name=instance.class_name,group=instance.group,section=instance.section,
+                                         institution=instance.institution,branch=instance.branch).order_by('id').last()
+    fees_dtl = FeesDetails.objects.filter(status=True,is_active=True,institution=instance.institution,branch=instance.branch,fees_master=fees_mst,
+                                          fees_type__category='admission').order_by('id').last()
+    FeesTransaction.objects.filter(status=True, is_active=True,institution=instance.institution,
+                                   branch=instance.branch,pay_status=False).exclude(fees_detail=fees_dtl).update(status=False)
+    if fees_dtl:
+        trns_count = FeesTransaction.objects.filter(status=True,student=instance.student,fees_detail=fees_dtl,institution=instance.institution,branch=instance.branch).count()
+        if trns_count == 0:
+            std_fees_trns = {}
+            std_fees_trns['student'] = instance.student
+            std_fees_trns['fees_detail'] = fees_dtl
+            std_fees_trns['institution'] = instance.institution
+            std_fees_trns['branch'] = instance.branch
+            t = FeesTransaction.objects.create(**std_fees_trns)
+    
 
 class ProcessStAttendanceDaily(models.Model):
     attn_date = models.DateField(verbose_name='Attendance Date',blank=True,null=True)
