@@ -4,6 +4,7 @@ from .views import *
 
 urlpatterns = [
     path('api/student', StudentList.as_view(), name='student-list'),
+    path('api/v2/student', StudentCreateList.as_view(), name='student-create-list'),
     path('api/search', StudentSearch.as_view(), name='student-search'),
     path('api/short/list', StudentShortList.as_view(), name='student-short-list'),
     path('api/student/detail/<int:pk>', StudentDetail.as_view(), name='student-detail'),

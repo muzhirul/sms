@@ -133,10 +133,11 @@ class StudentEnroll(models.Model):
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='version')
     session = models.ForeignKey(Session, on_delete=models.CASCADE, verbose_name='Session')
     class_name = models.ForeignKey(ClassName, on_delete=models.CASCADE, verbose_name='Class Name')
+    shift = models.ForeignKey(StaffShift, on_delete=models.SET_NULL, blank=True, null=True)
     group = models.ForeignKey(ClassGroup,on_delete=models.SET_NULL, blank=True,null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='Section')
     student = models.ForeignKey(Student, on_delete=models.SET_NULL, verbose_name='Student',related_name="enroll",blank=True,null=True)
-    roll = models.CharField(max_length=15,verbose_name='Class Roll',blank=True,null=True)
+    roll = models.IntegerField(verbose_name='Class Roll',blank=True,null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     remarks = models.CharField(max_length=255,blank=True, null=True)
@@ -155,6 +156,26 @@ class StudentEnroll(models.Model):
         
     def __str__(self):
         return str(self.roll)
+    
+    def save(self, *args, **kwargs):
+        if not self.roll:
+            last_roll = StudentEnroll.objects.filter(version=self.version,session=self.session,
+                                                     class_name=self.class_name,shift=self.shift,
+                                                     group=self.group,section=self.section,status=True,is_active=True,
+                                                     institution=self.institution,branch=self.branch).order_by('-roll').first()
+            if last_roll and last_roll.roll is not None:
+                self.roll = (last_roll.roll + 1)
+            else:
+                self.roll = 1
+        super().save(*args, **kwargs)
+
+
+@receiver(post_save, sender=StudentEnroll)
+def update_std_shift(sender, instance, **kwargs):
+    if instance.student:
+        last_enroll = StudentEnroll.objects.filter(status=True,is_active=True,institution=instance.institution,branch=instance.branch).last()
+        instance.student.shift = last_enroll.shift
+        instance.student.save()
 
 @receiver(post_save, sender=StudentEnroll)
 def insert_fees_trns(sender, instance, **kwargs):

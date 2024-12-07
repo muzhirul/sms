@@ -227,20 +227,67 @@ class StudentList(generics.ListCreateAPIView):
                         enroll_item['student'] = student.id
                         enroll_serializer = StudentEnrollSerialize(data=enroll_item)
                         enroll_serializer.is_valid(raise_exception=True)
-                        std_roll = StudentEnroll.objects.filter(status=True,section=enroll_item.get('section'),class_name=enroll_item.get('class_name'),version=enroll_item.get('version'),session=enroll_item.get('session'),institution=institution,branch=branch).order_by('roll').last()
-                        if not std_roll or std_roll.roll is None:
-                            class_roll = str(1)
-                        else:
-                            int_roll = int(std_roll.roll)
-                            class_roll = str(int_roll+1)
-                        enroll = enroll_serializer.save(roll=class_roll,institution=institution,branch=branch)
+                        # std_roll = StudentEnroll.objects.filter(status=True,section=enroll_item.get('section'),class_name=enroll_item.get('class_name'),version=enroll_item.get('version'),session=enroll_item.get('session'),institution=institution,branch=branch).order_by('roll').last()
+                        # if not std_roll or std_roll.roll is None:
+                        #     class_roll = str(1)
+                        # else:
+                        #     int_roll = int(std_roll.roll)
+                        #     class_roll = str(int_roll+1)
+                        # enroll = enroll_serializer.save(roll=class_roll,institution=institution,branch=branch)
+                        enroll = enroll_serializer.save(institution=institution,branch=branch)
                         enrolls.append(enroll)
                     response_data['enroll'] = StudentEnrollSerialize(enrolls, many=True).data
             return Response(response_data, status=status.HTTP_201_CREATED)
         except Exception as e:
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the Create", data=str(e))
-            
+
+class StudentCreateList(generics.ListCreateAPIView):
+    serializer_class = StudentViewSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        queryset = Student.objects.filter(status=True).order_by('-id')
+        try:
+            institution_id = self.request.user.institution
+            branch_id = self.request.user.branch
+            # users = Authentication.objects.get(id=user_id)
+            if institution_id and branch_id:
+                queryset = queryset.filter(
+                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
+            elif branch_id:
+                queryset = queryset.filter(
+                    branch=branch_id, status=True).order_by('-id')
+            elif institution_id:
+                queryset = queryset.filter(
+                    institution=institution_id, status=True).order_by('-id')
+            else:
+                queryset
+        except:
+            pass
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response_data = {
+                "code": 200,
+                "message": "Success",
+                "data": serializer.data,
+                "pagination": {
+                    "next": None,
+                    "previous": None,
+                    "count": queryset.count(),
+                },
+            }
+
+        return Response(response_data)
         
 
 class StudentSearch(generics.ListAPIView):
