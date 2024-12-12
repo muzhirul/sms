@@ -26,4 +26,6 @@ urlpatterns = [
     path('api/student-wise-trns/detail/<int:pk>', StudentWiseFeesTrnsDetails.as_view(), name='student-wise-fees-trns-details'),
     path('api/student-wise-fees-discount-add/<int:pk>', StudentWiseFeesDiscountAdd.as_view(), name='student-wise-fees-discount-add'),
     path('api/student-wise-fees-collection/<int:pk>', StudentWiseFeesCollection.as_view(), name='student-wise-fees-collection'),
+    # For Fees Report
+    path('api/student-wise-trns/report/<int:pk>', StudentWiseFeesTrnsReportDetails.as_view(), name='student-wise-fees-trns-reports-details'),
 ]

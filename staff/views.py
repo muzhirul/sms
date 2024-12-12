@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from setup_app.models import *
 from sms.permission import check_permission
 from authentication.models import Authentication
+from student.models import Student
 from datetime import datetime
 from django.db.models import Min, Max
 from django.db.models.functions import Coalesce
@@ -1862,15 +1863,18 @@ class StaffPunchData(generics.ListAPIView):
                     punch_data['mobile'] = i['mobile']
                     punch_data['staff_code'] = i['user_id']
                     punch_data['src_type'] = 'device'
-                    try:
-                        staff_info = Staff.objects.get(staff_id=i['user_id'],status=True)
+                    staff_info = Staff.objects.get(staff_id=i['user_id'],status=True)
+                    if staff_info:
                         punch_data['staff'] = staff_info
                         punch_data['institution'] = staff_info.institution
                         punch_data['branch'] = staff_info.branch
-                    except:
-                        punch_data['staff'] = None
-                        punch_data['institution'] = None
-                        punch_data['branch'] = None
+                        punch_data['user'] = staff_info.user
+                    std_info = Student.objects.get(student_no=i['user_id'],status=True)
+                    if std_info:
+                        punch_data['stdent'] = std_info
+                        punch_data['institution'] = std_info.institution
+                        punch_data['branch'] = std_info.branch
+                        punch_data['user'] = staff_info.user
                     punch_data['username'] = i['username']
                     p = AttendanceDailyRaw.objects.create(**punch_data)
                 else:

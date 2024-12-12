@@ -57,6 +57,19 @@ class FeesDiscountSortSerializer(serializers.ModelSerializer):
         model = FeesDiscount
         fields = ['id','code','name','percentage','amount']
 
+class FeesDetailsReportSerializer(serializers.ModelSerializer):
+    fees_type = FeesTypeListSerializer(read_only=True)
+    class Meta:
+        model = FeesDetails
+        exclude = ['fees_master','status','created_at','updated_at','created_by','updated_by','institution','branch']
+
+    def to_representation(self, instance):
+        if instance.status:
+            return super().to_representation(instance)
+        else:
+            return None
+
+
 class FeesDetailsViewSerializer(serializers.ModelSerializer):
     fees_type = FeesTypeListSerializer(read_only=True)
     detail_break_down = FeeDetailsBreakDownViewSerializer(many=True)
@@ -211,6 +224,15 @@ class FeesTransactionListSerializer(serializers.ModelSerializer):
         model = FeesTransaction
         # exclude = ['status','created_at','updated_at','created_by','updated_by','institution','branch']
         # fields = ['id','fees_detail','student','payment_id','pay_date','discount_amt','fees_amt','fine_amt','pay_status','is_active','pay_method','discount_type','total_fees','discount_amount','net_fess_amt']
+        fields = ['id','fees_detail','student','payment_id','pay_date','pay_status','is_active','pay_method','discount_type','fees_amount','fine_amount','discount_amount','net_fess_amt']
+
+class FeesTransactionReportSerializer(serializers.ModelSerializer):
+    fees_detail = FeesDetailsReportSerializer(read_only=True)
+    student = StudentListViewSerializer(read_only=True)
+    discount_type = FeesDiscountSortSerializer(read_only=True)
+    
+    class Meta:
+        model = FeesTransaction
         fields = ['id','fees_detail','student','payment_id','pay_date','pay_status','is_active','pay_method','discount_type','fees_amount','fine_amount','discount_amount','net_fess_amt']
 
 class FeesTransactionAddDiscountSerializer(serializers.ModelSerializer):

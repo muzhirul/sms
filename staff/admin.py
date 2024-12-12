@@ -116,7 +116,7 @@ class ProcessStaffSalaryTableAdmin(admin.ModelAdmin):
         model = ProcessStaffSalaryTable
 
 class AttendanceDailyRawAdmin(admin.ModelAdmin):
-    list_display = ['staff','staff_code','attn_date','trnsc_time','username','src_type','attn_type']
+    list_display = ['staff','staff_code','attn_date','trnsc_time','username','src_type','attn_type','user']
 
     class Meta:
         model = AttendanceDailyRaw

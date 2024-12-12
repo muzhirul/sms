@@ -9,6 +9,7 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from setup_app.models import *
 from django.core.validators import RegexValidator
+from django.db.models import UniqueConstraint
 # For generate student number
 def generate_student_no():
     last_stuent_no = Student.objects.all().order_by('student_no').last()
@@ -227,6 +228,9 @@ class ProcessStAttendanceDaily(models.Model):
 
     class Meta:
         db_table = 'st_attn_daily'
+        constraints = [
+            UniqueConstraint(fields=['attn_date','student','status','institution','branch'], name='unique_std_attn_constraint')
+        ] 
 
     def __str__(self):
         return str(self.attn_date)

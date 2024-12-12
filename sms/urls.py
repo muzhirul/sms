@@ -21,7 +21,9 @@ from django.conf.urls.static import static
 admin.site.site_header = 'School Management System'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
+    # path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
+    path('securelogin/', admin.site.urls),
     path('auth/', include('authentication.urls')),
     path('academic/',include('academic.urls')),
     path('student/',include('student.urls')),

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'login_history',
     'rest_framework',
+    'admin_honeypot',
     'django_userforeignkey',
     'corsheaders',
     'django_apscheduler',

@@ -344,6 +344,7 @@ def cal_late_min(sender,instance,**kwargs):
 
 class AttendanceDailyRaw(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True,null=True, related_name='raw_atten')
+    student = models.ForeignKey('student.Student', on_delete=models.SET_NULL, blank=True, null=True)
     staff_code = models.CharField(max_length=20, blank=True,null=True)
     attn_date = models.DateField(verbose_name='Attendance Date',blank=True,null=True)
     trnsc_time = models.DateTimeField(blank=True, null=True)
@@ -358,6 +359,7 @@ class AttendanceDailyRaw(models.Model):
     remarks = models.CharField(max_length=500, blank=True,null=True)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)
+    user = models.ForeignKey(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='atten_raw_creator', editable=False, blank=True, null=True)
@@ -370,6 +372,72 @@ class AttendanceDailyRaw(models.Model):
 
     def __str__(self):
         return str(self.id)
+    
+@receiver(post_save, sender=AttendanceDailyRaw)
+def update_attn_data(sender, instance, **kwargs):
+    from django.db.models import Min, Max
+    if instance.staff:
+        attn_raw_datas = AttendanceDailyRaw.objects.filter(attn_date=instance.attn_date,staff=instance.staff,institution=instance.institution,
+                                                           branch=instance.branch,is_active=True, status=True).values('staff', 'attn_date').annotate(
+                                        in_time=Coalesce(Min('trnsc_time'), F('attn_date')),
+                                        out_time=Coalesce(Max('trnsc_time'), F('attn_date'))
+                                    )
+        for attn_raw_data in attn_raw_datas:
+            in_datetime = attn_raw_data['in_time']
+            out_datetime = attn_raw_data['out_time']
+            daily_attn = ProcessAttendanceDaily.objects.get(attn_date=attn_raw_data['attn_date'],staff=attn_raw_data['staff'],
+                                                            institution=instance.institution,branch=instance.branch,
+                                                            is_active=True,status=True)
+            if daily_attn:
+                shift_start_time = daily_attn.shift.start_time
+                in_time = in_datetime.time()
+                if in_time <= shift_start_time:
+                    att_type = AttendanceType.objects.get(name__iexact='present',status=True)
+                    attn_id = att_type
+                elif in_time > shift_start_time:
+                    att_type = AttendanceType.objects.get(name__iexact='late',status=True)
+                    attn_id = att_type
+                else:
+                    att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+                    attn_id = att_type
+                daily_attn.in_time = in_datetime
+                daily_attn.out_time = out_datetime if in_datetime != out_datetime else None
+                daily_attn.attn_type = att_type
+                daily_attn.save()
+
+    if instance.student:
+        from student.models import ProcessStAttendanceDaily
+        attn_raw_datas = AttendanceDailyRaw.objects.filter(attn_date=instance.attn_date,student=instance.student,institution=instance.institution,
+                                                           branch=instance.branch,is_active=True, status=True).values('student', 'attn_date').annotate(
+                                        in_time=Coalesce(Min('trnsc_time'), F('attn_date')),
+                                        out_time=Coalesce(Max('trnsc_time'), F('attn_date'))
+                                                           )
+        for attn_raw_data in attn_raw_datas:
+            in_datetime = attn_raw_data['in_time']
+            out_datetime = attn_raw_data['out_time']
+            daily_attn = ProcessStAttendanceDaily.objects.get(attn_date=attn_raw_data['attn_date'],student=attn_raw_data['student'],
+                                                              institution=instance.institution,branch=instance.branch,
+                                                              is_active=True,status=True)
+            if daily_attn:
+                shift_start_time = daily_attn.shift.start_time
+                in_time = in_datetime.time()
+                if in_time <= shift_start_time:
+                    att_type = AttendanceType.objects.get(name__iexact='present',status=True)
+                    attn_id = att_type
+                elif in_time > shift_start_time:
+                    att_type = AttendanceType.objects.get(name__iexact='late',status=True)
+                    attn_id = att_type
+                else:
+                    att_type = AttendanceType.objects.get(name__iexact='absent',status=True)
+                    attn_id = att_type
+                daily_attn.in_time = in_datetime
+                daily_attn.out_time = out_datetime if in_datetime != out_datetime else None
+                daily_attn.attn_type = att_type
+                daily_attn.save()
+
+
+
+
 
 def leave_code():
     last_leave_code = StaffLeaveTransaction.objects.all().order_by('code').last()

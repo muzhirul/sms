@@ -67,7 +67,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 class ProcessStAttendanceDailyAdmin(admin.ModelAdmin):
     
-    list_display = ['attn_date','shift','in_time','out_time','duration','attn_type','late_by_min','early_gone_by_min']
+    list_display = ['attn_date','student','shift','in_time','out_time','duration','attn_type','late_by_min','early_gone_by_min']
 
     class Meta:
         model = ProcessStAttendanceDaily
