@@ -15,6 +15,11 @@ class StudentEnrollViewSerializer(serializers.ModelSerializer):
         model = StudentEnroll
         exclude = ['student','institution','branch','status','created_by', 'updated_by', 'created_at', 'updated_at']
 
+class PreviousEducationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PreviousEducation
+        exclude = ['status','created_by', 'updated_by', 'created_at', 'updated_at']
+
 class StudentEnrollSerialize(serializers.ModelSerializer):
     class Meta:
         model = StudentEnroll
@@ -34,6 +39,7 @@ class StudentSortViewSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     guardians = GuardianSerializer(many=True, required=False, read_only=True)
     enroll = StudentEnrollSerialize(many=True, required=False, read_only=True)
+    pre_education = PreviousEducationSerializer(many=True, required=False, read_only=True)
     class Meta:
         model = Student
         # Exclude the 'status' field and other fields you want to exclude
@@ -114,6 +120,7 @@ class StudentViewSerializer(serializers.ModelSerializer):
     std_atten_daily = ProcessStAttendanceDailyViewDailySerializer(many=True, required=False, read_only=True)
     std_leave_trns = StudentLeaveTransactionListSerializer(many=True, required=False, read_only=True)
     fees_trns = FeesTransactionListSerializer(many=True, required=False, read_only=True)
+    pre_education = PreviousEducationSerializer(many=True, required=False, read_only=True)
     gender = GenderSerializer(read_only=True)
     religion = ReligionSerializer(read_only=True)
     blood_group = BloodGroupSerializer(read_only=True)

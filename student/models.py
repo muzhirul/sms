@@ -119,6 +119,8 @@ class Guardian(models.Model):
     is_guardian = models.BooleanField(default=False)
     user = models.OneToOneField(Authentication,on_delete=models.SET_NULL, blank=True,null=True)
     status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='st_guardian_creator', editable=False, blank=True, null=True)
     updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='st_guardian_updated_by', editable=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -129,6 +131,148 @@ class Guardian(models.Model):
 
     def __str__(self):
         return self.first_name
+    
+
+@receiver(post_save, sender=Guardian)
+def create_user_from_guardian(sender, instance, **kwargs):
+    """
+    Signal to create a user for a Guardian if certain conditions are met.
+    """
+    if not instance.is_guardian or instance.user:
+        return  # Exit if not a guardian or user already exists
+
+    # Check if an active user is already linked to the student's guardians
+    if Guardian.objects.filter(student=instance.student, user__isnull=False, status=True).exists():
+        print(f'Guardian user already exists for this student {instance.studen}.')
+        return
+
+    ga_user_type = 'GUARDIAN'
+    default_password = '12345678'
+
+    def create_authentication_user(username):
+        """Helper function to create an Authentication user."""
+        ga_user = Authentication(
+            username=username,
+            first_name=instance.first_name,
+            model_name='Guardian',
+            last_name=instance.last_name,
+            user_type=ga_user_type,
+            is_active=True,
+            institution=instance.student.institution,
+            branch=instance.student.branch
+        )
+        ga_user.set_password(default_password)
+        ga_user.save()
+        return ga_user
+
+    # Check if the username exists, else create a new one
+    if not Authentication.objects.filter(username=instance.guardian_no).exists():
+        ga_user = create_authentication_user(instance.guardian_no)
+    else:
+        last_user = Authentication.objects.filter(username__startswith='11').order_by('-username').first()
+        new_username = str(int(last_user.username) + 1) if last_user else '11000001'
+        ga_user = create_authentication_user(new_username)
+        instance.guardian_no = new_username
+
+    # Link the created user to the Guardian instance
+    instance.user = ga_user
+    instance.save()
+    
+# @receiver(post_save, sender=Guardian)
+# def create_user_from_guardian(sender, instance, **kwargs):
+#     """
+#     Signal to automatically create a user for a Guardian if they meet specific conditions.
+#     """
+#     if instance.is_guardian and not instance.user:
+#         # Check if any active user is already linked to the student's guardians
+#         active_user_count = Guardian.objects.filter(
+#             student=instance.student, 
+#             user__isnull=False, 
+#             status=True
+#         ).count()
+
+#         if active_user_count == 0:
+#             ga_user_type = 'GUARDIAN'
+#             default_password = '12345678'
+
+#             # Check if the username already exists
+#             if not Authentication.objects.filter(username=instance.guardian_no).exists():
+#                 # Create a new user
+#                 ga_user = Authentication(
+#                     username=instance.guardian_no,
+#                     first_name=instance.first_name,
+#                     model_name='Guardian',
+#                     last_name=instance.last_name,
+#                     user_type=ga_user_type,
+#                     is_active=True,
+#                     institution=instance.student.institution,
+#                     branch=instance.student.branch
+#                 )
+#                 ga_user.set_password(default_password)
+#                 ga_user.save()
+
+#                 # Link the created user to the Guardian instance
+#                 instance.user = ga_user
+#                 instance.save()
+#             else:
+#                 # Generate a new username if it already exists
+#                 last_user = Authentication.objects.filter(username__startswith='11').order_by('username').last()
+#                 if last_user:
+#                     new_username = str(int(last_user.username) + 1)
+#                 # Create a new user with the new username
+#                 ga_user = Authentication(
+#                     username=new_username,
+#                     first_name=instance.first_name,
+#                     model_name='Guardian',
+#                     last_name=instance.last_name,
+#                     user_type=ga_user_type,
+#                     is_active=True,
+#                     institution=instance.student.institution,
+#                     branch=instance.student.branch
+#                 )
+#                 ga_user.set_password(default_password)
+#                 ga_user.save()
+
+#                 # Update the Guardian instance with the new user and guardian number
+#                 instance.user = ga_user
+#                 instance.guardian_no = new_username
+#                 instance.save()
+#         else:
+#             print('Guardian user already exists.')
+
+# @receiver(post_save, sender=Guardian)
+# def create_user_from_guardian(sender, instance, **kwargs):
+#     if instance.is_guardian and not instance.user:
+#         aaa = Guardian.objects.filter(student=instance.student,user__isnull=False,status=True).count()
+#         if aaa == 0:
+#             ga_user_type = 'GUARDIAN'
+#             default_password = '12345678'
+#             if not Authentication.objects.filter(username=instance.guardian_no).exists():
+                
+#                 ga_user = Authentication(username=instance.guardian_no,first_name=instance.first_name,model_name='Guardian',
+#                                          last_name=instance.last_name,user_type=ga_user_type,is_active=True,
+#                                          institution=instance.student.institution, branch=instance.student.branch)
+#                 ga_user.set_password(default_password)
+#                 ga_user.save()
+#                 instance.user = ga_user
+#                 instance.save()
+#             else:
+#                 last_ga_username = Authentication.objects.filter(username__startswith='11').order_by('username').last()
+#                 int_last_ga_username = int(last_ga_username.username)
+#                 new_ga_username = (int_last_ga_username+1)
+#                 print(new_ga_username)
+#                 ga_user = Authentication(username=new_ga_username,first_name=instance.first_name,model_name='Guardian',
+#                                          last_name=instance.last_name,user_type=ga_user_type,is_active=True,
+#                                          institution=instance.student.institution, branch=instance.student.branch)
+#                 ga_user.set_password(default_password)
+#                 ga_user.save()
+#                 instance.user = ga_user
+#                 instance.guardian_no = new_ga_username
+#                 instance.save()
+#         else:
+#             print('Already exists....')
+
+
 
 class StudentEnroll(models.Model):
     version = models.ForeignKey(Version, on_delete=models.CASCADE, verbose_name='version')
@@ -154,6 +298,10 @@ class StudentEnroll(models.Model):
     
     class Meta:
         db_table = 'st_enroll'
+        constraints = [
+            UniqueConstraint(fields=['student','version','session','class_name','status','institution','branch'], name='unique_std_enroll_constraint'),
+            UniqueConstraint(fields=['version','session','class_name','shift','group','section','roll','status','institution','branch'], name='unique_std_enroll_roll_const')
+        ] 
         
     def __str__(self):
         return str(self.roll)
@@ -228,9 +376,6 @@ class ProcessStAttendanceDaily(models.Model):
 
     class Meta:
         db_table = 'st_attn_daily'
-        constraints = [
-            UniqueConstraint(fields=['attn_date','student','status','institution','branch'], name='unique_std_attn_constraint')
-        ] 
 
     def __str__(self):
         return str(self.attn_date)
@@ -364,9 +509,45 @@ class StudentStatusTransaction(models.Model):
 
     def __str__(self):
         return str(self.code)
-    
+
+@receiver(post_save, sender=Student)
+def insert_std_status(sender, instance, created, **kwargs):
+    if created:
+        active_status = ActiveStatus.objects.filter(status=True, is_active=True,name__iexact='active').last()
+        StudentStatusTransaction.objects.create(
+            student = instance,
+            start_date = instance.admission_date,
+            reason="New student registration",
+            std_status=active_status,
+            institution = instance.institution,
+            branch = instance.branch
+        )
+
 @receiver(post_save, sender=StudentStatusTransaction)
 def update_staff_status(sender, instance, **kwargs):
     if instance.student:
         instance.student.std_status = instance.std_status
         instance.student.save()
+
+class PreviousEducation(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE,related_name='pre_education')
+    name = models.CharField(max_length=255,verbose_name='Previous Institution Name')
+    address = models.TextField()
+    class_name = models.CharField(max_length=255)
+    roll_no = models.IntegerField()
+    document = models.FileField(upload_to='pre_edu_doc/',blank=True, null=True, verbose_name='Document')
+    reason = models.TextField(blank=True, null=True)
+    status = models.BooleanField(default=True)
+    institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Institution Name')
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True,null=True,verbose_name='Branch Name')
+    created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='pre_edu_creator', editable=False, blank=True, null=True)
+    updated_by = UserForeignKey(auto_user=True, on_delete=models.SET_NULL, related_name='pre_edu_update_by', editable=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'std_previous_edu'
+
+    def __str__(self):
+        return str(self.name)
+    

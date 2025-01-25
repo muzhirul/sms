@@ -77,25 +77,23 @@ class VersionList(generics.ListCreateAPIView):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        queryset = Version.objects.filter(status=True).order_by('-id')
+        queryset = Version.objects.filter(status=True)
         try:
             institution_id = self.request.user.institution
             branch_id = self.request.user.branch
             # users = Authentication.objects.get(id=user_id)
             if institution_id and branch_id:
-                queryset = queryset.filter(
-                    institution=institution_id, branch=branch_id, status=True).order_by('-id')
+                queryset = queryset.filter(institution=institution_id, branch=branch_id)
             elif branch_id:
-                queryset = queryset.filter(
-                    branch=branch_id, status=True).order_by('-id')
+                queryset = queryset.filter(branch=branch_id)
             elif institution_id:
-                queryset = queryset.filter(
-                    institution=institution_id, status=True).order_by('-id')
+                queryset = queryset.filter(institution=institution_id)
             else:
                 queryset
         except:
             pass
-        return queryset
+        queryset = queryset.select_related('institution', 'branch') 
+        return queryset.order_by('-id')
 
     def list(self, request, *args, **kwargs):
         '''Check user has permission to View start'''
@@ -119,7 +117,7 @@ class VersionList(generics.ListCreateAPIView):
                 "pagination": {
                     "next": None,
                     "previous": None,
-                    "count": queryset.count(),
+                    "count": len(queryset),
                 },
             }
 
@@ -142,13 +140,12 @@ class VersionList(generics.ListCreateAPIView):
                 # If data is provided, use it; otherwise, use the values from the request user
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                version_count = Version.objects.filter(version=version, institution=institution, branch=branch, status=True).count()
-                if (version_count == 0):
-                    instance = serializer.save(
-                        institution=institution, branch=branch)
-                    # Customize the response data
-                    return CustomResponse(code=status.HTTP_200_OK, message="Version created successfully", data=VersionSerializer(instance).data)
-                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Version {version} already exits", data=serializer.errors)
+                version_exists = Version.objects.filter(version=version, institution=institution, branch=branch, status=True).exists()
+                if version_exists:
+                    return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Version {version} already exits", data=serializer.errors)
+                instance = serializer.save(institution=institution, branch=branch)
+                # Customize the response data
+                return CustomResponse(code=status.HTTP_200_OK, message="Version created successfully", data=VersionSerializer(instance).data)
             # If the serializer is not valid, return an error response
             return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)
         except Exception as e:
@@ -2914,3 +2911,68 @@ class StudentTimeTable(generics.ListAPIView):
             return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Not Found", data=None)
 
 
+class StudentTextBookList(generics.ListAPIView):
+    serializer_class = ClassSubjectStdViewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        user = self.request.user
+        institution = user.institution
+        branch = user.branch
+
+        queryset = ClassSubject.objects.filter(status=True, institution=institution, branch=branch)
+
+        try:
+            student = Student.objects.get(student_no=user, status=True)
+            enroll = StudentEnroll.objects.filter(is_active=True, status=True, student=student).last()
+            
+            if enroll:
+                filters = {
+                    "status": True,
+                    "institution": institution,
+                    "branch": branch,
+                    "version": enroll.version,
+                    "session": enroll.session,
+                    "section": enroll.section,
+                    "class_name": enroll.class_name,
+                }
+
+                if enroll.group:
+                    filters["group"] = enroll.group
+                    queryset = ClassSubject.objects.filter(**filters)
+                else:
+                    queryset = ClassSubject.objects.filter(**filters)
+                    print(filters,'++++++++++++++',queryset)
+        except Student.DoesNotExist:
+            pass
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        # Check user has permission to view "My Subject"
+        if not check_permission(self.request.user.id, "My Subject", "view"):
+            return Response({
+                "code": status.HTTP_401_UNAUTHORIZED,
+                "message": "Permission denied",
+                "data": None
+            })
+
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "code": 200,
+            "message": "Success",
+            "data": serializer.data,
+            "pagination": {
+                "next": None,
+                "previous": None,
+                "count": queryset.count(),
+            },
+        })

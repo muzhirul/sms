@@ -40,6 +40,9 @@ class Version(models.Model):
     class Meta:
         db_table = 'ac_version'
         verbose_name = '1. Version'
+        constraints = [
+            UniqueConstraint(fields=['version','status','institution','branch'], name='unique_version_constraint')
+        ] 
 
     def __str__(self):
         return self.version

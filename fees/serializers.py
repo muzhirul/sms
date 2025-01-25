@@ -148,12 +148,17 @@ class FeesMasterViewSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        # Filter out None values from the social_media list 
         representation['fees_detail'] = [item for item in representation['fees_detail'] if item is not None]
 
         if not instance.status:
-            # If status is False, exclude the social_media field
             representation.pop('fees_detail', None)
+        else:
+            representation['fees_detail'] = sorted(
+                representation['fees_detail'],
+                key=lambda x: x.get('-due_date', ''),  
+                reverse=True 
+            )
+
 
         return representation
     

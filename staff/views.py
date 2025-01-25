@@ -1838,48 +1838,135 @@ class StaffLeaveTypeList(generics.ListAPIView):
 
 class StaffPunchData(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
-        url = f"http://192.168.117.152:5002/waltonagro/attn_data"
-        attn_date = self.request.query_params.get('attn_date')
-        if attn_date:
-            pass
-        else:
-            attn_date = datetime.now().date()
-        payload = ""
-        headers = {}
-        response = requests.request("GET",url,headers=headers,data=payload)
-        json_data = response.json()
-        attn_data = json_data['attendance_data']
-        punch_data = {}
-        for i in attn_data:
-            if attn_date == datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S').date():
-                attn_count = AttendanceDailyRaw.objects.filter(staff_code=i['user_id'],trnsc_time=datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S')).count()
-                if attn_count == 0:
-                    punch_data['device_ip'] = i['device_ip']
-                    punch_data['attn_date'] = datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S').date()
-                    punch_data['trnsc_time'] = datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S')
-                    punch_data['device_name'] = i['device_name']
-                    punch_data['device_serial'] = i['device_serial']
-                    punch_data['email'] = i['email']
-                    punch_data['mobile'] = i['mobile']
-                    punch_data['staff_code'] = i['user_id']
-                    punch_data['src_type'] = 'device'
-                    staff_info = Staff.objects.get(staff_id=i['user_id'],status=True)
-                    if staff_info:
-                        punch_data['staff'] = staff_info
-                        punch_data['institution'] = staff_info.institution
-                        punch_data['branch'] = staff_info.branch
-                        punch_data['user'] = staff_info.user
-                    std_info = Student.objects.get(student_no=i['user_id'],status=True)
-                    if std_info:
-                        punch_data['stdent'] = std_info
-                        punch_data['institution'] = std_info.institution
-                        punch_data['branch'] = std_info.branch
-                        punch_data['user'] = staff_info.user
-                    punch_data['username'] = i['username']
-                    p = AttendanceDailyRaw.objects.create(**punch_data)
-                else:
-                    pass
-        return Response(punch_data)     
+        from_date = self.request.query_params.get('from_date', datetime.now().date().strftime('%Y-%m-%d'))
+        to_date = self.request.query_params.get('to_date', datetime.now().date().strftime('%Y-%m-%d'))
+        
+        try:
+            from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
+            to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({"code": 400, "message": "Invalid date format. Use 'YYYY-MM-DD'.", "data": None})
+
+        if not from_date or not to_date:
+            return Response({"code": 404, "message": "Please provide both 'From date' and 'To date'.", "data": None})
+
+        branches = Branch.objects.filter(status=True)
+        if not branches.exists():
+            return Response({"code": 404, "message": "No active Branches found.", "data": None})
+
+        for branch in branches:
+            url = branch.punch_link
+            try:
+                response = requests.get(url, timeout=10)
+                response.raise_for_status()
+                json_data = response.json()
+                attendance_data = json_data.get('attendance_data', [])
+            except requests.RequestException as e:
+                return Response({"code": 500, "message": f"Error fetching data from {url}: {str(e)}", "data": None})
+            except ValueError:
+                return Response({"code": 500, "message": f"Invalid JSON response from {url}.", "data": None})
+
+            for record in attendance_data:
+                if not AttendanceDailyRaw.objects.filter(device_row_id=record['uuid'], status=True, is_active=True).exists():
+                    punch_data = {
+                        'device_ip': record.get('device_ip'),
+                        'attn_date': datetime.strptime(record['punch_time'], '%Y-%m-%d %H:%M:%S').date(),
+                        'trnsc_time': datetime.strptime(record['punch_time'], '%Y-%m-%d %H:%M:%S'),
+                        'device_name': record.get('device_name'),
+                        'device_serial': record.get('device_serial'),
+                        'email': record.get('email'),
+                        'mobile': record.get('mobile'),
+                        'staff_code': record.get('user_id'),
+                        'device_row_id': record.get('uuid'),
+                        'src_type': 'device',
+                        'username': record.get('username')
+                    }
+                    try:
+                        staff_info = Staff.objects.get(staff_id=record['user_id'], status=True)
+                        punch_data.update({
+                            'staff': staff_info,
+                            'institution': staff_info.institution,
+                            'branch': staff_info.branch
+                        })
+                    except Staff.DoesNotExist:
+                        try:
+                            student_info = Student.objects.get(student_no=record['user_id'], status=True)
+                            punch_data.update({
+                                'student': student_info,
+                                'institution': student_info.institution,
+                                'branch': student_info.branch
+                            })
+                        except Student.DoesNotExist:
+                            pass
+                    AttendanceDailyRaw.objects.create(**punch_data)
+
+        return Response({"code": 200, "message": "Punch data inserted successfully.", "data": None})
+
+
+
+# class StaffPunchData(generics.ListAPIView):
+#     def list(self, request, *args, **kwargs):
+#         from_date = self.request.query_params.get('from_date')
+#         if from_date:
+#             from_date = datetime.strptime(from_date, '%Y-%m-%d')
+#         else:
+#             from_date = datetime.now().date()
+#         to_date = self.request.query_params.get('to_date')
+#         if to_date:
+#             to_date = datetime.strptime(to_date, '%Y-%m-%d')
+#         else:
+#             to_date = datetime.now().date()
+#         if from_date and to_date:
+#             branchs = Branch.objects.filter(status=True)
+#             for branch in branchs:
+#                 print(branch.punch_link)
+#                 url = f"{branch.punch_link}"
+#                 payload = ""
+#                 headers = {}
+#                 response = requests.request("GET",url,headers=headers,data=payload)
+#                 json_data = response.json()
+#                 attn_data = json_data['attendance_data']
+#                 punch_data = {}
+#                 for i in attn_data:
+#                     if not AttendanceDailyRaw.objects.filter(device_row_id=i['uuid'],status=True,is_active=True).exists:
+#                         punch_data['device_ip'] = i['device_ip']
+#                         punch_data['attn_date'] = datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S').date()
+#                         punch_data['trnsc_time'] = datetime.strptime(i['punch_time'], '%Y-%m-%d %H:%M:%S')
+#                         punch_data['device_name'] = i['device_name']
+#                         punch_data['device_serial'] = i['device_serial']
+#                         punch_data['email'] = i['email']
+#                         punch_data['mobile'] = i['mobile']
+#                         punch_data['staff_code'] = i['user_id']
+#                         punch_data['device_row_id'] = i['uuid']
+#                         punch_data['src_type'] = 'device'
+#                         try:
+#                             staff_info = Staff.objects.get(staff_id=i['user_id'],status=True)
+#                             punch_data['staff'] = staff_info
+#                             punch_data['institution'] = staff_info.institution
+#                             punch_data['branch'] = staff_info.branch
+#                         except:
+#                             std_info = Student.objects.get(student_no=i['user_id'],status=True)
+#                             punch_data['student'] = std_info
+#                             punch_data['institution'] = std_info.institution
+#                             punch_data['branch'] = std_info.institution
+#                         punch_data['username'] = i['username']
+#                         p = AttendanceDailyRaw.objects.create(**punch_data)
+#                     else:
+#                         pass
+#             response_data = {
+#                     "code": 200,
+#                     "message": "Punch data insert successfully.",
+#                     "data": None
+#                     }
+#             return Response(response_data)
+#         else:
+#             response_data = {
+#                 "code": 404,
+#                 "message": "Please Provide from date and to date",
+#                 "data": None
+#             }
+#             return Response(response_data)
+        
 
 class StaffAttendanceSummeryProcess(generics.CreateAPIView):
     serializer_class = ProcessStaffAttendanceMstCreateSerializer

@@ -7,6 +7,7 @@ from account.models import *
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from datetime import datetime,date, time
+from dateutil.relativedelta import relativedelta
 from hrms.models import *
 import datetime
 from authentication.models import Authentication
@@ -139,6 +140,20 @@ class Staff(models.Model):
 
     class Meta:
         db_table = 'sta_staff'
+
+    def calculate_age(self):
+        if self.dob:
+            today = date.today()
+            delta = relativedelta(today, self.dob)
+            return f"{delta.years} Y, {delta.months} M, {delta.days} D"
+        return "Date of Birth not available"
+
+    def calculate_working_duration(self):
+        if self.doj:
+            today = date.today()
+            delta = relativedelta(today, self.doj)
+            return f"{delta.years} Y, {delta.months} M, {delta.days} D"
+        return "Date of Join not available"
 
     def __str__(self):
         return self.first_name
@@ -356,6 +371,7 @@ class AttendanceDailyRaw(models.Model):
     username = models.CharField(max_length=255,blank=True,null=True)
     src_type = models.CharField(max_length=20,blank=True,null=True)
     attn_type = models.CharField(max_length=20,blank=True,null=True)
+    device_row_id = models.CharField(max_length=255,blank=True,null=True)
     remarks = models.CharField(max_length=500, blank=True,null=True)
     is_active = models.BooleanField(default=True)
     status = models.BooleanField(default=True)

@@ -442,11 +442,22 @@ class staffSerializer2(serializers.ModelSerializer):
     atten_daily = ProcessAttendanceViewDailySerializer(many=True, required=False, read_only=True)
     staff_leave = StaffLeaveViewSerialier(many=True, required=False, read_only=True)
     staff_leave_trns = StaffLeaveTransactionViewSerializer(many=True, required=False, read_only=True)
+    # Add SerializerMethodFields for custom methods
+    age = serializers.SerializerMethodField()
+    working_duration = serializers.SerializerMethodField()
     # shift = StaffShiftListCreate(read_only=True)
     class Meta:
         model = Staff
-        # fields = ['first_nmae','last_name']
+        # fields = "__all__"
         exclude = ['code','last_attn_proc_date','user','institution','branch','status']
+
+    # Method for age
+    def get_age(self, obj):
+        return obj.calculate_age()
+
+    # Method for working duration
+    def get_working_duration(self, obj):
+        return obj.calculate_working_duration()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

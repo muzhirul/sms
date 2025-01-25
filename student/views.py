@@ -134,6 +134,7 @@ class StudentList(generics.ListCreateAPIView):
         is_active = student_data.get('is_active', True) 
         user_type = student_data.get('user_type', 'STUDENT') 
         guardians_data = student_data.pop('guardians', [])
+        pre_educations = student_data.pop('pre_education', [])
         enrolls_data = request.data.get('enroll')
         # Create the student
         serializer_class = StudentSerializer
@@ -189,35 +190,35 @@ class StudentList(generics.ListCreateAPIView):
                     guardian_serializer = GuardianSerializer(data=guardian_data)
                     guardian_serializer.is_valid(raise_exception=True)
                     guardian = guardian_serializer.save()
-                    if ga_is_guardian:
-                        try:
-                            default_password = '12345678'
-                            model_name = 'Guardian'
-                            ga_user_data = Guardian.objects.values('guardian_no').get(id=guardian.id)
-                            ga_username = ga_user_data['guardian_no']
-                            ga_count = Authentication.objects.filter(username=ga_username).count()
-                            if(ga_count==0):
-                                ga_user = Authentication(model_name=model_name,username=ga_username,first_name=ga_first_name,last_name=ga_last_name,user_type=ga_user_type,is_active=ga_is_active,institution=institution, branch=branch)
-                                # Set a default password (you can change this as needed)
-                                ga_user.set_password(default_password)
-                                ga_user.save()
-                                # Update the Guardian's user_id field
-                                guardian.user_id = ga_user.id
-                                guardian.save()
-                            else:
-                                last_ga_username = Authentication.objects.filter(username__startswith='11').order_by('username').last()
-                                int_last_ga_username = int(last_ga_username.username)
-                                new_ga_username = (int_last_ga_username+1)
-                                user = Authentication(model_name=model_name,username=new_ga_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
-                                # Set a default password (you can change this as needed)
-                                user.set_password(default_password)
-                                user.save()
-                                # Update the student's user_id field
-                                guardian.user_id = user.id
-                                guardian.guardian_no = new_ga_username
-                                guardian.save()
-                        except:
-                            pass
+                    # if ga_is_guardian:
+                    #     try:
+                    #         default_password = '12345678'
+                    #         model_name = 'Guardian'
+                    #         ga_user_data = Guardian.objects.values('guardian_no').get(id=guardian.id)
+                    #         ga_username = ga_user_data['guardian_no']
+                    #         ga_count = Authentication.objects.filter(username=ga_username).count()
+                    #         if(ga_count==0):
+                    #             ga_user = Authentication(model_name=model_name,username=ga_username,first_name=ga_first_name,last_name=ga_last_name,user_type=ga_user_type,is_active=ga_is_active,institution=institution, branch=branch)
+                    #             # Set a default password (you can change this as needed)
+                    #             ga_user.set_password(default_password)
+                    #             ga_user.save()
+                    #             # Update the Guardian's user_id field
+                    #             guardian.user_id = ga_user.id
+                    #             guardian.save()
+                    #         else:
+                    #             last_ga_username = Authentication.objects.filter(username__startswith='11').order_by('username').last()
+                    #             int_last_ga_username = int(last_ga_username.username)
+                    #             new_ga_username = (int_last_ga_username+1)
+                    #             user = Authentication(model_name=model_name,username=new_ga_username,first_name=first_name,last_name=last_name,user_type=user_type,is_active=is_active,institution=institution,branch=branch)
+                    #             # Set a default password (you can change this as needed)
+                    #             user.set_password(default_password)
+                    #             user.save()
+                    #             # Update the student's user_id field
+                    #             guardian.user_id = user.id
+                    #             guardian.guardian_no = new_ga_username
+                    #             guardian.save()
+                    #     except:
+                    #         pass
                     guardians.append(guardian)
                 response_data = student_serializer.data
                 response_data['guardians'] = GuardianSerializer(guardians, many=True).data
@@ -237,6 +238,18 @@ class StudentList(generics.ListCreateAPIView):
                         enroll = enroll_serializer.save(institution=institution,branch=branch)
                         enrolls.append(enroll)
                     response_data['enroll'] = StudentEnrollSerialize(enrolls, many=True).data
+                
+                preeducations = []
+                if pre_educations:
+                    for pre_education in pre_educations:
+                        pre_education['student'] = student.id
+                        pre_edu_serializer = PreviousEducationSerializer(data=pre_education)
+                        pre_edu_serializer.is_valid(raise_exception=True)
+                        pre_edu = pre_edu_serializer.save(institution=institution,branch=branch)
+                        preeducations.append(pre_edu)
+                    response_data['pre_education'] = PreviousEducationSerializer(preeducations, many=True).data
+                
+
             return Response(response_data, status=status.HTTP_201_CREATED)
         except Exception as e:
             # Handle other exceptions
@@ -343,6 +356,21 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
         # Deserialize the updated guardian data
         guardian_data = request.data.get('guardians')
         enroll_data = request.data.get('enroll')
+        pre_education = request.data.get('pre_education')
+        if pre_education:
+            for pre_edu_item in pre_education:
+                pre_edu_id = pre_edu_item.get('id')
+                if pre_edu_id:
+                    pre_edu = PreviousEducation.objects.get(id=pre_edu_id, student=student)
+                    pre_edu_serializer = PreviousEducationSerializer(pre_edu, data=pre_edu_item, partial=True)
+                    pre_edu_serializer.is_valid(raise_exception=True)
+                    pre_edu_serializer.save(institution=institution,branch=branch)
+                else:
+                    pre_edu_item['student'] = student.id
+                    pre_edu_serializer = PreviousEducationSerializer(data=pre_edu_item)
+                    pre_edu_serializer.is_valid(raise_exception=True)
+                    pre_edu_serializer.save(institution=institution,branch=branch)
+
         if enroll_data:
             for enroll_item in enroll_data:
                 enroll_id = enroll_item.get('id')
@@ -355,24 +383,24 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
                     else:
                         std_roll = StudentEnroll.objects.filter(status=True,section=enroll_item.get('section'),class_name=enroll_item.get('class_name'),version=enroll_item.get('version'),session=enroll_item.get('session'),institution=institution,branch=branch).order_by('roll').last()
                         if not std_roll or std_roll.roll is None:
-                            class_roll = str(1)
+                            class_roll = 1
                         else:
                             int_roll = int(std_roll.roll)
-                            class_roll = str(int_roll+1)
+                            class_roll = int_roll+1
                         enroll_serializer = StudentEnrollSerialize(enroll, data=enroll_item, partial=True)
                         enroll_serializer.is_valid(raise_exception=True)
                         enroll_serializer.save(roll=class_roll,institution=institution,branch=branch)
                 else:
-                    std_roll = StudentEnroll.objects.filter(status=True,section=enroll_item.get('section'),class_name=enroll_item.get('class_name'),version=enroll_item.get('version'),session=enroll_item.get('session'),institution=institution,branch=branch).order_by('roll').last()
-                    if not std_roll or std_roll.roll is None:
-                        class_roll = str(1)
-                    else:
-                        int_roll = int(std_roll.roll)
-                        class_roll = str(int_roll+1)
+                    # std_roll = StudentEnroll.objects.filter(status=True,section=enroll_item.get('section'),class_name=enroll_item.get('class_name'),version=enroll_item.get('version'),session=enroll_item.get('session'),institution=institution,branch=branch).order_by('roll').last()
+                    # if not std_roll or std_roll.roll is None:
+                    #     class_roll = str(1)
+                    # else:
+                    #     int_roll = int(std_roll.roll)
+                    #     class_roll = str(int_roll+1)
                     enroll_item['student'] = student.id
                     enroll_serializer = StudentEnrollSerialize(data=enroll_item)
                     enroll_serializer.is_valid(raise_exception=True)
-                    enroll_serializer.save(roll=class_roll,institution=institution,branch=branch)
+                    enroll_serializer.save(institution=institution,branch=branch)
 
         if guardian_data:
             for guardian_item in guardian_data:
@@ -386,31 +414,77 @@ class StudentDetail(generics.RetrieveUpdateAPIView):
                     except Guardian.DoesNotExist:
                         pass
                 else:
-                    ga_first_name = guardian_item.get('first_name')
-                    ga_last_name = guardian_item.get('last_name')
-                    ga_is_active = guardian_item.get('is_active', True) 
-                    ga_user_type = guardian_item.get('user_type', 'GUARDIAN') 
-                    ga_is_guardian = guardian_item.get('is_guardian')
+                    # ga_first_name = guardian_item.get('first_name')
+                    # ga_last_name = guardian_item.get('last_name')
+                    # ga_is_active = guardian_item.get('is_active', True) 
+                    # ga_user_type = guardian_item.get('user_type', 'GUARDIAN') 
+                    # ga_is_guardian = guardian_item.get('is_guardian')
                     # If no guardian ID provided, create a new guardian for the student
                     guardian_item['student'] = student.id
                     guardian_serializer = GuardianSerializer(data=guardian_item)
                     guardian_serializer.is_valid(raise_exception=True)
                     guardian = guardian_serializer.save(institution=institution,branch=branch)
-                    if ga_is_guardian:
-                        try:
-                            ga_user_data = Guardian.objects.values('guardian_no').get(id=guardian.id)
-                            ga_username = ga_user_data['guardian_no']
-                            ga_user = Authentication(username=ga_username,first_name=ga_first_name,last_name=ga_last_name,user_type=ga_user_type,is_active=ga_is_active)
-                            # Set a default password (you can change this as needed)
-                            default_password = '12345678'
-                            ga_user.set_password(default_password)
-                            ga_user.save()
-                            # Update the Guardian's user_id field
-                            guardian.user_id = ga_user.id
-                            guardian.save()
-                        except:
-                            pass
+                    # if ga_is_guardian:
+                    #     try:
+                    #         ga_user_data = Guardian.objects.values('guardian_no').get(id=guardian.id)
+                    #         ga_username = ga_user_data['guardian_no']
+                    #         ga_user = Authentication(username=ga_username,first_name=ga_first_name,last_name=ga_last_name,user_type=ga_user_type,is_active=ga_is_active)
+                    #         # Set a default password (you can change this as needed)
+                    #         default_password = '12345678'
+                    #         ga_user.set_password(default_password)
+                    #         ga_user.save()
+                    #         # Update the Guardian's user_id field
+                    #         guardian.user_id = ga_user.id
+                    #         guardian.save()
+                    #     except:
+                    #         pass
         return CustomResponse(code=status.HTTP_200_OK, message="Student updated successfully", data=StudentViewSerializer(instance).data)
+
+class StudentDelete(generics.UpdateAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to Delete start'''
+        # permission_check = check_permission(self.request.user.id, 'Exam Name', 'delete')
+        # if not permission_check:
+        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to Delete End'''
+        try:
+            instance = self.get_object()
+            if not instance.status:
+                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Student already Deleted", data=None)
+            # Update the "status" field to False
+            instance.status = False
+            instance.save(update_fields=['status']) 
+            enrolls = StudentEnroll.objects.filter(student=instance,status=True,is_active=True)
+            for enroll in enrolls:
+                enroll.status = False
+                enroll.is_active = False
+                enroll.save()
+            try:
+                user = Authentication.objects.get(id=instance.user.id,is_active=True)
+                user.is_active = False
+                user.save()
+            except:
+                pass
+            guardians = Guardian.objects.filter(student=instance,status=True)
+            for guardian in guardians:
+                guardian.status = False
+                guardian.save()
+                if guardian.is_guardian:
+                    gua_user = Authentication.objects.get(id=guardian.user.id,is_active=True)
+                    gua_user.is_active = False
+                    gua_user.save()
+
+            # Customize the response format for successful update
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Student Delete successfully", data=None)
+        except Student.DoesNotExist:
+            return CustomResponse(code=status.HTTP_404_NOT_FOUND, message="Student not found", data=None)
+        except Exception as e:
+            # General error handling
+            return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message=str(e), data=None)
 
 class StudentImageUpload(generics.UpdateAPIView):
     queryset = Student.objects.all()
@@ -463,6 +537,33 @@ class GuardianImageUpload(generics.UpdateAPIView):
             instance.save()
             return CustomResponse(code=status.HTTP_200_OK, message=f"Guardian Image Update successfully", data=None)
         return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"No Guardian Image for Update", data=None)    
+
+class StudentPreEduUpload(generics.UpdateAPIView):
+    queryset = PreviousEducation.objects.all()
+    serializer_class = PreviousEducationSerializer
+    # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
+
+    def partial_update(self, request, *args, **kwargs):
+        '''Check user has permission to View start'''
+        permission_check = check_permission(
+            self.request.user.id, 'Student Admission', 'create')
+        if not permission_check:
+            return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+        '''Check user has permission to View end'''
+        # Retrieve the instance
+        instance = self.get_object()
+
+        # Get the image data from the request
+        doc_data = request.data.get('document', None)
+
+        # Validate and update the image field
+        if doc_data:
+            instance.document = doc_data
+            instance.save()
+            return CustomResponse(code=status.HTTP_200_OK, message=f"Document Update successfully", data=None)
+        return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"No Document for Update", data=None)
+
 
 class StudentAttendanceProcess(generics.ListCreateAPIView):
      

@@ -322,13 +322,10 @@ class ExamNameDetailsList(generics.RetrieveUpdateAPIView):
                 name = serializer.validated_data.get('name')
                 institution = institution_data if institution_data is not None else self.request.user.institution
                 branch = branch_data if branch_data is not None else self.request.user.branch
-                exam_name_count = ExamName.objects.filter(name=name,institution=institution,branch=branch,status=True).count()
-                if (exam_name_count==0):
-                    # Perform any custom update logic here if needed
-                    instance = serializer.save()
-                    # Customize the response format for successful update
-                    return CustomResponse(code=status.HTTP_200_OK, message="Exam Name updated successfully", data=ExamNameViewSerializer(instance).data)
-                return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message=f"Exam Name already exits", data=serializer.errors)
+                # Perform any custom update logic here if needed
+                instance = serializer.save()
+                # Customize the response format for successful update
+                return CustomResponse(code=status.HTTP_200_OK, message="Exam Name updated successfully", data=ExamNameViewSerializer(instance).data)
             else:
                 # Handle validation errors
                 return CustomResponse(code=status.HTTP_400_BAD_REQUEST, message="Validation error", data=serializer.errors)

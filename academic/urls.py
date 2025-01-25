@@ -72,4 +72,5 @@ urlpatterns = [
     path('api/teacher-timetable/<str:staff_id>', TeacherTimeTableList.as_view(), name='teacher-timetable-list'),
     # Student Time Table
     path('api/student-timetable', StudentTimeTable.as_view(), name='student-time-table'),
+    path('api/student/text-book/list', StudentTextBookList.as_view(), name='student-text-book-list'),
 ]

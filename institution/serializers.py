@@ -6,10 +6,10 @@ class InstitutionViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Institution
-        fields = ['id','name','mobile_no','email','logo']
+        fields = ['name','mobile_no','email','address','logo']
 
 class BranchViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Branch
-        fields = ['id','name','mobile_no','email']
+        fields = ['name','mobile_no','address','email']

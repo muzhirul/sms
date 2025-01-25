@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from academic.models import *
 from datetime import datetime, timedelta
 from staff.models import Staff
+from django.db.models import UniqueConstraint
 # Create your models here.
 class Grade(models.Model):
     start_mark = models.IntegerField()
@@ -48,6 +49,9 @@ class ExamName(models.Model):
     
     class Meta:
         db_table = 'e_exam_name'
+        constraints = [
+            UniqueConstraint(fields=['name','status','institution','branch'], name='exam_name_unique_constraint')
+        ] 
     
     def __str__(self):
         return self.name

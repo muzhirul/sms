@@ -36,6 +36,7 @@ class Branch(models.Model):
     address = models.TextField(blank=True,null=True,verbose_name='Address')
     # site_link = models.URLField(max_length=255, blank=True,null=True,verbose_name='Website')
     map_link = models.URLField(max_length=255,blank=True,null=True,verbose_name='Map Address')
+    punch_link = models.URLField(max_length=255,blank=True, null=True, verbose_name='Punch Device Link')
     institution = models.ForeignKey(Institution,on_delete=models.SET_NULL,blank=True,null=True)
     status = models.BooleanField(default=True)
     created_by = UserForeignKey(auto_user_add=True, on_delete=models.SET_NULL,related_name='branch_creator', editable=False, blank=True, null=True)

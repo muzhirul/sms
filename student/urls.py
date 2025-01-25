@@ -8,8 +8,10 @@ urlpatterns = [
     path('api/search', StudentSearch.as_view(), name='student-search'),
     path('api/short/list', StudentShortList.as_view(), name='student-short-list'),
     path('api/student/detail/<int:pk>', StudentDetail.as_view(), name='student-detail'),
+    path('api/student/delete/<int:pk>', StudentDelete.as_view(), name='student-delete'),
     path('api/student/image/<int:pk>', StudentImageUpload.as_view(), name='student-image-upload'),
     path('api/guardian/image/<int:pk>', GuardianImageUpload.as_view(), name='guardian-image-upload'),
+    path('api/pre-edu/doc/<int:pk>', StudentPreEduUpload.as_view(), name='student-pre-edu-doc-upload'),
     path('api/student-teacher/list', StudentWiseTeacherList.as_view(), name="student-wise-teacher-list"),
     # Student Attendance Process
     path('api/attendance/process', StudentAttendanceProcess.as_view(), name='student-attendance-process'),

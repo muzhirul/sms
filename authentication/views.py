@@ -40,8 +40,7 @@ class UserV4LoginView(APIView):
                 'error':[],
                 'data': None
                 }, status=status.HTTP_401_UNAUTHORIZED)
-        # if not user.is_active:
-        #     raise forms.ValidationError('Account disabled, contact admin')
+
         if not user.is_verified:
             return Response({
                 'code':401,
@@ -96,14 +95,6 @@ class UserV4LoginView(APIView):
         user_data['menus'] = []
         for role in user.role.all():
             role_id.append((role.id))
-            # for parent in Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True), role=role).values_list('menu__parent', flat=True).distinct():
-            #     parent_name = Menu.objects.get(id=parent,parent_id__isnull=True)
-                # app_name = parent_name.name
-                # if app_name not in menu_info:
-                #     menu_info[app_name] = {}
-                # for child in Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True), role=role, menu__parent= parent).distinct():
-                #     model_name = child.menu.name
-                #     menu_info[app_name][model_name] = []
         parent_id = []
         for parent in Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True), role__in=role_id,status=True).values_list('menu__parent', flat=True).distinct():
             if parent:
@@ -111,16 +102,15 @@ class UserV4LoginView(APIView):
         main_menus = []
         parent_menus = Menu.objects.filter(id__in=parent_id,parent_id__isnull=True,status=True).order_by('sl_no')
         for parent_menu in parent_menus:
-            # print(parent_menu.name)
             main_menu = {}
-            main_menu['id'] = parent_menu.id
+            # main_menu['id'] = parent_menu.id
             main_menu['name'] = parent_menu.name
-            if parent_menu.icon:
-                main_menu['icon'] = SITE_PROTOCOL+current_site + '/media/'+str(parent_menu.icon)
-            else:
-                main_menu['icon'] = ''
+            # if parent_menu.icon:
+            #     main_menu['icon'] = SITE_PROTOCOL+current_site + '/media/'+str(parent_menu.icon)
+            # else:
+            #     main_menu['icon'] = ''
             main_menu['icon_text'] = parent_menu.icon_text
-            main_menu['order'] = parent_menu.sl_no
+            # main_menu['order'] = parent_menu.sl_no
             child_id = []
             permissions = Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True), role__in=role_id,menu__parent= parent_menu.id,status=True).values_list('menu__id', flat=True).distinct()
             for permission in permissions:
@@ -131,11 +121,11 @@ class UserV4LoginView(APIView):
             
             for child_menu in child_menus:
                 sub_memu = {}
-                sub_memu['id'] = child_menu.id
+                # sub_memu['id'] = child_menu.id
                 sub_memu['name'] = child_menu.name
                 if child_menu.slug:
                     sub_memu['slug'] = '/'+parent_menu.slug+'/'+child_menu.slug
-                sub_memu['order'] = child_menu.sl_no
+                # sub_memu['order'] = child_menu.sl_no
                 sub_memu['permission'] = []
                 userPermission = []
                 user_permissions = Permission.objects.filter(Q(can_create=True) | Q(can_view=True) | Q(can_update=True) | Q(can_delete=True), role__in=role_id,menu= child_menu.id,status=True)
@@ -155,13 +145,12 @@ class UserV4LoginView(APIView):
             main_menus.append(main_menu)
         user_data['menus'] = main_menus        
         user_data['token'] = {}
-        user_data['token']['refresh'] = str(refresh)
+        # user_data['token']['refresh'] = str(refresh)
         user_data['token']['access'] = str(refresh.access_token)
         
         return Response({
             'code':200,
             'message':'Success',
-            'error':[],
             'data':user_data},status=status.HTTP_200_OK)
 
 class DashboardView(generics.ListAPIView):

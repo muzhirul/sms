@@ -349,6 +349,14 @@ class ClassSubjectViewSerializer(serializers.ModelSerializer):
         # Exclude the specified fields from serialization
         exclude = ['status','created_at','updated_at','institution','branch','created_by','updated_by']
 
+class ClassSubjectStdViewSerializer(serializers.ModelSerializer):
+    subject = SubjectViewSerializer(read_only=True)
+    class Meta:
+        model = ClassSubject
+        # Include the specified fields from serialization
+        fields = ['id','code','subject','image','book_file']
+
+
 class ClassSubjectSerializer(serializers.ModelSerializer):
     created_username = serializers.ReadOnlyField(source='created_by.username')
     updated_username = serializers.ReadOnlyField(source='created_by.username')

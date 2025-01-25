@@ -16,7 +16,7 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin_thumbnails.thumbnail('photo')
 class GuardianTabularInline(admin.TabularInline):
     model = Guardian
-    fields = ['first_name','last_name','mobile_no','relation','gender','occupation','nid','photo','photo_thumbnail','is_guardian']
+    fields = ['user','first_name','last_name','mobile_no','relation','gender','occupation','nid','photo','photo_thumbnail','is_guardian','status','institution','branch']
     extra = 0
 
 class StudentEnrollTabularInline(admin.TabularInline):
@@ -40,13 +40,18 @@ class StudentLeaveTransactionTabularInline(admin.TabularInline):
     fields = ['start_date','end_date','app_status']
     extra = 0
 
+class PreviousEducationTabularInline(admin.TabularInline):
+    model = PreviousEducation
+    fields = ['name','address','class_name','roll_no','document','reason','status','institution','branch']
+    extra = 0
+
 @admin_thumbnails.thumbnail('photo')
 class StudentAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Basic Information",{'fields':[('first_name','last_name','gender','category','shift'),
                                         ('email','dob','mobile_no','religion'),
                                         ('photo','photo_thumbnail','admission_date','blood_group'),
-                                        ('birth_reg_scert_no','birth_cert_file'),]}),
+                                        ('birth_reg_scert_no','birth_cert_file','status'),]}),
         # ("Basic Information",{'fields':[('code','first_name','last_name','gender'),('email','dob','mobile_no','religion'),('photo','photo_thumbnail','admission_date','blood_group','Institution','status','is_online'),]}),
         ("Address",{'fields':[('present_address','permanent_address'),]}),  
         ("Institution Info",{'fields':[('institution','branch'),]})  
@@ -59,8 +64,7 @@ class StudentAdmin(admin.ModelAdmin):
     save_on_top = True
     list_per_page = 15
 
-    # inlines = [GuardianTabularInline,StudentEnrollTabularInline,ProcessStAttendanceDailyAdminTabularInline,StudentLeaveTransactionTabularInline,FeesTransactionAdminTabularInline]
-    inlines = [GuardianTabularInline,StudentEnrollTabularInline,StudentLeaveTransactionTabularInline,FeesTransactionAdminTabularInline]
+    inlines = [GuardianTabularInline,StudentEnrollTabularInline,StudentLeaveTransactionTabularInline,FeesTransactionAdminTabularInline,PreviousEducationTabularInline]
     
     class Meta:
         model = Student

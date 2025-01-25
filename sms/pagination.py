@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from rest_framework import pagination
 from rest_framework.response import Response
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
@@ -9,6 +10,13 @@ class CustomPagination(pagination.PageNumberPagination):
     max_page_size = 1000  # Maximum page size
 
     def get_paginated_response(self, data):
+        # Cache the paginated data based on the current request URL (with page size and page number)
+        cache_key = self.get_cache_key()
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return Response(cached_data)  # Return the cached data if available
+
         next_url = self.get_next_link()
         previous_url = self.get_previous_link()
         
@@ -22,7 +30,15 @@ class CustomPagination(pagination.PageNumberPagination):
             },
             "data": data,
         }
+
+        # Cache the response for 5 minutes (adjust as needed)
+        cache.set(cache_key, response_data, timeout=300)
+
         return Response(response_data)
+    
+    def get_cache_key(self):
+        # Cache key is based on the request URL with page number and page size
+        return self.request.build_absolute_uri()
 
     def get_next_link(self):
         if not self.page.has_next():
@@ -30,8 +46,7 @@ class CustomPagination(pagination.PageNumberPagination):
 
         page_number = self.page.next_page_number()
         url = self.request.build_absolute_uri()
-        url = self.replace_query_param(url, self.page_query_param, page_number)
-        return url
+        return self.replace_query_param(url, self.page_query_param, page_number)
 
     def get_previous_link(self):
         if not self.page.has_previous():
@@ -39,8 +54,7 @@ class CustomPagination(pagination.PageNumberPagination):
 
         page_number = self.page.previous_page_number()
         url = self.request.build_absolute_uri()
-        url = self.replace_query_param(url, self.page_query_param, page_number)
-        return url
+        return self.replace_query_param(url, self.page_query_param, page_number)
 
     def replace_query_param(self, url, param_name, param_value):
         parsed_url = urlparse(url)
