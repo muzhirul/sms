@@ -894,65 +894,141 @@ class StudentLeaveDetails(generics.RetrieveUpdateAPIView):
             # Handle other exceptions
             return CustomResponse(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred during the update", data=str(e))
 
+# class TeacherWiseStudentList(generics.ListAPIView):
+#     queryset = Student.objects.filter(status=True)
+#     serializer_class = StudentSortViewSerializer
+#     permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+
+#     def get_queryset(self):
+#         queryset = Student.objects.filter(status=True).order_by('-id')
+#         username = self.request.user
+#         model_name = self.request.user.model_name
+#         institution = self.request.user.institution
+#         branch = self.request.user.branch
+#         try:
+#             staff_info = Staff.objects.get(staff_id=username,status=True)
+#             version_ids = []
+#             session_ids = []
+#             section_ids = []
+#             class_name_ids = []
+#             group_ids = []
+#             for cls_teacher in ClassTeacher.objects.filter(status=True,teacher=staff_info,institution=institution,branch=branch):
+#                 session_ids.append(cls_teacher.session.id)
+#                 version_ids.append(cls_teacher.version.id)
+#                 class_name_ids.append(cls_teacher.class_name.id)
+#                 section_ids.append(cls_teacher.section.id)
+#                 if cls_teacher.group:
+#                     group_ids.append(cls_teacher.group.id)
+#                 student_ids = []
+#                 for std_id in StudentEnroll.objects.filter(status=True,is_active=True,session__in=session_ids,version__in=version_ids,class_name__in=class_name_ids,section__in=section_ids):
+#                     student_ids.append(std_id.student.id)
+#             queryset = queryset.filter(institution=institution, branch=branch, status=True,id__in=student_ids).order_by('-id')
+#         except:
+#             queryset
+#         return queryset
+
+#     def list(self,request,*args, **kwargs):
+#         '''Check user has permission to View start'''
+#         # permission_check = check_permission(self.request.user.id, 'Student Details', 'view')
+#         # if not permission_check:
+#         #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
+#         '''Check user has permission to View end'''
+#         # serializer_class = TokenObtainPairView  # Create this serializer
+#         queryset = self.filter_queryset(self.get_queryset())
+#         page = self.paginate_queryset(queryset)
+#         if page is not None:
+#             serializer = self.get_serializer(page, many=True)
+#             response_data = self.get_paginated_response(serializer.data).data
+#         else:
+#             serializer = self.get_serializer(queryset, many=True)
+#             response_data = {
+#                 "code": 200,
+#                 "message": "Success",
+#                 "data": serializer.data,
+#                 "pagination": {
+#                     "next": None,
+#                     "previous": None,
+#                     "count": queryset.count(),
+#                 },
+#             }
+
+#         return Response(response_data)
+
 class TeacherWiseStudentList(generics.ListAPIView):
     queryset = Student.objects.filter(status=True)
     serializer_class = StudentSortViewSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Requires a valid JWT token for access
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Student.objects.filter(status=True).order_by('-id')
-        username = self.request.user
-        model_name = self.request.user.model_name
-        institution = self.request.user.institution
-        branch = self.request.user.branch
+        """
+        Returns a queryset of students filtered by the current teacher's assignments.
+        """
+        user = self.request.user
+        institution = user.institution
+        branch = user.branch
+
         try:
-            staff_info = Staff.objects.get(staff_id=username,status=True)
-            version_ids = []
-            session_ids = []
-            section_ids = []
-            class_name_ids = []
-            group_ids = []
-            for cls_teacher in ClassTeacher.objects.filter(status=True,teacher=staff_info,institution=institution,branch=branch):
-                session_ids.append(cls_teacher.session.id)
-                version_ids.append(cls_teacher.version.id)
-                class_name_ids.append(cls_teacher.class_name.id)
-                section_ids.append(cls_teacher.section.id)
-                if cls_teacher.group:
-                    group_ids.append(cls_teacher.group.id)
-                student_ids = []
-                for std_id in StudentEnroll.objects.filter(status=True,is_active=True,session__in=session_ids,version__in=version_ids,class_name__in=class_name_ids,section__in=section_ids):
-                    student_ids.append(std_id.student.id)
-            queryset = queryset.filter(institution=institution, branch=branch, status=True,id__in=student_ids).order_by('-id')
-        except:
-            queryset
+            staff_info = Staff.objects.get(staff_id=user, status=True)
+        except Staff.DoesNotExist:
+            return Student.objects.none()  
+
+        class_teachers = ClassTeacher.objects.filter(
+            status=True, teacher=staff_info, institution=institution, branch=branch
+        ).select_related("session", "version", "class_name", "section", "group")
+
+        session_ids = class_teachers.values_list("session__id", flat=True)
+        version_ids = class_teachers.values_list("version__id", flat=True)
+        class_name_ids = class_teachers.values_list("class_name__id", flat=True)
+        section_ids = class_teachers.values_list("section__id", flat=True)
+        group_ids = class_teachers.values_list("group__id", flat=True)
+        group_ids = [group_id for group_id in group_ids if group_id is not None]
+        student_enroll_filter = {
+            "status": True,
+            "is_active": True,
+            "session__in": session_ids,
+            "version__in": version_ids,
+            "class_name__in": class_name_ids,
+            "section__in": section_ids,
+        }
+
+        if group_ids:
+            student_enroll_filter["group__in"] = group_ids
+        student_ids = StudentEnroll.objects.filter(**student_enroll_filter).values_list("student__id", flat=True)
+
+        student_id = self.request.query_params.get("student_id")
+
+        queryset = Student.objects.filter(
+            id__in=student_ids, institution=institution, branch=branch, status=True
+        ).order_by("-id")
+
+        if student_id:
+            queryset = queryset.filter(student_no=student_id)
+
         return queryset
 
-    def list(self,request,*args, **kwargs):
-        '''Check user has permission to View start'''
-        # permission_check = check_permission(self.request.user.id, 'Student Details', 'view')
-        # if not permission_check:
-        #     return CustomResponse(code=status.HTTP_401_UNAUTHORIZED, message="Permission denied", data=None)
-        '''Check user has permission to View end'''
-        # serializer_class = TokenObtainPairView  # Create this serializer
+    def list(self, request, *args, **kwargs):
+        """
+        Custom list method to format the response with pagination and additional data.
+        """
         queryset = self.filter_queryset(self.get_queryset())
+
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            response_data = self.get_paginated_response(serializer.data).data
-        else:
-            serializer = self.get_serializer(queryset, many=True)
-            response_data = {
-                "code": 200,
-                "message": "Success",
-                "data": serializer.data,
-                "pagination": {
-                    "next": None,
-                    "previous": None,
-                    "count": queryset.count(),
-                },
-            }
+            return self.get_paginated_response(serializer.data)
 
-        return Response(response_data)
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = {
+            "code": 200,
+            "message": "Success",
+            "data": serializer.data,
+            "pagination": {
+                "next": None,
+                "previous": None,
+                "count": queryset.count(),
+            },
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
 class StudentResponsibleLeaveList(generics.ListAPIView):
     serializer_class = StudentLeaveTransactionListSerializer
